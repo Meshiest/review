@@ -1,5 +1,6 @@
 //! The app's dock: gpui-component's skin, plus the headers of the folded
-//! sidebar sections under the left region.
+//! sidebar sections under the left region and a fold button before a
+//! sidebar section's tabs.
 //!
 //! One dock area holds everything: the sidebar's sections in its left
 //! region and the pull request tabs in its center, so a tab drags between
@@ -12,20 +13,21 @@ use std::sync::Arc;
 use gpui::{
     AnyElement, AnyView, App, AppContext as _, Axis, CursorStyle, DispatchPhase, Div, Entity,
     Hitbox, HitboxBehavior, IntoElement, MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent,
-    ParentElement, Pixels, Stateful, StyleRefinement, Styled, Window, canvas,
+    ParentElement, Pixels, Stateful, StyleRefinement, Styled, Window, canvas, div, px,
 };
 use gpui_kit::base::ResizeHandleContext;
 use gpui_kit::component::{
+    ActiveTheme as _,
     dock::{
-        BasePanelView, DockArea, DockAreaRenderer, DockContext, DockPlacement, DockSkin, NodeId,
-        PanelState, PanelStyle, TabGroupRenderer,
+        BasePanelView, DockArea, DockAreaRenderer, DockContext, DockPlacement, DockSkin,
+        DropIndicator, NodeId, PanelState, PanelStyle, TabGroupContext, TabGroupRenderer,
     },
-    v_flex,
+    h_flex, v_flex,
 };
 
 use crate::layout;
 use crate::sidebar::Sidebar;
-use crate::sidebar_panels::SlotDrag;
+use crate::sidebar_panels::{self, SlotDrag};
 
 /// gpui-component's skin with the folded sections stacked under the left
 /// region, which also moves the boundaries between the sidebar's open slots
@@ -118,7 +120,90 @@ impl DockAreaRenderer for AppSkin {
     }
 
     fn tab_group_renderer(&self) -> Rc<dyn TabGroupRenderer> {
-        self.inner.tab_group_renderer()
+        Rc::new(AppTabs {
+            inner: self.inner.tab_group_renderer(),
+        })
+    }
+}
+
+/// The skin's tab groups, with a sidebar section's fold button before its
+/// tabs.
+struct AppTabs {
+    inner: Rc<dyn TabGroupRenderer>,
+}
+
+impl TabGroupRenderer for AppTabs {
+    fn frame(&self, group: &TabGroupContext, window: &mut Window, cx: &mut App) -> Stateful<Div> {
+        self.inner.frame(group, window, cx)
+    }
+
+    fn content_frame(
+        &self,
+        group: &TabGroupContext,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> Stateful<Div> {
+        self.inner.content_frame(group, window, cx)
+    }
+
+    fn render_tab_bar(
+        &self,
+        group: &TabGroupContext,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> AnyElement {
+        let bar = self.inner.render_tab_bar(group, window, cx);
+        let Some(fold) = sidebar_panels::fold_button(group, cx) else {
+            return bar;
+        };
+        let theme = cx.theme();
+        // As the skin's own leading buttons: the tab bar's ground and bottom
+        // border, and the first tab's 1px border overlapped.
+        let lead = h_flex()
+            .flex_none()
+            .items_center()
+            .h_full()
+            .px_1()
+            .mr(px(-1.0))
+            .border_r_1()
+            .border_b_1()
+            .border_color(theme.border)
+            .bg(theme.tokens.tab_bar)
+            .child(fold);
+        h_flex()
+            .w_full()
+            .items_stretch()
+            .child(lead)
+            .child(div().flex_1().min_w_0().child(bar))
+            .into_any_element()
+    }
+
+    fn render_active_panel(
+        &self,
+        panel: AnyView,
+        group: &TabGroupContext,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> AnyElement {
+        self.inner.render_active_panel(panel, group, window, cx)
+    }
+
+    fn render_drop_indicator(
+        &self,
+        indicator: DropIndicator,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> Option<AnyElement> {
+        self.inner.render_drop_indicator(indicator, window, cx)
+    }
+
+    fn render_empty(
+        &self,
+        group: &TabGroupContext,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> Option<AnyElement> {
+        self.inner.render_empty(group, window, cx)
     }
 }
 

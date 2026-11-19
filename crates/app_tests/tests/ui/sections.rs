@@ -163,6 +163,12 @@ fn a_folded_section_keeps_its_fold_in_the_layout(
     );
     let open = bounds(&mut shell, Section::Inbox);
     let others_before: f32 = heights(&mut shell)[1..].iter().sum();
+    let fold = shell.bounds_of("section-toggle-Inbox");
+    let tab = shell.bounds_of("section-title-Inbox");
+    assert!(
+        fold.right() <= tab.left() && fold.left() >= open.left(),
+        "the fold button leads the tabs: {fold:?}, {tab:?}"
+    );
     shell.click("section-toggle-Inbox");
     shell.redraw();
     let inbox = panel(&mut shell, Section::Inbox);
@@ -347,7 +353,7 @@ fn folding_one_tab_of_a_group_folds_the_whole_group(cx: &mut TestAppContext) {
 }
 
 #[gpui::test]
-fn a_tab_click_only_selects_and_the_fold_button_sits_beside_the_tabs(cx: &mut TestAppContext) {
+fn a_tab_click_only_selects_and_the_fold_button_leads_the_tabs(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
     shell.open_pr(41);
     checks_with_files(&mut shell);
@@ -361,15 +367,16 @@ fn a_tab_click_only_selects_and_the_fold_button_sits_beside_the_tabs(cx: &mut Te
     );
     assert!(shell.drawn("section-Files"));
 
-    // The button is in the tab bar, right of both tabs, not in a tab.
+    // The button leads the tab bar at the sidebar's edge, not in a tab; the
+    // tabs scroll beside it when they do not fit.
     let button = shell.bounds_of("section-toggle-Files");
     let (files, checks) = (
         shell.bounds_of("section-title-Files"),
         shell.bounds_of("section-title-Rollup"),
     );
     assert!(
-        button.left() >= files.right() && button.left() >= checks.right(),
-        "{button:?} right of {files:?} and {checks:?}"
+        button.left() < px(12.0) && button.right() <= checks.left(),
+        "{button:?} before {files:?} and {checks:?}"
     );
     assert!(button.top() < files.bottom() && files.top() < button.bottom());
     shell.click("section-toggle-Files");

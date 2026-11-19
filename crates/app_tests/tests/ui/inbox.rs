@@ -378,14 +378,21 @@ fn inner_sections_keep_their_shares_through_outer_resizes(cx: &mut TestAppContex
         "and the heights: {before:?} -> {grown:?}"
     );
 
-    // The inner handle changes its own section only: shrinking leaves empty
-    // space, and growing takes it back.
+    // The inner handle moves the boundary: what the first gives, the next
+    // open one takes, and the sections still fill the panel.
     let first = block(&mut shell, 0);
     let grip = point(first.center().x, first.bottom() - px(2.0));
     shell.drag(grip, point(grip.x, grip.y - px(10.0)));
     let up = heights(&mut shell);
     assert!(up[0] < grown[0] - 5.0, "{grown:?} -> {up:?}");
-    assert!((up[1] - grown[1]).abs() < 2.0, "the next keeps its size");
+    let next = (1..up.len())
+        .find(|&ix| grown[ix] > 28.0)
+        .expect("an open section under the first");
+    assert!(
+        (up[next] - grown[next] - (grown[0] - up[0])).abs() < 2.0,
+        "the next takes it: {grown:?} -> {up:?}"
+    );
+    assert!((up.iter().sum::<f32>() - total).abs() < 2.0);
     let first = block(&mut shell, 0);
     let grip = point(first.center().x, first.bottom() - px(2.0));
     shell.drag(grip, point(grip.x, grip.y + px(20.0)));
@@ -419,72 +426,54 @@ fn drag_handle(shell: &mut ShellWindow, ix: usize, dy: f32) {
 const LEAST: f32 = app::inbox::DRAG_MIN;
 
 #[gpui::test]
-fn every_open_section_shrinks_and_grows_beside_folded_ones(cx: &mut TestAppContext) {
+fn the_boundary_between_open_sections_moves_beside_folded_ones(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
     shell.resize(1440.0, 1100.0);
     // The user's shape: an open section, two folded, then an open one.
     open_only(&mut shell, &[0, 3]);
     let start = heights(&mut shell);
+    let total: f32 = start.iter().sum();
     assert!(
         start[0] > LEAST + 40.0 && start[3] > LEAST + 40.0,
         "both open sections have room to shrink: {start:?}"
     );
     assert_eq!(start[1], 28.0);
     assert_eq!(start[2], 28.0);
+    let filled = |heights: &[f32]| (heights.iter().sum::<f32>() - total).abs() < 2.0;
 
-    // The first shrinks from its own handle; the space is left empty.
+    // The first shrinks from its handle and the last open one takes the
+    // space: nothing is left empty.
     drag_handle(&mut shell, 0, -40.0);
     let first = heights(&mut shell);
     assert!(first[0] < start[0] - 30.0, "{start:?} -> {first:?}");
-    assert!(
-        (first[3] - start[3]).abs() < 2.0,
-        "the other keeps its size"
-    );
+    assert!(first[3] > start[3] + 30.0 && filled(&first), "{first:?}");
 
-    // The last open one has a handle too, and shrinks the same way.
+    // The last open one fills the rest and has no handle.
     drag_handle(&mut shell, 3, -40.0);
-    let second = heights(&mut shell);
-    assert!(second[3] < first[3] - 30.0, "{first:?} -> {second:?}");
-    assert!((second[0] - first[0]).abs() < 2.0);
+    assert!(near(&heights(&mut shell), &first), "nothing to drag");
 
     // Neither goes under about two rows, however far it is dragged.
-    drag_handle(&mut shell, 3, -2000.0);
     drag_handle(&mut shell, 0, -2000.0);
     let least = heights(&mut shell);
     assert!(
-        (least[0] - LEAST).abs() < 2.0 && (least[3] - LEAST).abs() < 2.0,
+        (least[0] - LEAST).abs() < 2.0 && filled(&least),
         "{least:?}"
     );
+    drag_handle(&mut shell, 0, 2000.0);
+    let most = heights(&mut shell);
+    assert!((most[3] - LEAST).abs() < 2.0 && filled(&most), "{most:?}");
 
-    // Each grows again into the empty space, the other keeping its size.
-    drag_handle(&mut shell, 3, 40.0);
-    let grown = heights(&mut shell);
-    assert!(grown[3] > least[3] + 30.0 && (grown[0] - least[0]).abs() < 2.0);
-    drag_handle(&mut shell, 0, 40.0);
-    let grown = heights(&mut shell);
-    assert!(grown[0] > least[0] + 30.0, "{least:?} -> {grown:?}");
-}
-
-#[gpui::test]
-fn growing_a_section_takes_from_the_next_open_one_once_the_space_is_used(cx: &mut TestAppContext) {
-    let mut shell = open_shell(cx, Options::default());
-    shell.resize(1440.0, 1100.0);
-    open_only(&mut shell, &[0, 3]);
-    // Fill the panel: grow the last one as far as it goes.
-    drag_handle(&mut shell, 3, 2000.0);
-    let full = heights(&mut shell);
-    // Growing the first now shrinks the one after it.
-    drag_handle(&mut shell, 0, 20.0);
-    let moved = heights(&mut shell);
-    assert!(moved[0] > full[0] + 10.0 && moved[3] < full[3] - 10.0);
+    // And back: growing the last takes from the first.
+    drag_handle(&mut shell, 0, -40.0);
+    let back = heights(&mut shell);
     assert!(
-        ((moved[0] + moved[3]) - (full[0] + full[3])).abs() < 2.0,
-        "{full:?} -> {moved:?}"
+        back[3] > most[3] + 30.0 && filled(&back),
+        "{most:?} -> {back:?}"
     );
 }
 
 #[gpui::test]
-fn shares_survive_a_shrunk_then_regrown_panel_with_leftover_space(cx: &mut TestAppContext) {
+fn shares_survive_a_shrunk_then_regrown_panel(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
     shell.resize(1440.0, 1100.0);
     open_only(&mut shell, &[0, 3]);

@@ -317,21 +317,35 @@ impl Want {
     }
 }
 
-/// The height of each section in `avail`. A folded one is its header.
+/// The last open section, which fills what the others leave.
+fn last_open(wants: &[Want]) -> Option<usize> {
+    wants.iter().rposition(|w| !w.collapsed)
+}
+
+/// The height of each section in `avail`. A folded one is its header, and
+/// the last open one takes whatever the others leave, so the open sections
+/// fill the panel.
 ///
-/// Open sections are never stretched to fill the panel: what they do not use
-/// is empty space below them, so each can be dragged shorter.
-///
-/// Once a handle was dragged each open section is its share of the space
-/// the folded ones leave (a section without one asks for its rows), so a
-/// taller or shorter panel scales every section alike; when the shares
-/// together exceed the space they are scaled down to fit, and none goes
-/// under its least. Before that, open ones top down get their rows' height,
-/// leaving room for the least each section under them needs.
+/// Once a handle was dragged each open section above the last is its share
+/// of the space the folded ones leave (a section without one asks for its
+/// rows), so a taller or shorter panel scales every section alike; when the
+/// shares together exceed the space they are scaled down to fit, and none
+/// goes under its least. Before that, open ones top down get their rows'
+/// height, leaving room for the least each section under them needs.
 pub(crate) fn allot(avail: f32, wants: &[Want]) -> Vec<f32> {
-    if wants.iter().any(|w| !w.collapsed && w.share.is_some()) {
-        return allot_by_share(avail, wants);
+    let mut heights = if wants.iter().any(|w| !w.collapsed && w.share.is_some()) {
+        allot_by_share(avail, wants)
+    } else {
+        allot_top_down(avail, wants)
+    };
+    if let Some(last) = last_open(wants) {
+        let used: f32 = heights.iter().sum();
+        heights[last] += (avail - used).max(0.0);
     }
+    heights
+}
+
+fn allot_top_down(avail: f32, wants: &[Want]) -> Vec<f32> {
     let mut left = avail;
     wants
         .iter()
@@ -352,12 +366,28 @@ pub(crate) fn allot(avail: f32, wants: &[Want]) -> Vec<f32> {
 fn allot_by_share(avail: f32, wants: &[Want]) -> Vec<f32> {
     let folded = wants.iter().filter(|w| w.collapsed).count() as f32 * ROW;
     let space = (avail - folded).max(0.0);
-    let share = |w: &Want| {
-        w.share
-            .unwrap_or_else(|| w.content / space.max(1.0))
+    let last = last_open(wants);
+    let asked = |w: &Want| w.share.unwrap_or_else(|| w.content / space.max(1.0));
+    // The last open one's share is what the others leave.
+    let rest = 1.0
+        - (0..wants.len())
+            .filter(|&ix| !wants[ix].collapsed && Some(ix) != last)
+            .map(|ix| asked(&wants[ix]))
+            .sum::<f32>();
+    let shares: Vec<f32> = (0..wants.len())
+        .map(|ix| {
+            if Some(ix) == last {
+                rest
+            } else {
+                asked(&wants[ix])
+            }
             .max(f32::EPSILON)
-    };
-    let all: f32 = wants.iter().filter(|w| !w.collapsed).map(share).sum();
+        })
+        .collect();
+    let all: f32 = (0..wants.len())
+        .filter(|&ix| !wants[ix].collapsed)
+        .map(|ix| shares[ix])
+        .sum();
     let widest = space / all.max(1.0);
     let mut heights: Vec<Option<f32>> = wants.iter().map(|w| w.collapsed.then_some(ROW)).collect();
     // A section whose share is under its least takes the least; the others
@@ -371,7 +401,7 @@ fn allot_by_share(avail: f32, wants: &[Want]) -> Vec<f32> {
             .filter_map(|ix| heights[ix])
             .sum();
         let left = (space - fixed).max(0.0);
-        let total: f32 = free.iter().map(|&ix| share(&wants[ix])).sum();
+        let total: f32 = free.iter().map(|&ix| shares[ix]).sum();
         let unit = if total > 0.0 {
             widest.min(left / total)
         } else {
@@ -380,11 +410,11 @@ fn allot_by_share(avail: f32, wants: &[Want]) -> Vec<f32> {
         let short: Vec<usize> = free
             .iter()
             .copied()
-            .filter(|&ix| share(&wants[ix]) * unit < wants[ix].min())
+            .filter(|&ix| shares[ix] * unit < wants[ix].min())
             .collect();
         if short.is_empty() {
             for ix in free {
-                heights[ix] = Some(share(&wants[ix]) * unit);
+                heights[ix] = Some(shares[ix] * unit);
             }
             break;
         }
@@ -788,11 +818,11 @@ impl Sidebar {
     }
 
     /// The handle under section `ix` was dragged so that it would be `size`
-    /// tall, not under about two rows. Shrinking leaves the space empty
-    /// below the sections. Growing uses that space first, then takes from the
-    /// open sections after it, down to their least; folded ones are skipped.
-    /// Every open section's share is then what it shows now, so later
-    /// resizes of the panel keep them.
+    /// tall, not under about two rows. Shrinking gives the space to the next
+    /// open section; growing takes from the open sections after it, down to
+    /// their least; folded ones are skipped. The last open section has no
+    /// handle: it fills what the others leave. Every open section's share is
+    /// then what it shows now, so later resizes of the panel keep them.
     pub fn resize_section(&mut self, ix: usize, size: f32, cx: &mut Context<Self>) {
         let heights = self.inbox.heights.clone();
         let sections = &self.inbox.sections;
@@ -800,6 +830,9 @@ impl Sidebar {
         if ix >= count || sections[ix].collapsed {
             return;
         }
+        let Some(next) = (ix + 1..count).find(|&n| !sections[n].collapsed) else {
+            return;
+        };
         let folded = sections[..count].iter().filter(|s| s.collapsed).count() as f32;
         let space = (f32::from(self.inbox.height.get()) - folded * ROW).max(1.0);
         let least = |n: usize| {
@@ -826,6 +859,8 @@ impl Sidebar {
                 need -= give;
             }
             new_heights[ix] -= need;
+        } else {
+            new_heights[next] -= grow;
         }
         let unchanged = (0..count).all(|n| {
             sections[n].collapsed
@@ -1665,10 +1700,11 @@ impl Sidebar {
         if let Some(heights) = &heights {
             self.inbox.heights.clone_from(heights);
         }
+        let last = last_open(&wanted);
         let sections: Vec<AnyElement> = (0..count)
             .map(|ix| {
                 let height = heights.as_ref().map(|h| h[ix]);
-                self.section_block(ix, height, &t, cx)
+                self.section_block(ix, height, Some(ix) == last, &t, cx)
             })
             .collect();
         let measured = self.inbox.height.clone();
@@ -1729,11 +1765,13 @@ impl Sidebar {
     }
 
     /// Section `ix`: its header, and while open its list, sized as dragged
-    /// (or by its rows), with a drag handle under it.
+    /// (or by its rows), with a drag handle under it unless it is the `last`
+    /// open one, which fills the rest.
     fn section_block(
         &self,
         ix: usize,
         height: Option<f32>,
+        last: bool,
         t: &Theme,
         cx: &mut Context<Self>,
     ) -> AnyElement {
@@ -1762,10 +1800,14 @@ impl Sidebar {
             // Before the first measure: by its rows.
             None => block
                 .flex_basis(px(content))
-                .flex_grow(0.0)
+                .flex_grow(if last { 1.0 } else { 0.0 })
                 .flex_shrink(1.0)
                 .min_h(px(SECTION_MIN.min(content))),
         };
+        let block = block.child(body);
+        if last {
+            return block.into_any_element();
+        }
         block
             .on_drag_move(
                 cx.listener(move |this, event: &DragMoveEvent<ResizeSection>, _, cx| {
@@ -1775,7 +1817,6 @@ impl Sidebar {
                     }
                 }),
             )
-            .child(body)
             .child(
                 resize_handle::<ResizeSection, ResizeSection>(("inbox-handle", ix), Axis::Vertical)
                     .inside(HandleEdge::Trailing)
@@ -2135,10 +2176,15 @@ mod tests {
             share: None,
             content: 500.0,
         };
-        // Room for everything: rows' heights, and the rest stays empty.
+        // Room for everything: rows' heights, and the last open one takes
+        // the rest.
         assert_eq!(
             allot(600.0, &[open(None, 100.0), folded, open(None, 50.0)]),
-            [100.0, ROW, 50.0]
+            [100.0, ROW, 600.0 - 100.0 - ROW]
+        );
+        assert_eq!(
+            allot(600.0, &[open(None, 50.0), folded]),
+            [600.0 - ROW, ROW]
         );
         // Too little: the first keeps what it can and leaves the others
         // their least.
@@ -2182,11 +2228,16 @@ mod tests {
             share: Some(share),
             content: 1000.0,
         };
-        // Shares of the space; what they leave is empty.
-        assert_eq!(allot(600.0, &[open(0.25), open(0.5)]), [150.0, 300.0]);
-        assert_eq!(allot(900.0, &[open(0.25), open(0.5)]), [225.0, 450.0]);
-        // Over one they scale down to fit: a third and two thirds.
-        assert_eq!(allot(600.0, &[open(1.0), open(2.0)]), [200.0, 400.0]);
+        // Shares of the space; the last open one takes what the others
+        // leave, whatever its own share.
+        assert_eq!(allot(600.0, &[open(0.25), open(0.5)]), [150.0, 450.0]);
+        assert_eq!(allot(900.0, &[open(0.25), open(0.5)]), [225.0, 675.0]);
+        // The others asking for more than the space leave the last its least.
+        let over = allot(600.0, &[open(1.0), open(2.0)]);
+        assert!(
+            close(&over, &[600.0 - SECTION_MIN, SECTION_MIN]),
+            "{over:?}"
+        );
         // Shrunk below a section's least, it keeps the least; grown again,
         // the shares come back.
         let small = allot(200.0, &[open(0.05), open(0.95)]);
@@ -2194,12 +2245,16 @@ mod tests {
             close(&small, &[SECTION_MIN, 200.0 - SECTION_MIN]),
             "{small:?}"
         );
-        assert_eq!(allot(1000.0, &[open(0.1), open(0.5)]), [100.0, 500.0]);
+        assert_eq!(allot(1000.0, &[open(0.1), open(0.5)]), [100.0, 900.0]);
         // A folded section is its header and gives its share to the rest;
         // unfolded, it takes the share back.
         assert_eq!(
             allot(600.0 + ROW, &[open(0.25), folded(0.5), open(0.5)]),
-            [150.0, ROW, 300.0]
+            [150.0, ROW, 450.0]
+        );
+        assert_eq!(
+            allot(600.0 + ROW, &[open(0.25), open(0.5), folded(0.25)]),
+            [150.0, 450.0, ROW]
         );
         assert_eq!(
             allot(600.0, &[open(0.25), open(0.5), open(0.25)]),

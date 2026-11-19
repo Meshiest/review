@@ -23,11 +23,12 @@ use gpui::{
 };
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{
-    Icon, Placement,
-    button::Button,
+    Icon, Placement, Sizable as _,
+    button::{Button, ButtonVariants as _},
     dock::{
         BasePanel, DockArea, DockEvent, DockLayout, DockPlacement, InsertTarget, NodeId, PaneNode,
-        PaneRef, Panel, PanelEvent, PanelId, PanelInfo, PanelState, register_panel,
+        PaneRef, Panel, PanelEvent, PanelId, PanelInfo, PanelState, TabGroupContext,
+        register_panel,
     },
     h_flex,
     scroll::ScrollableElement as _,
@@ -332,6 +333,39 @@ impl SectionPanel {
             first == Some(me)
         })
     }
+}
+
+/// The button that folds a sidebar section's tab group to its header row
+/// under the sidebar, drawn before the group's tabs. `None` when the group's
+/// displayed panel is not a section in the sidebar.
+pub fn fold_button(group: &TabGroupContext, cx: &App) -> Option<AnyElement> {
+    let panel = group
+        .active_panel()?
+        .view()
+        .downcast::<SectionPanel>()
+        .ok()?;
+    let this = panel.read(cx);
+    if !this.in_sidebar() {
+        return None;
+    }
+    let name = this.section.name();
+    let (icon, tip) = if this.is_collapsed() {
+        (IconName::ChevronsUpDown, "Unfold")
+    } else {
+        (IconName::ChevronsDownUp, "Fold")
+    };
+    let fold = Button::new("section-fold")
+        .icon(icon)
+        .xsmall()
+        .ghost()
+        .tab_stop(false)
+        .tooltip_with_action(tip, &ToggleFold, Some(FOLD_CONTEXT))
+        // As the section's name in the folded row, which unfolds it.
+        .debug_selector(move || format!("section-toggle-{name}"))
+        .on_click(move |_, window, cx| {
+            panel.update(cx, |this, cx| this.toggle_collapsed(window, cx));
+        });
+    Some(fold.into_any_element())
 }
 
 /// The tab group of the sidebar holding `panel`: its panels in tab order and
@@ -1006,27 +1040,6 @@ impl Panel for SectionPanel {
             })
             .children(group)
             .children(refresh)
-    }
-
-    /// In the sidebar, the button that folds the tab group to its header
-    /// row under the sidebar, beside the group's menu.
-    fn toolbar_buttons(&mut self, _: &mut Window, cx: &mut Context<Self>) -> Option<Vec<Button>> {
-        if !self.in_sidebar() {
-            return None;
-        }
-        let name = self.section.name();
-        let (icon, tip) = if self.is_collapsed() {
-            (IconName::ChevronsUpDown, "Unfold")
-        } else {
-            (IconName::ChevronsDownUp, "Fold")
-        };
-        let fold = Button::new("section-fold")
-            .icon(icon)
-            .tooltip_with_action(tip, &ToggleFold, Some(FOLD_CONTEXT))
-            // As the section's name in the folded row, which unfolds it.
-            .debug_selector(move || format!("section-toggle-{name}"))
-            .on_click(cx.listener(|this, _, window, cx| this.toggle_collapsed(window, cx)));
-        Some(vec![fold])
     }
 
     fn inner_padding(&self, _: &App) -> bool {
