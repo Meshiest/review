@@ -687,6 +687,10 @@ impl Forge for GitLab {
         GitLab::pull_request_pulse(self, repo, number).await
     }
 
+    async fn ci_states(&self, repo: &RepoRef, numbers: &[PrNumber]) -> Result<Vec<CiState>> {
+        GitLab::ci_states(self, repo, numbers).await
+    }
+
     async fn mergeability(&self, repo: &RepoRef, number: PrNumber) -> Result<Mergeability> {
         lifecycle::mergeability(self, repo, number).await
     }
@@ -1766,12 +1770,18 @@ mod tests {
         let cases = [
             ("CREATED", CiState::Queued),
             ("WAITING_FOR_RESOURCE", CiState::Queued),
+            ("PREPARING", CiState::Queued),
+            ("PENDING", CiState::Queued),
+            ("SCHEDULED", CiState::Queued),
+            ("WAITING_FOR_CALLBACK", CiState::Queued),
             ("running", CiState::Running),
             ("SUCCESS", CiState::Pass),
             ("FAILED", CiState::Fail),
             ("CANCELING", CiState::Canceled),
             ("MANUAL", CiState::Skipped),
             ("SKIPPED", CiState::Skipped),
+            ("CANCELED", CiState::Canceled),
+            ("something_new", CiState::None),
         ];
         for (status, expected) in cases {
             assert_eq!(ci_state(status), expected, "{status}");

@@ -465,7 +465,8 @@ impl Sidebar {
 
     /// The focused pull request, copied out so rows can hold listeners.
     fn detail(&self, cx: &App) -> Option<Detail> {
-        self.session.read(cx).open_pr().map(Detail::of)
+        let session = self.session.read(cx);
+        session.open_pr().map(|open| Detail::of(open, session))
     }
 
     /// Whether a pull request is open, so the sections showing it take space.
@@ -893,11 +894,17 @@ struct Detail {
 }
 
 impl Detail {
-    fn of(open: &OpenPr) -> Self {
+    /// The stack's members show what their inbox rows show now, not what
+    /// the rows showed when the stack was read.
+    fn of(open: &OpenPr, session: &Session) -> Self {
+        let mut stack = open.stack.clone();
+        for member in &mut stack.members {
+            member.ci = session.shown_ci(&member.key).unwrap_or(member.ci);
+        }
         Self {
             key: open.key.clone(),
             pr: open.pr.clone(),
-            stack: open.stack.clone(),
+            stack,
             jobs: check_rows(open),
             files: open.files.clone(),
             viewed: open.viewed.clone(),

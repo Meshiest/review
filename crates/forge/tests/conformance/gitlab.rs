@@ -499,6 +499,51 @@ async fn graphql_jobs_map_to_checks() {
 }
 
 #[tokio::test]
+async fn ci_states_read_a_page_of_merge_requests_in_one_query() {
+    let node = |iid: &str, status: Option<&str>| json!({"iid": iid, "headPipeline": status.map(|status| json!({"status": status}))});
+    let asked = ["4", "5", "6", "7", "8", "9", "10", "11"];
+    // Unordered, and !7 is gone: the project no longer has it.
+    let data = json!({"project": {"mergeRequests": {"nodes": [
+        node("11", Some("SUCCESS")),
+        node("4", Some("CREATED")),
+        node("5", Some("MANUAL")),
+        node("6", None),
+        node("8", Some("SCHEDULED")),
+        node("9", Some("WAITING_FOR_RESOURCE")),
+        node("10", Some("PREPARING")),
+    ]}}});
+    let cassette = Cassette {
+        exchanges: vec![graphql_exchange(
+            "CiStates",
+            json!({"path": "Lovelace/review-sandbox", "iids": asked, "first": asked.len()}),
+            data,
+        )],
+    };
+    let replay = Arc::new(ReplayTransport::new("inline", cassette));
+    let gitlab = replayed(replay.clone()).await;
+    let numbers: Vec<PrNumber> = asked
+        .iter()
+        .map(|iid| PrNumber(iid.parse().unwrap()))
+        .collect();
+    let states = gitlab.ci_states(&repo(), &numbers).await.unwrap();
+    assert_eq!(
+        states,
+        [
+            CiState::Queued,
+            CiState::Skipped,
+            CiState::None,
+            CiState::None,
+            CiState::Queued,
+            CiState::Queued,
+            CiState::Queued,
+            CiState::Pass,
+        ],
+        "a manual pipeline, a deleted one and a missing merge request all settle"
+    );
+    assert_eq!(replay.unused(), Vec::<String>::new());
+}
+
+#[tokio::test]
 async fn approvals_become_verdict_threads() {
     let note = |id: u64, body: &str, at: &str| {
         json!({"id": id, "body": body, "system": true, "created_at": at,

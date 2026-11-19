@@ -9,6 +9,7 @@ mod agent_review;
 mod apply;
 mod back_forward;
 mod checks;
+mod ci_settle;
 mod commits;
 mod composer;
 mod conversation;

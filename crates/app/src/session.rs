@@ -26,6 +26,7 @@ use gpui::{
 use forge::model::Timestamp;
 
 use crate::ci::{self, CiLoad, Retry, RetryConfirm};
+use crate::ci_settle::{self, SETTLE_POLL, SettleRead};
 use crate::commits::{self, CommitView, PrCommit, PrCommits};
 use crate::drafts::DraftSaver;
 use crate::fixtures::{self, Fixtures};
@@ -397,6 +398,9 @@ pub struct Session {
     /// the config file; set by whoever fills the inbox from the forges.
     repo_remover: Option<RepoRemover>,
     pub inbox_refresh: InboxRefresh,
+    /// Whether rows with active CI are being read again (see
+    /// [`crate::ci_settle`]).
+    settling: bool,
 }
 
 /// Starts a refetch of every inbox section, resolving when all answered.
@@ -543,6 +547,7 @@ impl Session {
             refresher: None,
             repo_remover: None,
             inbox_refresh: InboxRefresh::default(),
+            settling: false,
         });
         cx.set_global(SessionHandle(session.clone()));
         session
@@ -642,6 +647,7 @@ impl Session {
         for pr in waiting {
             self.open_row(pr, cx);
         }
+        self.settle_ci(cx);
         cx.notify();
     }
 
@@ -666,7 +672,8 @@ impl Session {
     }
 
     /// Replaces the inbox; the open pull requests and the selection stay.
-    pub fn set_inbox(&mut self, inbox: Inbox, cx: &mut Context<Self>) {
+    pub fn set_inbox(&mut self, mut inbox: Inbox, cx: &mut Context<Self>) {
+        self.keep_patched_ci(&mut inbox);
         for open in &mut self.prs {
             if let Some(row) = inbox.get(&open.key)
                 && open.pr.source.is_none()
@@ -676,7 +683,24 @@ impl Session {
         }
         self.stacks = inbox_stacks(&inbox, &self.source);
         self.inbox = Arc::new(inbox);
+        self.settle_ci(cx);
         cx.notify();
+    }
+
+    /// A row built from the same forge record as before (its list was not
+    /// read again, or the read failed) keeps the CI state patched since;
+    /// a fresh list's state wins.
+    fn keep_patched_ci(&self, inbox: &mut Inbox) {
+        let old: HashMap<&PrKey, &PullRequest> =
+            self.inbox.prs.iter().map(|row| (&row.key, row)).collect();
+        for row in &mut inbox.prs {
+            if let Some(old) = old.get(&row.key)
+                && let (Some(was), Some(now)) = (&old.source, &row.source)
+                && Arc::ptr_eq(was, now)
+            {
+                row.ci = old.ci;
+            }
+        }
     }
 
     /// The inbox's stacks of two or more pull requests, each bottom first,
@@ -1237,6 +1261,7 @@ impl Session {
                 }
             }
         }
+        self.settle_ci(cx);
         cx.notify();
     }
 
@@ -2148,7 +2173,86 @@ impl Session {
         if let Some(open) = self.pr_mut(key) {
             open.pr.ci = state;
         }
+        self.settle_ci(cx);
         cx.notify();
+    }
+
+    /// The CI state `key` shows: its inbox row's, else the open pull
+    /// request's. A stack member draws this, so it never disagrees with
+    /// the row.
+    #[must_use]
+    pub fn shown_ci(&self, key: &PrKey) -> Option<CiState> {
+        self.inbox
+            .get(key)
+            .map(|row| row.ci)
+            .or_else(|| self.pr(key).map(|open| open.pr.ci))
+    }
+
+    /// Starts reading rows with active CI again every [`SETTLE_POLL`],
+    /// unless that is running or nothing is active.
+    fn settle_ci(&mut self, cx: &mut Context<Self>) {
+        if self.settling || self.services().is_none() || self.settle_reads().is_empty() {
+            return;
+        }
+        self.settling = true;
+        cx.spawn(async move |this, cx| {
+            loop {
+                cx.background_executor().timer(SETTLE_POLL).await;
+                let next = this.update(cx, |session, _| session.next_settle_reads());
+                let Ok(Some((services, reads))) = next else {
+                    return;
+                };
+                let calls = reads.iter().map(|read| {
+                    let (repo, numbers) = (read.repo.clone(), read.numbers.clone());
+                    services.forge(&read.repo.host, move |forge| async move {
+                        forge.ci_states(&repo, &numbers).await
+                    })
+                });
+                let answers = futures::future::join_all(calls).await;
+                let applied = this.update(cx, |session, cx| {
+                    session.settle_answers(&reads, answers, cx);
+                });
+                if applied.is_err() {
+                    return;
+                }
+            }
+        })
+        .detach();
+    }
+
+    /// The rows to read now; `None`, and the loop ends, when none is active.
+    fn next_settle_reads(&mut self) -> Option<(Services, Vec<SettleRead>)> {
+        let reads = self.settle_reads();
+        let services = self.services().cloned().filter(|_| !reads.is_empty());
+        self.settling = services.is_some();
+        Some((services?, reads))
+    }
+
+    fn settle_reads(&self) -> Vec<SettleRead> {
+        let rows = self.inbox.prs.iter().map(|row| (&row.key, row.ci));
+        let open = self.prs.iter().map(|open| (&open.key, open.pr.ci));
+        ci_settle::reads(rows.chain(open))
+    }
+
+    /// A failed read changes nothing; the next round asks again.
+    fn settle_answers(
+        &mut self,
+        reads: &[SettleRead],
+        answers: Vec<forge::Result<Vec<CiState>>>,
+        cx: &mut Context<Self>,
+    ) {
+        for (read, answer) in reads.iter().zip(answers) {
+            let Ok(states) = answer else {
+                continue;
+            };
+            for (key, state) in ci_settle::answered(read, &states) {
+                let shown = self.inbox.get(&key).map(|row| row.ci);
+                let open = self.pr(&key).map(|open| open.pr.ci);
+                if shown.is_some_and(|ci| ci != state) || open.is_some_and(|ci| ci != state) {
+                    self.patch_row_ci(&key, state, cx);
+                }
+            }
+        }
     }
 
     /// Comments, reviews or the state changed: reads `key`'s snapshot

@@ -10,6 +10,7 @@ pub mod assets;
 pub mod avatars;
 pub mod checks_panel;
 pub mod ci;
+pub mod ci_settle;
 pub mod claude_review;
 pub mod commands;
 pub mod commits;

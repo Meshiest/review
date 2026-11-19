@@ -640,6 +640,10 @@ web routes and in status `target_url`s is `index_in_repo`, not the run id)
   running job.
 - **Subscriptions** poll with an adaptive interval: fast while a run is
   active, slow when idle, using conditional requests.
+- A row or stack member showing queued or running CI is read again every
+  minute until it settles, watched or not, in one batched request per
+  repository where the forge allows (`ci_settle.rs`, `Forge::ci_states`).
+  Settled rows are only read with the inbox.
 - A state change raises an OS toast and an in-app badge. The app has no tray
   and does nothing once its window is closed. Webhook or Discord channels and
   a background service are not built (see `ROADMAP.md`).

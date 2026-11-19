@@ -1014,6 +1014,10 @@ impl Forge for GitHub {
     ) -> Result<PullRequestPulse> {
         GitHub::pull_request_pulse(self, repo, number).await
     }
+
+    async fn ci_states(&self, repo: &RepoRef, numbers: &[PrNumber]) -> Result<Vec<CiState>> {
+        GitHub::ci_states(self, repo, numbers).await
+    }
 }
 
 fn variables(repo: &RepoRef, number: PrNumber) -> Value {

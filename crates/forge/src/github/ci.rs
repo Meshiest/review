@@ -2,13 +2,20 @@
 //! request pulse. REST rather than GraphQL because it sends ETags, so a
 //! poll that finds nothing new is a free `304`.
 
+use std::collections::HashMap;
+use std::fmt::Write as _;
+
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
-use serde_json::Value;
+use serde_json::{Value, json};
 
-use super::{Conclusion, GitHub, RunStatus, StatusState, run_state, status_state};
+use super::{
+    Conclusion, Connection, GitHub, HeadCommit, RunStatus, StatusState, rollup_state, run_state,
+    status_state,
+};
 use crate::ci_log;
-use crate::error::Result;
+use crate::error::{Error, Result};
+use crate::forge::ci_states_by_pulse;
 use crate::http::{HttpRequest, RedirectPolicy, Url};
 use crate::model::{
     CheckStep, CiDetail, CiJob, CiRun, CiState, JobId, LogChunk, PrNumber, PrState,
@@ -117,6 +124,56 @@ impl GitHub {
         .await
     }
 
+    /// Batched with aliases; a missing pull request fails the whole query
+    /// with `NOT_FOUND`, so that falls back to one pulse each.
+    pub(super) async fn ci_states(
+        &self,
+        repo: &RepoRef,
+        numbers: &[PrNumber],
+    ) -> Result<Vec<CiState>> {
+        let mut states = Vec::with_capacity(numbers.len());
+        for chunk in numbers.chunks(CI_STATES_PAGE) {
+            match self.ci_states_page(repo, chunk).await {
+                Ok(page) => states.extend(page),
+                Err(Error::NotFound { .. }) => {
+                    states.extend(ci_states_by_pulse(self, repo, chunk).await?);
+                }
+                Err(error) => return Err(error),
+            }
+        }
+        Ok(states)
+    }
+
+    async fn ci_states_page(&self, repo: &RepoRef, numbers: &[PrNumber]) -> Result<Vec<CiState>> {
+        let mut fields = String::new();
+        for (ix, number) in numbers.iter().enumerate() {
+            let _ = write!(
+                fields,
+                "pr{ix}: pullRequest(number: {}) {{                  commits(last:1){{nodes{{commit{{statusCheckRollup{{state}}}}}}}} }} ",
+                number.0
+            );
+        }
+        let query = format!(
+            "query CiStates($owner: String!, $name: String!) {{              repository(owner: $owner, name: $name) {{ {fields}}} }}"
+        );
+        let variables = json!({"owner": repo.owner, "name": repo.name});
+        let data: CiStatesData = self.query("CiStates", &query, variables).await?;
+        let mut found = data.repository.ok_or_else(|| Error::NotFound {
+            request: format!("CiStates {}", repo.path()),
+        })?;
+        Ok((0..numbers.len())
+            .map(|ix| {
+                found
+                    .remove(&format!("pr{ix}"))
+                    .flatten()
+                    .and_then(|pr| pr.commits.into_parts().0.pop())
+                    .and_then(|commit| commit.commit.status_check_rollup)
+                    .and_then(|rollup| rollup.state)
+                    .map_or(CiState::None, rollup_state)
+            })
+            .collect())
+    }
+
     pub(super) async fn pull_request_pulse(
         &self,
         repo: &RepoRef,
@@ -156,6 +213,20 @@ impl GitHub {
             ci,
         })
     }
+}
+
+/// Pull requests per [`GitHub::ci_states`] query; GitHub caps a query's
+/// cost, not its aliases, and each alias is a small one.
+const CI_STATES_PAGE: usize = 50;
+
+#[derive(Deserialize)]
+struct CiStatesData {
+    repository: Option<HashMap<String, Option<CiStateNode>>>,
+}
+
+#[derive(Deserialize)]
+struct CiStateNode {
+    commits: Connection<HeadCommit>,
 }
 
 #[derive(Deserialize)]

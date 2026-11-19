@@ -762,6 +762,11 @@ pub struct FakeForge {
     others: Mutex<Vec<forge::model::PullRequest>>,
     /// Every collaborator query asked, in order.
     queries: Mutex<Vec<String>>,
+    /// What batched CI reads answer, by number; one not listed is
+    /// unsupported, so rows of other tests keep what they show.
+    ci_states: Mutex<std::collections::HashMap<u64, forge::model::CiState>>,
+    /// The pull requests each batched CI read asked about.
+    ci_state_reads: Mutex<Vec<Vec<u64>>>,
 }
 
 /// The accounts a [`FakeForge`] lists as collaborators. It refuses to ask
@@ -809,7 +814,25 @@ impl FakeForge {
             snapshots: AtomicBool::new(false),
             others: Mutex::default(),
             queries: Mutex::default(),
+            ci_states: Mutex::default(),
+            ci_state_reads: Mutex::default(),
         })
+    }
+
+    /// From now on a batched CI read answers `state` for `number`.
+    pub fn set_ci(&self, number: u64, state: forge::model::CiState) {
+        self.ci_states
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .insert(number, state);
+    }
+
+    /// The pull requests each batched CI read asked about, in order.
+    pub fn ci_state_reads(&self) -> Vec<Vec<u64>> {
+        self.ci_state_reads
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .clone()
     }
 
     /// From now on the runs read back as `runs`, as after they moved on.
@@ -1177,6 +1200,28 @@ impl forge::Forge for FakeForge {
     ) -> forge::Result<forge::model::PullRequest> {
         self.record(format!("close {number}"));
         self.answer(forge::model::PrState::Closed)
+    }
+
+    async fn ci_states(
+        &self,
+        _: &forge::model::RepoRef,
+        numbers: &[forge::model::PrNumber],
+    ) -> forge::Result<Vec<forge::model::CiState>> {
+        let asked: Vec<u64> = numbers.iter().map(|number| number.0).collect();
+        self.ci_state_reads
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .push(asked.clone());
+        let states = self
+            .ci_states
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .clone();
+        asked
+            .iter()
+            .map(|number| states.get(number).copied())
+            .collect::<Option<Vec<_>>>()
+            .map_or_else(|| self.unsupported("CI states"), Ok)
     }
 
     async fn job_log(

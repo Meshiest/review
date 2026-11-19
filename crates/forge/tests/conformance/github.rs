@@ -545,6 +545,41 @@ async fn threads_page_to_the_end_and_include_the_conversation() {
     assert!(ghost.edited_at.is_some());
 }
 
+#[tokio::test]
+async fn ci_states_alias_every_pull_request_in_one_query() {
+    let sandbox = repo();
+    let asked = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let counted = asked.clone();
+    let github = scripted(move |operation, variables| {
+        assert_eq!(operation, "CiStates");
+        assert_eq!(variables["owner"], "Lovelace");
+        counted.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        let rollup = |state: Option<&str>| {
+            json!({"commits": {"nodes": [{"commit": {"statusCheckRollup":
+                state.map(|state| json!({"state": state}))}}]}})
+        };
+        json!({"repository": {
+            "pr0": rollup(Some("SUCCESS")),
+            "pr1": rollup(Some("PENDING")),
+            "pr2": rollup(None),
+            "pr3": rollup(Some("FAILURE")),
+        }})
+    })
+    .await;
+    let numbers = [PrNumber(1), PrNumber(2), PrNumber(3), PrNumber(4)];
+    let states = github.ci_states(&sandbox, &numbers).await.unwrap();
+    assert_eq!(
+        states,
+        [
+            CiState::Pass,
+            CiState::Running,
+            CiState::None,
+            CiState::Fail
+        ]
+    );
+    assert_eq!(asked.load(std::sync::atomic::Ordering::SeqCst), 1);
+}
+
 fn run_json(id: &str, database_id: u64, name: &str, workflow: Option<(&str, u64)>) -> Value {
     json!({
         "__typename": "CheckRun", "id": id, "databaseId": database_id, "name": name,

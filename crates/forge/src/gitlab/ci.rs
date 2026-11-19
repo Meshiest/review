@@ -1,11 +1,14 @@
 //! Pipelines and jobs over REST [L5][L6][L7]: GraphQL has no ETags and no
 //! raw trace. GitLab has no steps, so a job is one log.
 
-use serde::Deserialize;
+use std::collections::HashMap;
 
-use super::{GitLab, PAGE, RestJob, ci_state, pr_state, project_segment};
+use serde::Deserialize;
+use serde_json::json;
+
+use super::{Connection, GitLab, PAGE, ProjectData, RestJob, ci_state, pr_state, project_segment};
 use crate::ci_log;
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::model::{
     CiDetail, CiJob, CiRun, CiState, JobId, LogChunk, PrNumber, PullRequestPulse, RepoRef, RunId,
     Sha, Timestamp,
@@ -78,6 +81,59 @@ impl GitLab {
                 .map_or(CiState::None, |pipeline| ci_state(&pipeline.status)),
         })
     }
+
+    /// One query per page of merge requests. One without a head pipeline
+    /// (none ran, or it was deleted) or that the project no longer has
+    /// reads `None`.
+    pub(super) async fn ci_states(
+        &self,
+        repo: &RepoRef,
+        numbers: &[PrNumber],
+    ) -> Result<Vec<CiState>> {
+        const QUERY: &str = "query CiStates($path: ID!, $iids: [String!], $first: Int!) {
+               project(fullPath: $path) {
+                 mergeRequests(iids: $iids, state: all, first: $first) {
+                   nodes { iid headPipeline { status } }
+                 }
+               }
+             }";
+        let mut found: HashMap<u64, CiState> = HashMap::with_capacity(numbers.len());
+        for chunk in numbers.chunks(PAGE) {
+            let iids: Vec<String> = chunk.iter().map(|number| number.0.to_string()).collect();
+            let variables = json!({"path": repo.path(), "iids": iids, "first": chunk.len()});
+            let data: ProjectData<CiStatesHolder> =
+                self.query("CiStates", QUERY, variables).await?;
+            let project = data.project.ok_or_else(|| Error::NotFound {
+                request: format!("CiStates {}", repo.path()),
+            })?;
+            for mr in project.merge_requests.nodes {
+                let Ok(iid) = mr.iid.parse::<u64>() else {
+                    continue;
+                };
+                let state = mr
+                    .head_pipeline
+                    .map_or(CiState::None, |pipeline| ci_state(&pipeline.status));
+                found.insert(iid, state);
+            }
+        }
+        Ok(numbers
+            .iter()
+            .map(|number| found.get(&number.0).copied().unwrap_or(CiState::None))
+            .collect())
+    }
+}
+
+#[derive(Deserialize)]
+struct CiStatesHolder {
+    #[serde(rename = "mergeRequests")]
+    merge_requests: Connection<CiStateNode>,
+}
+
+#[derive(Deserialize)]
+struct CiStateNode {
+    iid: String,
+    #[serde(rename = "headPipeline")]
+    head_pipeline: Option<RestPipelineStatus>,
 }
 
 impl RestJob {

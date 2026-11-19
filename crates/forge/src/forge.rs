@@ -7,10 +7,10 @@ use crate::error::{Error, Result};
 #[cfg(doc)]
 use crate::model::PendingPlace;
 use crate::model::{
-    CheckRun, CiDetail, CiJob, CiRun, Comment, CommentId, ForgeKind, InboxSection, JobId, Label,
-    LogChunk, MergeOptions, MergeSettings, Mergeability, NewComment, PendingComment, PendingReview,
-    PrNumber, PullRequest, PullRequestPulse, RepoRef, Review, ReviewId, RunId, Sha, Snapshot,
-    Stack, SuggestionId, Thread, ThreadId, User, Verdict, ViewedFile,
+    CheckRun, CiDetail, CiJob, CiRun, CiState, Comment, CommentId, ForgeKind, InboxSection, JobId,
+    Label, LogChunk, MergeOptions, MergeSettings, Mergeability, NewComment, PendingComment,
+    PendingReview, PrNumber, PullRequest, PullRequestPulse, RepoRef, Review, ReviewId, RunId, Sha,
+    Snapshot, Stack, SuggestionId, Thread, ThreadId, User, Verdict, ViewedFile,
 };
 #[cfg(doc)]
 use crate::people::COLLABORATOR_LIMIT;
@@ -708,6 +708,38 @@ pub trait Forge: Send + Sync + 'static {
             ci: pull_request.ci.unwrap_or_default(),
         })
     }
+
+    /// The check rollup of each of `numbers`, in their order: how an inbox
+    /// row whose CI is queued or running is read again until it settles. A
+    /// pull request the forge does not find reads `None`, so nothing waits
+    /// on it.
+    ///
+    /// - GitHub: one `repository` query with a `pullRequest` alias per
+    ///   number (`statusCheckRollup.state`); per pull request as below when
+    ///   that query finds no repository or misses one of them.
+    /// - GitLab: `project.mergeRequests(iids:)` with `headPipeline.status`,
+    ///   a page of numbers per query.
+    /// - Forgejo (the default): [`Self::pull_request_pulse`] per pull request.
+    async fn ci_states(&self, repo: &RepoRef, numbers: &[PrNumber]) -> Result<Vec<CiState>> {
+        ci_states_by_pulse(self, repo, numbers).await
+    }
+}
+
+/// [`Forge::ci_states`] one [`Forge::pull_request_pulse`] at a time.
+pub(crate) async fn ci_states_by_pulse<F: Forge + ?Sized>(
+    forge: &F,
+    repo: &RepoRef,
+    numbers: &[PrNumber],
+) -> Result<Vec<CiState>> {
+    let mut states = Vec::with_capacity(numbers.len());
+    for &number in numbers {
+        states.push(match forge.pull_request_pulse(repo, number).await {
+            Ok(pulse) => pulse.ci,
+            Err(Error::NotFound { .. }) => CiState::None,
+            Err(error) => return Err(error),
+        });
+    }
+    Ok(states)
 }
 
 /// The answer of a write the forge has no API for.
