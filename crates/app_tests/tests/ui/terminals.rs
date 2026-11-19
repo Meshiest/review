@@ -11,8 +11,9 @@ use std::time::Duration;
 
 use app::agent::{ConfigCheck, SAFE_CLAUDE_FLAGS};
 use app::machines::{self, Machine, MachineEntry};
+use app::model::ForgeKind;
 use app::panels::PanelKind;
-use app::session::OpenMode;
+use app::session::{ForgeState, ForgeStatus, OpenMode};
 use app::terminal_panel::{RunState, TerminalPanel};
 use app::terminals::{TerminalSpec, Terminals, Where, WorktreeState};
 use gpui::{Entity, SharedString, TestAppContext};
@@ -565,4 +566,33 @@ fn trusting_a_prs_agent_config_takes_a_confirmation(cx: &mut TestAppContext) {
     );
     assert_absolute_programs(&spec);
     close_terminals(&mut shell);
+}
+
+/// Not clicked: it would start the real `glab auth login`.
+#[gpui::test]
+fn a_forge_with_an_auth_error_offers_to_sign_in(cx: &mut TestAppContext) {
+    let mut shell = open_shell(cx, Options::default());
+    let session = shell.session();
+    shell.update(|_, cx| {
+        session.update(cx, |session, cx| {
+            session.forges = vec![
+                ForgeStatus {
+                    host: "gitlab.com".into(),
+                    kind: ForgeKind::GitLab,
+                    state: ForgeState::AuthError("invalid_grant".into()),
+                    account: None,
+                },
+                ForgeStatus {
+                    host: "github.com".into(),
+                    kind: ForgeKind::GitHub,
+                    state: ForgeState::Ok,
+                    account: None,
+                },
+            ];
+            cx.notify();
+        });
+    });
+    shell.redraw();
+    assert!(shell.drawn("sign-in-gitlab.com"));
+    assert!(!shell.drawn("sign-in-github.com"), "signed in already");
 }

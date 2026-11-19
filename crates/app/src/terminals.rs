@@ -25,7 +25,7 @@ use term::SessionConfig;
 use crate::agent::{self, ConfigCheck, LaunchMode};
 use crate::claude_review::{self, ReviewLaunch};
 use crate::machines::{self, Machine, Place};
-use crate::model::PrKey;
+use crate::model::{ForgeKind, PrKey};
 use crate::panels::PanelKind;
 use crate::session::{OpenMode, Session};
 use crate::ui::{self, Button, ButtonKind, TextExt as _};
@@ -146,6 +146,16 @@ pub struct Forward {
     pub local: u16,
 }
 
+/// The forge CLI's login for `host`; the app reads its token from that CLI.
+#[must_use]
+pub fn sign_in_command(kind: ForgeKind, host: &str) -> String {
+    match kind {
+        ForgeKind::GitHub => format!("gh auth login --hostname {host}"),
+        ForgeKind::GitLab => format!("glab auth login --hostname {host}"),
+        ForgeKind::Forgejo => format!("fj -H {host} auth login"),
+    }
+}
+
 /// How a local shell is told to run a command and stay.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum ShellKind {
@@ -183,6 +193,24 @@ impl TerminalSpec {
             shell: machine.shell().map(str::to_owned),
             agent: None,
         }
+    }
+
+    /// A shell on `machine` that runs the forge CLI's login for `host`, the
+    /// way back from an auth error. `None` when `host` is not a plain host
+    /// name (with an optional port), since it goes into a command line.
+    #[must_use]
+    pub fn sign_in(kind: ForgeKind, host: &str, machine: &Machine) -> Option<Self> {
+        let plain = host
+            .chars()
+            .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '.' | '-' | ':'))
+            && host.starts_with(|ch: char| ch.is_ascii_alphanumeric());
+        if !plain {
+            return None;
+        }
+        Some(Self {
+            command: Some(sign_in_command(kind, host)),
+            ..Self::shell_on(machine)
+        })
     }
 
     /// What the tab says: the machine and the end of the directory.
@@ -1436,6 +1464,35 @@ mod tests {
 
     fn safe_spec(machine: &Machine, path: &str) -> TerminalSpec {
         agent::launch_spec(machine, &worktree(path), LaunchMode::Safe).unwrap()
+    }
+
+    #[test]
+    fn signing_in_runs_the_forges_login_on_a_plain_host_only() {
+        let pc = Machine::this_pc(None);
+        let spec = TerminalSpec::sign_in(ForgeKind::GitLab, "gitlab.com", &pc).unwrap();
+        assert_eq!(
+            spec.command.as_deref(),
+            Some("glab auth login --hostname gitlab.com")
+        );
+        assert_eq!(spec.host, None, "on this PC");
+        let fj = TerminalSpec::sign_in(ForgeKind::Forgejo, "git.example.org:2222", &pc).unwrap();
+        assert_eq!(
+            fj.command.as_deref(),
+            Some("fj -H git.example.org:2222 auth login")
+        );
+        for host in [
+            "",
+            "-x.org",
+            "a.org; rm -rf ~",
+            "a.org && b",
+            "a b.org",
+            "$(id).org",
+        ] {
+            assert!(
+                TerminalSpec::sign_in(ForgeKind::GitHub, host, &pc).is_none(),
+                "{host:?}"
+            );
+        }
     }
 
     #[test]

@@ -10,8 +10,8 @@ use gpui::prelude::FluentBuilder as _;
 use gpui::{
     AnyElement, App, AppContext as _, Context, Entity, FocusHandle, Focusable as _, FontWeight,
     Global, InteractiveElement as _, IntoElement, KeyContext, MouseButton, ParentElement, Render,
-    StatefulInteractiveElement as _, Styled, Subscription, Task, WeakEntity, Window, actions, div,
-    px,
+    SharedString, StatefulInteractiveElement as _, Styled, Subscription, Task, WeakEntity, Window,
+    actions, div, px,
 };
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{
@@ -28,7 +28,8 @@ use diff_view::FrameClock;
 use crate::appearance;
 use crate::commands::{self, Group};
 use crate::layout;
-use crate::model::PrKey;
+use crate::machines::Machine;
+use crate::model::{ForgeKind, PrKey};
 use crate::palette::{Closed, Item, Mode, Palette};
 use crate::panels::{ChecksPanel, ConversationPanel, DiffPanel, LogPanel, PanelKind};
 use crate::session::{ForgeState, OpenMode, Session, SessionEvent, ShowPanel};
@@ -38,7 +39,9 @@ use crate::sidebar_panels;
 use crate::subscriptions::Subscriptions;
 use crate::tab_menu::{self, TabAction, tab_handle};
 use crate::terminal_panel::TerminalPanel;
-use crate::terminals::{NewTerminal, Purpose, TerminalSpec, Terminals, TerminalsEvent, Where};
+use crate::terminals::{
+    self, NewTerminal, Purpose, TerminalSpec, Terminals, TerminalsEvent, Where,
+};
 use crate::ui::spinner::{DockSpinners, SpinnerSlots};
 use crate::ui::{self, TextExt as _};
 use crate::watching::NoticeKind;
@@ -480,6 +483,26 @@ impl Shell {
             terminals.update(cx, |terminals, cx| {
                 terminals.open_picker(Purpose::NewTerminal, window, cx);
             });
+        }
+    }
+
+    /// Opens a terminal tab on this PC that runs the forge CLI's login for
+    /// `host`, from the status bar's "Sign in".
+    fn sign_in(
+        &mut self,
+        kind: ForgeKind,
+        host: &str,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let machine = Terminals::global(cx)
+            .and_then(|terminals| {
+                let machines = terminals.read(cx).machines(cx);
+                machines.into_iter().find(Machine::is_local)
+            })
+            .unwrap_or_else(|| Machine::this_pc(None));
+        if let Some(spec) = TerminalSpec::sign_in(kind, host, &machine) {
+            self.add_terminal(spec, Where::Tab, window, cx);
         }
     }
 
@@ -1449,12 +1472,38 @@ impl Shell {
                 .account
                 .as_ref()
                 .map(|user| ui::avatar(cx, &forge.host, user, ui::avatar::ROW));
+            let sign_in = matches!(forge.state, ForgeState::AuthError(_)).then(|| {
+                let (kind, host) = (forge.kind, forge.host.clone());
+                let command = terminals::sign_in_command(kind, &host);
+                let link = c.link;
+                div()
+                    .id(SharedString::from(format!("sign-in-{host}")))
+                    .debug_selector({
+                        let host = host.clone();
+                        move || format!("sign-in-{host}")
+                    })
+                    .tiny(&t)
+                    .text_color(link)
+                    .cursor_pointer()
+                    .hover(|s| s.underline())
+                    .tooltip(move |window, cx| {
+                        gpui_kit::component::tooltip::Tooltip::new(format!(
+                            "Runs `{command}` in a terminal; refresh once it is done"
+                        ))
+                        .build(window, cx)
+                    })
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        this.sign_in(kind, &host, window, cx);
+                    }))
+                    .child("Sign in")
+            });
             h_flex()
                 .gap(px(5.0))
                 .items_center()
                 .child(div().size(px(6.0)).rounded_full().bg(dot))
                 .children(account)
                 .child(div().mono(&t).tiny(&t).child(label))
+                .children(sign_in)
         });
         let activity = session.activity;
         let queue = if activity.forge + activity.git_active + activity.git_queued == 0 {
