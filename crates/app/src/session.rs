@@ -26,7 +26,7 @@ use gpui::{
 use forge::model::Timestamp;
 
 use crate::ci::{self, CiLoad, Retry, RetryConfirm};
-use crate::commits::{self, CommitView, PrCommit};
+use crate::commits::{self, CommitView, PrCommit, PrCommits};
 use crate::drafts::DraftSaver;
 use crate::fixtures::{self, Fixtures};
 use crate::forge_sink::ForgeSink;
@@ -171,7 +171,7 @@ pub struct OpenPr {
     pub selected_file: Option<SharedString>,
     /// The commits from the merge base to the head, newest first; `None`
     /// until they are read.
-    pub commits: Option<Arc<[PrCommit]>>,
+    pub commits: Option<PrCommits>,
     /// The commit the Diff panel shows alone, in place of all changes.
     pub commit_view: Option<CommitView>,
     /// Marks from the cache, and the toggles made since, by (path, blob).
@@ -1009,7 +1009,7 @@ impl Session {
                     })
                     .clone();
                 open.viewed = fixtures.viewed(&open.key, &detail.files);
-                open.commits = Some(fixtures::commits(&open.pr).into());
+                open.commits = Some(PrCommits::all(fixtures::commits(&open.pr)));
                 open.snapshot = fixtures.forge_pr(&open.key).map(|pull_request| {
                     Arc::new(Snapshot {
                         pull_request,
@@ -1210,7 +1210,7 @@ impl Session {
             }
             OpenUpdate::Commits(list) => {
                 if let Some(open) = self.pr_mut(key) {
-                    open.commits = Some(list.into());
+                    open.commits = Some(list);
                 }
             }
             OpenUpdate::Diff(DiffUpdate {
@@ -1686,8 +1686,8 @@ impl Session {
             Some(sha) => {
                 let Some(commit) = open
                     .commits
-                    .as_deref()
-                    .and_then(|list| list.iter().find(|c| c.sha == sha))
+                    .as_ref()
+                    .and_then(|commits| commits.list.iter().find(|c| c.sha == sha))
                     .cloned()
                 else {
                     return;

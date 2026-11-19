@@ -16,7 +16,7 @@ use gpui::SharedString;
 use repo::{ChangeKind, FileChange, FileList, FileListOptions, ObjectId};
 use store::PrKey;
 
-use crate::commits::PrCommit;
+use crate::commits::{self, PrCommits};
 use crate::model::{ChangedFile, FileStatus};
 use crate::services::Services;
 
@@ -70,7 +70,7 @@ pub enum OpenUpdate {
     Status(OpenStatus),
     Diff(DiffUpdate),
     /// The commits from the merge base to the head, newest first.
-    Commits(Vec<PrCommit>),
+    Commits(PrCommits),
 }
 
 /// Runs the whole open; drop the future to stop it.
@@ -249,13 +249,11 @@ async fn build_and_send(
     let commits = {
         let objects = objects.clone();
         services
-            .run_blocking(move || objects.pr_commits(number))
+            .run_blocking(move || objects.pr_commits(number, commits::LISTED))
             .await
     };
     if let Some(Ok(commits)) = commits {
-        send(OpenUpdate::Commits(
-            commits.iter().map(PrCommit::from_repo).collect(),
-        ));
+        send(OpenUpdate::Commits(PrCommits::from_repo(&commits)));
     }
 
     let may_rename = list.files.iter().any(|f| f.kind == ChangeKind::Added)

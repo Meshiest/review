@@ -169,10 +169,21 @@ fn check_ranges(dir: &Path, ranges: &[(String, String)]) -> usize {
     let store = Store::open(dir).unwrap();
     let mut compared = 0;
     for (base, head) in ranges {
-        let ours = store.commits(rev(dir, base), rev(dir, head)).unwrap();
+        let (base_id, head_id) = (rev(dir, base), rev(dir, head));
+        let ours = store.commits(base_id, head_id, usize::MAX).unwrap();
         let theirs = git_log(dir, base, head);
-        assert_eq!(ours, theirs, "{base}..{head} in {}", dir.display());
-        compared += ours.len();
+        assert_eq!(ours.commits, theirs, "{base}..{head} in {}", dir.display());
+        assert_eq!(ours.total, theirs.len());
+        // A limited walk is git log's newest ones, with the same count.
+        let limit = theirs.len() / 2;
+        let capped = store.commits(base_id, head_id, limit).unwrap();
+        assert_eq!(
+            capped.commits,
+            theirs[..limit],
+            "{base}..{head} first {limit}"
+        );
+        assert_eq!(capped.total, theirs.len());
+        compared += theirs.len();
     }
     compared
 }
@@ -203,7 +214,7 @@ fn the_walk_matches_git_log_on_merges_and_ties() {
     let store = Store::open(&dir).unwrap();
     let (main, feature) = (rev(&dir, "main"), rev(&dir, "feature"));
     let base = store.merge_base(main, feature).unwrap();
-    let commits = store.commits(base, feature).unwrap();
+    let commits = store.commits(base, feature, usize::MAX).unwrap().commits;
     let titles: Vec<&str> = commits.iter().map(|c| c.title.as_str()).collect();
     assert_eq!(
         titles,

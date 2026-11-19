@@ -21,6 +21,35 @@ use crate::services::ObjectStores;
 use crate::session::{OpenDiff, Session};
 use crate::ui::{self, TextExt as _, fold};
 
+/// The most commits the list shows; older ones are only counted.
+pub const LISTED: usize = 250;
+
+/// A pull request's newest commits, and how many it has.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PrCommits {
+    /// At most [`LISTED`], newest first.
+    pub list: Arc<[PrCommit]>,
+    /// Every commit from the merge base to the head, listed or not.
+    pub total: usize,
+}
+
+impl PrCommits {
+    pub fn from_repo(log: &repo::CommitLog) -> Self {
+        Self {
+            list: log.commits.iter().map(PrCommit::from_repo).collect(),
+            total: log.total,
+        }
+    }
+
+    /// A list that holds every commit.
+    pub fn all(list: Vec<PrCommit>) -> Self {
+        Self {
+            total: list.len(),
+            list: list.into(),
+        }
+    }
+}
+
 /// One commit of a pull request.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PrCommit {
@@ -117,7 +146,7 @@ pub fn build(objects: &ObjectStores, repo: &RepoRef, commit: &str) -> Result<Bui
 /// "3 commits": a click, Enter or Space shows or hides the list under the
 /// header. Nothing while the commits are being read.
 pub fn chip(
-    commits: Option<&[PrCommit]>,
+    commits: Option<&PrCommits>,
     open: bool,
     toggle: impl Fn(&mut App) + 'static,
     cx: &App,
@@ -125,7 +154,7 @@ pub fn chip(
     let commits = commits?;
     let t = ui::theme(cx);
     let c = &t.colors;
-    let count = commits.len();
+    let count = commits.total;
     let label = format!("{count} commit{}", if count == 1 { "" } else { "s" });
     let row = div()
         .id("commits-chip")
@@ -150,17 +179,18 @@ pub fn chip(
 
 /// The commits, newest first: short id, title, author and age. A click,
 /// Enter or Space on one shows its diff in the Diff panel; the one shown
-/// is marked.
+/// is marked. Past [`LISTED`] a last line counts the older ones.
 pub fn list(
     session: &Entity<Session>,
     key: &PrKey,
-    commits: &[PrCommit],
+    commits: &PrCommits,
     shown: Option<&SharedString>,
     cx: &App,
 ) -> AnyElement {
     let t = ui::theme(cx);
     let c = &t.colors;
-    let rows = commits.iter().enumerate().map(|(ix, commit)| {
+    let older = commits.total.saturating_sub(commits.list.len());
+    let rows = commits.list.iter().enumerate().map(|(ix, commit)| {
         let on = shown == Some(&commit.sha);
         let short = commit.short().to_owned();
         let (session, key, sha) = (session.clone(), key.clone(), commit.sha.clone());
@@ -223,7 +253,7 @@ pub fn list(
         .border_color(c.border)
         .rounded(t.radius.md)
         .overflow_hidden()
-        .when(commits.is_empty(), |el| {
+        .when(commits.list.is_empty(), |el| {
             el.child(
                 div()
                     .px(px(10.0))
@@ -233,6 +263,21 @@ pub fn list(
             )
         })
         .children(rows)
+        .when(older > 0, |el| {
+            el.child(
+                div()
+                    .debug_selector(|| "commits-older".into())
+                    .px(px(10.0))
+                    .py(px(6.0))
+                    .border_t_1()
+                    .border_color(c.border)
+                    .text_color(c.text_muted)
+                    .child(format!(
+                        "{older} older commit{} not listed",
+                        if older == 1 { "" } else { "s" }
+                    )),
+            )
+        })
         .into_any_element()
 }
 

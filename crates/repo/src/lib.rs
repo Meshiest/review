@@ -25,7 +25,7 @@ pub use files::{
 };
 pub use gix::ObjectId;
 pub use hunks::{CONTEXT, compute_hunks, render_hunk};
-pub use log::CommitInfo;
+pub use log::{CommitInfo, CommitLog};
 pub use store::{Store, StoreKind, pr_base_ref, pr_head_ref};
 pub use suggest::{LineEdit, PushTarget};
 pub use worktree::{

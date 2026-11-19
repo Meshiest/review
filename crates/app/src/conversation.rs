@@ -831,7 +831,7 @@ impl Render for ConversationPanel {
         let commits_open = self.commits_open.as_ref() == Some(&key);
         let me = cx.weak_entity();
         let chip = commits::chip(
-            open.commits.as_deref(),
+            open.commits.as_ref(),
             commits_open,
             move |cx| {
                 me.update(cx, |this, cx| this.toggle_commits(cx)).ok();
@@ -840,7 +840,7 @@ impl Render for ConversationPanel {
         );
         let commit_list = open
             .commits
-            .as_deref()
+            .as_ref()
             .filter(|_| commits_open)
             .map(|list| commits::list(&self.session, &key, list, open.shown_commit(), cx));
         let meta = pr_header::meta_row(open, session.account(&key.repo.host), chip, cx);

@@ -18,7 +18,7 @@ fn commits(shell: &mut ShellWindow) -> Vec<PrCommit> {
         session
             .read(cx)
             .open_pr()
-            .and_then(|open| open.commits.as_deref().map(<[PrCommit]>::to_vec))
+            .and_then(|open| open.commits.as_ref().map(|commits| commits.list.to_vec()))
             .expect("the fixture's commits")
     })
 }

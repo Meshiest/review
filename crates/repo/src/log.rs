@@ -29,13 +29,23 @@ impl CommitInfo {
     }
 }
 
+/// A range's newest commits, and how many it holds in all.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CommitLog {
+    /// At most the limit asked for, newest first.
+    pub commits: Vec<CommitInfo>,
+    /// Every commit of the range, listed or not.
+    pub total: usize,
+}
+
 impl Store {
-    /// The commits reachable from `head` and not from `base`, newest first,
-    /// in the order `git log base..head` prints them.
+    /// The newest `limit` commits reachable from `head` and not from `base`,
+    /// in the order `git log base..head` prints them, and how many there are
+    /// in all. Commits past the limit are counted, not read.
     ///
     /// # Errors
     /// If a commit cannot be read.
-    pub fn commits(&self, base: ObjectId, head: ObjectId) -> Result<Vec<CommitInfo>> {
+    pub fn commits(&self, base: ObjectId, head: ObjectId, limit: usize) -> Result<CommitLog> {
         let repo = self.repo();
         let walk = repo
             .rev_walk([head])
@@ -44,8 +54,13 @@ impl Store {
             .all()
             .map_err(Error::gix)?;
         let mut commits = Vec::new();
+        let mut total = 0;
         for info in walk {
             let info = info.map_err(Error::gix)?;
+            total += 1;
+            if commits.len() == limit {
+                continue;
+            }
             let commit = info.object().map_err(Error::gix)?;
             let author = commit.author().map_err(Error::gix)?;
             let message = commit.message_raw().map_err(Error::gix)?;
@@ -57,16 +72,17 @@ impl Store {
                 authored: author.seconds(),
             });
         }
-        Ok(commits)
+        Ok(CommitLog { commits, total })
     }
 
-    /// A pull request's commits: those on its head and not on its merge base.
+    /// A pull request's newest `limit` commits, those on its head and not on
+    /// its merge base, and how many it has.
     ///
     /// # Errors
     /// If the pull request was not fetched into this store.
-    pub fn pr_commits(&self, number: u64) -> Result<Vec<CommitInfo>> {
+    pub fn pr_commits(&self, number: u64, limit: usize) -> Result<CommitLog> {
         let (base, head) = self.pr_range(number)?;
-        self.commits(base, head)
+        self.commits(base, head, limit)
     }
 
     /// The file list of one commit: from its first parent (the empty tree
