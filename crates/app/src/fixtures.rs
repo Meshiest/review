@@ -2,6 +2,7 @@
 //! and benchmarks run offline. Every name here is made up.
 
 use std::collections::HashMap;
+use std::fmt::Write as _;
 
 use chrono::{Duration, Utc};
 use diff::synth::{SynthConfig, synthesize};
@@ -13,6 +14,7 @@ use forge::model::{
 use gpui::SharedString;
 
 use crate::avatars;
+use crate::commits::PrCommit;
 use crate::model::{
     ChangedFile, Check, CiState, FileStatus, ForgeKind, Inbox, PrKey, PrNumber, PullRequest,
     RepoRef, ReviewState, Section, SectionState, Stack, StackMember, Viewed,
@@ -958,6 +960,94 @@ pub fn synthetic_diff(number: u64, files: &[ChangedFile], min_rows: Option<usize
     };
     let mut diff = synthesize(&config);
     for (file, changed) in diff.files.iter_mut().zip(files) {
+        file.path = changed.path.to_string();
+    }
+    diff
+}
+
+/// A stable fake commit id: 40 hex digits from `number` and `ix`.
+fn commit_sha(number: u64, ix: usize) -> String {
+    let mut hash = number ^ 0xC0FF_EE00_D15E_A5E5;
+    let mut digits = String::with_capacity(40);
+    for round in 0..3u64 {
+        hash = (hash ^ (ix as u64) ^ (round << 32)).wrapping_mul(0x9E37_79B9_7F4A_7C15);
+        hash ^= hash >> 29;
+        let _ = write!(digits, "{hash:016x}");
+    }
+    digits.truncate(40);
+    digits
+}
+
+const COMMIT_TITLES: [&str; 6] = [
+    "Add the reader and its tests",
+    "Handle the empty case",
+    "Rename the cache fields",
+    "Fix the overflow on large inputs",
+    "Address review comments",
+    "Split the parser out of the loader",
+];
+
+/// A fixture pull request's commits, newest first: two to five, the newest
+/// at its head, and a merge of the base branch among the longer ones.
+pub fn commits(pr: &PullRequest) -> Vec<PrCommit> {
+    let number = pr.key.number.0;
+    let count = 2 + (number % 4) as usize;
+    let newest = pr.updated_at - Duration::minutes(10);
+    let sha = |ix: usize| -> SharedString {
+        if ix == 0 {
+            format!("{}{}", pr.sha, &commit_sha(number, 0)[pr.sha.len()..]).into()
+        } else {
+            commit_sha(number, ix).into()
+        }
+    };
+    (0..count)
+        .map(|ix| {
+            let merge = count >= 4 && ix == 1;
+            let title = if merge {
+                format!("Merge branch '{}' into {}", pr.base, pr.head)
+            } else {
+                COMMIT_TITLES[(number as usize + ix) % COMMIT_TITLES.len()].to_owned()
+            };
+            let author = if ix == 2 {
+                s(PEOPLE[number as usize % PEOPLE.len()])
+            } else {
+                pr.author.clone()
+            };
+            PrCommit {
+                sha: sha(ix),
+                title: title.into(),
+                author,
+                authored: newest - Duration::hours(3 * ix as i64),
+                parent: Some(commit_sha(number, ix + 1).into()),
+                merge,
+            }
+        })
+        .collect()
+}
+
+/// A synthetic diff of one fixture commit: some of the pull request's
+/// files, picked by the commit's id.
+pub fn commit_diff(number: u64, commit: &PrCommit, files: &[ChangedFile]) -> diff::Diff {
+    let seed = u64::from_str_radix(commit.sha.get(..16).unwrap_or("0"), 16).unwrap_or(number);
+    let mut picked: Vec<&ChangedFile> = files
+        .iter()
+        .enumerate()
+        .filter(|(ix, _)| (seed >> (ix % 64)) & 1 == 1)
+        .map(|(_, file)| file)
+        .collect();
+    if picked.is_empty()
+        && let Some(file) = files.get(seed as usize % files.len().max(1))
+    {
+        picked.push(file);
+    }
+    let mut diff = synthesize(&SynthConfig {
+        seed: seed ^ number,
+        max_files: picked.len(),
+        target_rows: None,
+        block_every: 0,
+    });
+    diff.files.truncate(picked.len());
+    for (file, changed) in diff.files.iter_mut().zip(picked) {
         file.path = changed.path.to_string();
     }
     diff

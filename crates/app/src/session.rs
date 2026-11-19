@@ -26,6 +26,7 @@ use gpui::{
 use forge::model::Timestamp;
 
 use crate::ci::{self, CiLoad, Retry, RetryConfirm};
+use crate::commits::{self, CommitView, PrCommit};
 use crate::drafts::DraftSaver;
 use crate::fixtures::{self, Fixtures};
 use crate::forge_sink::ForgeSink;
@@ -168,6 +169,11 @@ pub struct OpenPr {
     pub first_paint: Option<Duration>,
     /// Path of the file selected in the tree.
     pub selected_file: Option<SharedString>,
+    /// The commits from the merge base to the head, newest first; `None`
+    /// until they are read.
+    pub commits: Option<Arc<[PrCommit]>>,
+    /// The commit the Diff panel shows alone, in place of all changes.
+    pub commit_view: Option<CommitView>,
     /// Marks from the cache, and the toggles made since, by (path, blob).
     marks: Option<store::ViewedSet>,
     toggles: HashMap<(SharedString, SharedString), bool>,
@@ -245,6 +251,8 @@ impl OpenPr {
             opened_at: Instant::now(),
             first_paint: None,
             selected_file: None,
+            commits: None,
+            commit_view: None,
             marks: None,
             toggles: HashMap::new(),
             forge_viewed: HashMap::new(),
@@ -256,6 +264,20 @@ impl OpenPr {
             lifecycle: Lifecycle::default(),
             people: crate::people::PeopleState::default(),
             _task: None,
+        }
+    }
+
+    /// The id of the commit the Diff panel shows alone, if one is.
+    pub fn shown_commit(&self) -> Option<&SharedString> {
+        self.commit_view.as_ref().map(|view| &view.commit.sha)
+    }
+
+    /// The diff the Diff panel shows: the commit picked, once built, or
+    /// all changes.
+    pub fn shown_diff(&self) -> Option<&OpenDiff> {
+        match &self.commit_view {
+            Some(view) => view.diff.as_ref(),
+            None => self.diff.as_ref(),
         }
     }
 
@@ -422,6 +444,14 @@ pub enum SessionEvent {
         /// Move keyboard focus to the diff; false keeps it where the jump
         /// came from (the sidebar list, which keeps j, k and Enter).
         focus_diff: bool,
+    },
+    /// A commit was picked to show alone in the pull request's diff, or
+    /// all changes for `None`.
+    CommitShown {
+        pr: PrKey,
+        commit: Option<SharedString>,
+        /// The commit shown before, for Back.
+        previous: Option<SharedString>,
     },
     Show(ShowPanel),
     /// Close this dock panel: its tab's close button was clicked.
@@ -979,6 +1009,7 @@ impl Session {
                     })
                     .clone();
                 open.viewed = fixtures.viewed(&open.key, &detail.files);
+                open.commits = Some(fixtures::commits(&open.pr).into());
                 open.snapshot = fixtures.forge_pr(&open.key).map(|pull_request| {
                     Arc::new(Snapshot {
                         pull_request,
@@ -1175,6 +1206,11 @@ impl Session {
             OpenUpdate::Status(status) => {
                 if let Some(open) = self.pr_mut(key) {
                     open.status = status;
+                }
+            }
+            OpenUpdate::Commits(list) => {
+                if let Some(open) = self.pr_mut(key) {
+                    open.commits = Some(list.into());
                 }
             }
             OpenUpdate::Diff(DiffUpdate {
@@ -1602,6 +1638,115 @@ impl Session {
             open.selected_file = path;
             cx.notify();
         }
+    }
+
+    /// Shows `commit` of `key` alone in its Diff panel, or all changes for
+    /// `None`, as a click on a commit does: the Diff panel comes forward
+    /// and Back returns to where the click was.
+    pub fn show_commit(
+        &mut self,
+        key: &PrKey,
+        commit: Option<SharedString>,
+        cx: &mut Context<Self>,
+    ) {
+        let Some(open) = self.pr_mut(key) else {
+            return;
+        };
+        let previous = open.shown_commit().cloned();
+        if commit.is_some() {
+            // A commit is read whole; a file picked in all changes may not be in it.
+            open.selected_file = None;
+        }
+        self.set_shown_commit(key, commit.clone(), cx);
+        cx.emit(SessionEvent::CommitShown {
+            pr: key.clone(),
+            commit,
+            previous,
+        });
+        cx.notify();
+    }
+
+    /// Shows `commit` of `key` alone in its diff, or all changes for
+    /// `None`, without a jump: Back and Forward, "Show all changes". A
+    /// commit not in the pull request's list is ignored.
+    pub fn set_shown_commit(
+        &mut self,
+        key: &PrKey,
+        commit: Option<SharedString>,
+        cx: &mut Context<Self>,
+    ) {
+        let Some(open) = self.pr(key) else {
+            return;
+        };
+        if open.shown_commit() == commit.as_ref() {
+            return;
+        }
+        let view = match commit {
+            None => None,
+            Some(sha) => {
+                let Some(commit) = open
+                    .commits
+                    .as_deref()
+                    .and_then(|list| list.iter().find(|c| c.sha == sha))
+                    .cloned()
+                else {
+                    return;
+                };
+                Some(self.start_commit_view(key, commit, cx))
+            }
+        };
+        if let Some(open) = self.pr_mut(key) {
+            open.commit_view = view;
+        }
+        cx.notify();
+    }
+
+    /// The view of one commit, its diff built from the fixtures at once or
+    /// read from git off the main thread.
+    fn start_commit_view(
+        &mut self,
+        key: &PrKey,
+        commit: PrCommit,
+        cx: &mut Context<Self>,
+    ) -> CommitView {
+        let generation = self.generation();
+        let mut view = CommitView::new(commit.clone());
+        match &self.source {
+            Source::Fixtures { fixtures, .. } => {
+                let files = fixtures.detail(key).files;
+                view.ready(
+                    fixtures::commit_diff(key.number.0, &commit, &files),
+                    generation,
+                );
+            }
+            Source::Live(Some(services)) => {
+                let (objects, repo) = (services.objects.clone(), key.repo.clone());
+                let sha = commit.sha.clone();
+                let job = services.run_blocking(move || commits::build(&objects, &repo, &sha));
+                let key = key.clone();
+                view.task = Some(cx.spawn(async move |this, cx| {
+                    let built = job.await;
+                    this.update(cx, |session, cx| {
+                        let Some(view) = session
+                            .pr_mut(&key)
+                            .and_then(|open| open.commit_view.as_mut())
+                            .filter(|view| view.commit.sha == commit.sha)
+                        else {
+                            return;
+                        };
+                        match built {
+                            Some(Ok(built)) => view.ready(built.diff, generation),
+                            Some(Err(error)) => view.error = Some(error.into()),
+                            None => view.error = Some("the diff was not built".into()),
+                        }
+                        cx.notify();
+                    })
+                    .ok();
+                }));
+            }
+            Source::Live(None) => {}
+        }
+        view
     }
 
     pub fn diff_layout(&self) -> Layout {

@@ -163,13 +163,19 @@ struct Control {
     run: Run,
 }
 
-/// Whether the forge of `key` takes comments on a whole file; the reason
-/// when it does not.
+/// Why a commit's diff takes no comments.
+pub const COMMIT_READ_ONLY: &str = "Comments go on all changes, not on one commit";
+
+/// Whether the forge of `key` takes comments on a whole file, and the diff
+/// shown is all changes; the reason when not.
 pub fn file_comments(session: &Entity<Session>, key: &PrKey, cx: &App) -> Result<(), SharedString> {
     let session = session.read(cx);
     let Some(open) = session.pr(key) else {
         return Err("The pull request is not open".into());
     };
+    if open.commit_view.is_some() {
+        return Err(COMMIT_READ_ONLY.into());
+    }
     match session.capabilities_for(key) {
         Some(caps) if caps.file_comments => Ok(()),
         _ => Err(format!("{} has no comments on a whole file", open.pr.forge.label()).into()),

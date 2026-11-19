@@ -16,6 +16,7 @@ use gpui::SharedString;
 use repo::{ChangeKind, FileChange, FileList, FileListOptions, ObjectId};
 use store::PrKey;
 
+use crate::commits::PrCommit;
 use crate::model::{ChangedFile, FileStatus};
 use crate::services::Services;
 
@@ -68,6 +69,8 @@ pub enum OpenUpdate {
     Stack(Stack),
     Status(OpenStatus),
     Diff(DiffUpdate),
+    /// The commits from the merge base to the head, newest first.
+    Commits(Vec<PrCommit>),
 }
 
 /// Runs the whole open; drop the future to stop it.
@@ -199,8 +202,8 @@ pub async fn open_pr(
     futures::join!(network, git);
 }
 
-/// File list, first diff, full diff, then renames. Returns whether a diff
-/// went out.
+/// File list, first diff, full diff, the commits, then renames. Returns
+/// whether a diff went out.
 async fn build_and_send(
     services: &Services,
     objects: &repo::Store,
@@ -242,6 +245,18 @@ async fn build_and_send(
         send(OpenUpdate::Diff(full.into_update(head)));
     }
     send(OpenUpdate::Status(OpenStatus::Ready));
+
+    let commits = {
+        let objects = objects.clone();
+        services
+            .run_blocking(move || objects.pr_commits(number))
+            .await
+    };
+    if let Some(Ok(commits)) = commits {
+        send(OpenUpdate::Commits(
+            commits.iter().map(PrCommit::from_repo).collect(),
+        ));
+    }
 
     let may_rename = list.files.iter().any(|f| f.kind == ChangeKind::Added)
         && list.files.iter().any(|f| f.kind == ChangeKind::Deleted);
@@ -337,6 +352,14 @@ fn text(blob: &repo::Blob, id: Option<ObjectId>) -> Text {
         blob.shared_bytes().clone(),
         blob.shared_line_starts().clone(),
     )
+}
+
+/// Lines added and removed over a whole diff.
+pub fn stat(diff: &diff::Diff) -> (u32, u32) {
+    diff.files
+        .iter()
+        .map(counts)
+        .fold((0, 0), |(added, removed), (a, r)| (added + a, removed + r))
 }
 
 fn counts(file: &FileDiff) -> (u32, u32) {

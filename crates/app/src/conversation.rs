@@ -31,6 +31,7 @@ mod footer;
 use self::ci_box::CiBoxes;
 use self::footer::{Footer, FooterState};
 use crate::appearance::{self, Appearance};
+use crate::commits;
 use crate::model::{CiState, PrKey};
 use crate::panels::{Binding, PanelKind, dock_panel, header};
 use crate::pr_header::{self, Facts, PrActions};
@@ -101,6 +102,8 @@ pub struct ConversationPanel {
     /// No code excerpt is still being read, so the threads keep their
     /// heights: a thread scrolled to stays where it was put.
     laid_out: bool,
+    /// The pull request whose commit list is open under the header.
+    commits_open: Option<PrKey>,
 }
 
 dock_panel!(ConversationPanel, "Conversation", bound, spinners);
@@ -183,6 +186,7 @@ impl ConversationPanel {
                 footer: FooterState::default(),
                 nav,
                 laid_out: false,
+                commits_open: None,
             }
         })
     }
@@ -235,6 +239,13 @@ impl ConversationPanel {
     pub fn scroll_to(&mut self, scrolled: f32, cx: &mut Context<Self>) {
         let offset = self.scroll.offset();
         self.scroll.set_offset(point(offset.x, px(-scrolled)));
+        cx.notify();
+    }
+
+    /// Shows or hides the list of the pull request's commits.
+    pub fn toggle_commits(&mut self, cx: &mut Context<Self>) {
+        let key = self.binding.key(cx);
+        self.commits_open = if self.commits_open == key { None } else { key };
         cx.notify();
     }
 
@@ -817,7 +828,22 @@ impl Render for ConversationPanel {
         let key = open.key.clone();
         let threads: Arc<[Thread]> = open.threads.clone();
         let diff = open.diff.as_ref().map(|d| (d.diff.clone(), d.generation));
-        let meta = pr_header::meta_row(open, session.account(&key.repo.host), cx);
+        let commits_open = self.commits_open.as_ref() == Some(&key);
+        let me = cx.weak_entity();
+        let chip = commits::chip(
+            open.commits.as_deref(),
+            commits_open,
+            move |cx| {
+                me.update(cx, |this, cx| this.toggle_commits(cx)).ok();
+            },
+            cx,
+        );
+        let commit_list = open
+            .commits
+            .as_deref()
+            .filter(|_| commits_open)
+            .map(|list| commits::list(&self.session, &key, list, open.shown_commit(), cx));
+        let meta = pr_header::meta_row(open, session.account(&key.repo.host), chip, cx);
         let ci_summary = ci_box::render(open, &self.boxes, &self.session, &self.spinners, cx);
         let preview = session.is_preview(&key);
         let refs = crate::references::context_for(session, &key);
@@ -875,6 +901,7 @@ impl Render for ConversationPanel {
                     .text_color(c.text)
                     .child(pr.title.clone()),
             )
+            .children(commit_list)
             .child(self.actions.clone())
             .child(ci_summary);
 

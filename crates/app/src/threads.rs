@@ -420,6 +420,8 @@ pub struct ThreadCards {
     row_focus: HashMap<ThreadId, FocusHandle>,
     bodies: Bodies,
     current: Option<usize>,
+    /// No composers or pending comments: the diff is one commit's.
+    read_only: bool,
 }
 
 impl EventEmitter<CardsEvent> for ThreadCards {}
@@ -435,6 +437,7 @@ impl ThreadCards {
             row_focus: HashMap::new(),
             bodies: Bodies::default(),
             current: None,
+            read_only: false,
         }
     }
 
@@ -442,6 +445,12 @@ impl ThreadCards {
     /// Draws composers and queued comments from `writing` from now on.
     pub fn set_writing(&mut self, writing: Entity<Writing>) {
         self.writing = writing;
+    }
+
+    /// A read-only diff (one commit's) shows no composers and no pending
+    /// comments: they anchor to all changes.
+    pub fn set_read_only(&mut self, read_only: bool) {
+        self.read_only = read_only;
     }
 
     pub fn reset(&mut self) {
@@ -496,6 +505,11 @@ impl ThreadCards {
 
     /// Returns whether the blocks differ from the ones placed before.
     fn place_extras(&mut self, diff: &diff::Diff, revealed: &Revealed, cx: &App) -> bool {
+        if self.read_only {
+            let placed = !self.extras.is_empty();
+            self.extras.clear();
+            return placed;
+        }
         let writing = self.writing.read(cx);
         let mut extras = Vec::new();
         for (ix, queued) in writing.queued().iter().enumerate() {

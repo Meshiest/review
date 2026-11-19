@@ -2,6 +2,8 @@
 //! cards between the lines, and keyboard navigation between files, hunks and
 //! threads. A file picked in the tree is shown alone, in full or as its
 //! changes; each file header carries its controls and a right-click menu.
+//! A commit picked in the Conversation is shown alone, read-only, under a
+//! banner that leads back to all changes.
 
 mod file_actions;
 mod file_header;
@@ -29,6 +31,7 @@ use store::DraftAnchor;
 use theme::{ActiveTheme, Theme};
 
 use crate::appearance::{self, Appearance};
+use crate::commits;
 use crate::diff_style::diff_style;
 use crate::gutter;
 use crate::model::{ChangedFile, PrKey};
@@ -142,6 +145,9 @@ struct Loaded {
     /// The full id of the head commit the diff shows: a rebuilt diff of the
     /// same head keeps the context revealed in this one.
     head: String,
+    /// The one commit shown, or `None` for all changes. A commit's diff is
+    /// read-only: no threads, no new comments, no viewed marks.
+    commit: Option<SharedString>,
 }
 
 /// A drag over gutter lines that has not been let go of.
@@ -190,6 +196,8 @@ pub struct DiffPanel {
     /// The file shown alone and how it was shown before, to put back when
     /// the diff shows every file again.
     whole_restore: Option<(FileIx, ContextMode)>,
+    /// The threads of a commit's diff: none, the same list every frame.
+    no_threads: Arc<[Thread]>,
 }
 
 dock_panel!(DiffPanel, "Diff", bound);
@@ -294,6 +302,7 @@ impl DiffPanel {
                 menu: None,
                 whole_mode: ContextMode::Full,
                 whole_restore: None,
+                no_threads: Arc::new([]),
             }
         })
     }
@@ -356,12 +365,21 @@ impl DiffPanel {
         cx.notify();
     }
 
-    /// Shows `file` alone (every file for `None`) scrolled `scrolled` down,
-    /// as it was when Back or Forward left it.
-    pub fn return_to(&mut self, file: Option<SharedString>, scrolled: f64, cx: &mut Context<Self>) {
+    /// Shows `commit` alone (all changes for `None`) and `file` alone
+    /// (every file for `None`) scrolled `scrolled` down, as it was when
+    /// Back or Forward left it.
+    pub fn return_to(
+        &mut self,
+        commit: Option<SharedString>,
+        file: Option<SharedString>,
+        scrolled: f64,
+        cx: &mut Context<Self>,
+    ) {
         if let Some(key) = self.binding.key(cx) {
-            self.session
-                .update(cx, |session, cx| session.set_selected_file(&key, file, cx));
+            self.session.update(cx, |session, cx| {
+                session.set_shown_commit(&key, commit, cx);
+                session.set_selected_file(&key, file, cx);
+            });
         }
         self.pending_jump = None;
         self.pending_thread = None;
@@ -383,6 +401,14 @@ impl DiffPanel {
         &self.cards
     }
 
+    /// Whether the diff on screen is one commit's, which takes no comments
+    /// and no viewed marks.
+    pub fn read_only(&self) -> bool {
+        self.loaded
+            .as_ref()
+            .is_some_and(|loaded| loaded.commit.is_some())
+    }
+
     fn restyle(&mut self, cx: &mut Context<Self>) {
         if let Some(loaded) = &self.loaded {
             let t = ui::theme(cx);
@@ -396,13 +422,15 @@ impl DiffPanel {
         cx.notify();
     }
 
-    /// Builds the view for the open pull request's current diff, keeping the
-    /// scroll offset when it replaces an earlier diff of the same one, and
-    /// places its threads as blocks.
+    /// Builds the view for the open pull request's current diff (all
+    /// changes, or the one `commit`), keeping the scroll offset when it
+    /// replaces an earlier diff of the same, and places its threads as
+    /// blocks.
     fn ensure_view(
         &mut self,
         key: &PrKey,
         open: &OpenDiff,
+        commit: Option<&SharedString>,
         threads: &Arc<[Thread]>,
         window: &mut Window,
         cx: &mut Context<Self>,
@@ -439,17 +467,21 @@ impl DiffPanel {
         let scroll = self
             .loaded
             .as_ref()
-            .filter(|_| same_pr)
+            .filter(|loaded| same_pr && loaded.commit.as_ref() == commit)
             .map(|loaded| loaded.view.read(cx).scroll_y());
         // A diff built again at the same head keeps what was revealed in it.
         let revealed = self
             .loaded
             .as_ref()
-            .filter(|loaded| same_pr && loaded.head == open.head_sha)
+            .filter(|loaded| {
+                same_pr && loaded.head == open.head_sha && loaded.commit.as_ref() == commit
+            })
             .map(|loaded| loaded.view.read(cx).reveals())
             .unwrap_or_default();
         let mut diff = (*open.diff).clone();
+        let read_only = commit.is_some();
         let (blocks, rails) = self.cards.update(cx, |cards, cx| {
+            cards.set_read_only(read_only);
             cards.set_threads(threads.clone(), &diff, &revealed, &t, cx)
         });
         diff.blocks = blocks;
@@ -488,6 +520,7 @@ impl DiffPanel {
             viewed: Vec::new(),
             restored: false,
             head: open.head_sha.clone(),
+            commit: commit.cloned(),
         });
         cx.observe(&view, |this: &mut Self, _, cx| this.rehover(cx))
             .detach();
@@ -552,6 +585,10 @@ impl DiffPanel {
     /// file tree does (stored by path and blob, sent to a forge that keeps
     /// it); the headers follow in [`Self::sync_viewed`].
     fn toggle_viewed(&mut self, file: FileIx, cx: &mut Context<Self>) {
+        // Viewed marks belong to all changes.
+        if self.read_only() {
+            return;
+        }
         let Some((key, changed)) = self.changed_file(file, cx) else {
             return;
         };
@@ -587,6 +624,7 @@ impl DiffPanel {
         let Some(open) = session.pr(&loaded.key) else {
             return;
         };
+        let read_only = loaded.commit.is_some();
         let marks: Vec<bool> = loaded
             .view
             .read(cx)
@@ -595,10 +633,12 @@ impl DiffPanel {
             .files
             .iter()
             .map(|file| {
-                open.files
-                    .iter()
-                    .find(|f| f.path.as_ref() == file.path)
-                    .is_some_and(|f| open.viewed.contains(f))
+                !read_only
+                    && open
+                        .files
+                        .iter()
+                        .find(|f| f.path.as_ref() == file.path)
+                        .is_some_and(|f| open.viewed.contains(f))
             })
             .collect();
         if marks == loaded.viewed {
@@ -729,7 +769,7 @@ impl DiffPanel {
         }
         let pointer = event.position - self.bounds.get().origin;
         match self.hit_at(pointer, cx) {
-            Some(hit) if hit.in_gutter => {
+            Some(hit) if hit.in_gutter && !self.read_only() => {
                 self.selection = None;
                 self.drag = Some(Drag {
                     range: gutter::Range::of(&hit),
@@ -761,7 +801,11 @@ impl DiffPanel {
     /// Opens a composer on `range`: one line, or lines `first` to `last`
     /// where the forge takes ranges.
     fn open_range(&mut self, range: &gutter::Range, cx: &mut Context<Self>) {
-        let Some(loaded) = &self.loaded else {
+        let Some(loaded) = self
+            .loaded
+            .as_ref()
+            .filter(|loaded| loaded.commit.is_none())
+        else {
             return;
         };
         let multi_line = self
@@ -847,7 +891,7 @@ impl DiffPanel {
                     .into_any_element(),
             );
         }
-        if let (Some(hit), None) = (&self.hovered, &self.drag) {
+        if let (Some(hit), None, false) = (&self.hovered, &self.drag, self.read_only()) {
             let top = list.top_of(hit.row) - scroll;
             let size = line - 4.0;
             overlays.push(
@@ -909,6 +953,27 @@ impl DiffPanel {
         });
         self.cards
             .update(cx, |cards, cx| cards.set_current(Some(thread), cx));
+    }
+
+    /// A thread asked for while one commit is shown is on all changes:
+    /// shows them, and the thread once they are drawn.
+    fn leave_commit_for_thread(&mut self, cx: &mut Context<Self>) {
+        let Some(key) = self
+            .binding
+            .key(cx)
+            .filter(|_| self.pending_thread.is_some())
+        else {
+            return;
+        };
+        let shown = self
+            .session
+            .read(cx)
+            .pr(&key)
+            .is_some_and(|open| open.commit_view.is_some());
+        if shown {
+            self.session
+                .update(cx, |session, cx| session.set_shown_commit(&key, None, cx));
+        }
     }
 
     fn take_pending_thread(&mut self, cx: &mut Context<Self>) {
@@ -1083,6 +1148,7 @@ impl Panel for DiffPanel {
 impl Render for DiffPanel {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         self.sync_writing(cx);
+        self.leave_commit_for_thread(cx);
         if let Some(key) = self.binding.key(cx) {
             self.actions
                 .update(cx, |actions, cx| actions.bind(&key, window, cx));
@@ -1103,20 +1169,50 @@ impl Render for DiffPanel {
             .is_preview(&key)
             .then(|| crate::conversation::keep_button(&self.session, &key, cx));
         let pr = &open.pr;
-        let summary = format!("{} files changed", open.files.len());
-        let (added, removed) = open.stat();
+        let commit_view = open.commit_view.as_ref();
+        let shown_commit = open.shown_commit().cloned();
+        let (files, (added, removed)) = match commit_view {
+            Some(view) => (
+                view.diff.as_ref().map_or(0, |d| d.diff.files.len()),
+                view.stat,
+            ),
+            None => (open.files.len(), open.stat()),
+        };
+        let summary = format!("{files} files changed");
         let sha = open
-            .diff
-            .as_ref()
+            .shown_diff()
             .map_or_else(|| pr.sha.clone(), |d| d.head.clone());
         let branches = if pr.head.is_empty() {
             format!("@ {sha}")
         } else {
             format!("{} into {}  @ {sha}", pr.head, pr.base)
         };
-        let note = status_note(&open.status);
-        let diff = open.diff.clone();
-        let threads = open.threads.clone();
+        let note = match commit_view {
+            Some(view) => match &view.error {
+                Some(error) => Some((error.clone(), true)),
+                None => view
+                    .diff
+                    .is_none()
+                    .then(|| ("reading the commit".into(), false)),
+            },
+            None => status_note(&open.status),
+        };
+        let banner = commit_view.map(|view| {
+            let (session, key) = (self.session.clone(), open.key.clone());
+            commits::banner(
+                &view.commit,
+                move |cx| {
+                    session.update(cx, |session, cx| session.set_shown_commit(&key, None, cx));
+                },
+                cx,
+            )
+        });
+        let diff = open.shown_diff().cloned();
+        let threads = if shown_commit.is_some() {
+            self.no_threads.clone()
+        } else {
+            open.threads.clone()
+        };
         let open_threads = threads
             .iter()
             .filter(|thread| thread.anchor.is_some() && !thread.is_resolved())
@@ -1128,7 +1224,8 @@ impl Render for DiffPanel {
         let toggle = self.layout_toggle(layout, &t, cx);
         let body = match diff {
             Some(diff) => {
-                let view = self.ensure_view(&key, &diff, &threads, window, cx);
+                let view =
+                    self.ensure_view(&key, &diff, shown_commit.as_ref(), &threads, window, cx);
                 view.update(cx, |view, _| view.set_layout(layout));
                 self.sync_viewed(cx);
                 self.restore_collapsed(cx);
@@ -1287,6 +1384,7 @@ impl Render for DiffPanel {
             ))
             .child(self.actions.clone())
             .child(self.review_bar.clone())
+            .children(banner)
             .child(body)
             .children(menu)
     }

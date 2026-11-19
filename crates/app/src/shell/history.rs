@@ -1,5 +1,5 @@
 //! Back and forward, as in a browser: where the user was before each jump
-//! to a thread, a file or another pull request's tab.
+//! to a thread, a file, a commit or another pull request's tab.
 
 use gpui::{App, Context, SharedString, Window};
 use gpui_kit::component::dock::{DockPlacement, PaneRef, PanelId};
@@ -31,8 +31,10 @@ pub(super) enum Spot {
     Tab,
     /// How far the conversation was scrolled down, in pixels.
     Conversation(f32),
-    /// The file shown alone, if one was, and how far the diff was scrolled.
+    /// The commit shown alone (all changes for `None`), the file shown
+    /// alone, if one was, and how far the diff was scrolled.
     Diff {
+        commit: Option<SharedString>,
         file: Option<SharedString>,
         scrolled: f64,
     },
@@ -132,11 +134,15 @@ impl Shell {
             Spot::Conversation(conversation.read(cx).scrolled())
         } else if let Ok(diff) = view.downcast::<DiffPanel>() {
             let diff = diff.read(cx);
-            let file = diff
-                .pr(cx)
-                .and_then(|key| session.pr(&key)?.selected_file.clone());
+            let open = diff.pr(cx).and_then(|key| session.pr(&key));
+            let file = open.and_then(|open| open.selected_file.clone());
+            let commit = open.and_then(|open| open.shown_commit().cloned());
             let scrolled = diff.view().map_or(0.0, |view| view.read(cx).scroll_y());
-            Spot::Diff { file, scrolled }
+            Spot::Diff {
+                commit,
+                file,
+                scrolled,
+            }
         } else {
             Spot::Tab
         };
@@ -165,6 +171,16 @@ impl Shell {
                     && key == pr
                 {
                     file.clone_from(previous);
+                }
+                true
+            }
+            // Likewise, the commit was picked before.
+            SessionEvent::CommitShown { pr, previous, .. } => {
+                if let (Some((key, PanelKind::Diff)), Spot::Diff { commit, .. }) =
+                    (&before.pr, &mut before.spot)
+                    && key == pr
+                {
+                    commit.clone_from(previous);
                 }
                 true
             }
@@ -250,9 +266,13 @@ impl Shell {
                     conversation.update(cx, |panel, cx| panel.scroll_to(scrolled, cx));
                 }
             }
-            Spot::Diff { file, scrolled } => {
+            Spot::Diff {
+                commit,
+                file,
+                scrolled,
+            } => {
                 if let Ok(diff) = view.downcast::<DiffPanel>() {
-                    diff.update(cx, |panel, cx| panel.return_to(file, scrolled, cx));
+                    diff.update(cx, |panel, cx| panel.return_to(commit, file, scrolled, cx));
                 }
             }
         }

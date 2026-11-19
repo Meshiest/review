@@ -165,7 +165,8 @@ impl Shell {
                     }
                     SessionEvent::Show(show) => show.clone(),
                     SessionEvent::JumpToThread { pr, .. }
-                    | SessionEvent::FileSelected { pr, .. } => ShowPanel {
+                    | SessionEvent::FileSelected { pr, .. }
+                    | SessionEvent::CommitShown { pr, .. } => ShowPanel {
                         pr: Some(pr.clone()),
                         kind: PanelKind::Diff,
                         replace: None,
@@ -297,7 +298,9 @@ impl Shell {
     /// built for it just now.
     fn pass_on(&mut self, event: &SessionEvent, window: &mut Window, cx: &mut Context<Self>) {
         let pr = match event {
-            SessionEvent::JumpToThread { pr, .. } | SessionEvent::FileSelected { pr, .. } => pr,
+            SessionEvent::JumpToThread { pr, .. }
+            | SessionEvent::FileSelected { pr, .. }
+            | SessionEvent::CommitShown { pr, .. } => pr,
             SessionEvent::Show(_) | SessionEvent::ClosePanel(_) => return,
         };
         let Some(id) = self
@@ -321,6 +324,8 @@ impl Shell {
                 thread, focus_diff, ..
             } => panel.reveal_thread(thread.clone(), *focus_diff, window, cx),
             SessionEvent::FileSelected { path, .. } => panel.reveal_file(path.clone(), cx),
+            // The list it was picked from is behind the diff now.
+            SessionEvent::CommitShown { .. } => window.focus(&panel.focus_handle(cx), cx),
             SessionEvent::Show(_) | SessionEvent::ClosePanel(_) => {}
         });
     }

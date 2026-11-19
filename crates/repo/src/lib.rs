@@ -1,5 +1,5 @@
-//! Git access: object stores, fetching pull request heads, tree and blob diffs,
-//! worktrees here and on other machines over `ssh`.
+//! Git access: object stores, fetching pull request heads, commit ranges,
+//! tree and blob diffs, worktrees here and on other machines over `ssh`.
 //!
 //! Everything here blocks (disk, git, child processes). Call it from a
 //! background thread, never from the UI thread; [`Store::fetch_pr`] already
@@ -11,6 +11,7 @@ mod fetch;
 mod files;
 mod git;
 mod hunks;
+mod log;
 pub mod shell;
 mod store;
 mod suggest;
@@ -24,6 +25,7 @@ pub use files::{
 };
 pub use gix::ObjectId;
 pub use hunks::{CONTEXT, compute_hunks, render_hunk};
+pub use log::CommitInfo;
 pub use store::{Store, StoreKind, pr_base_ref, pr_head_ref};
 pub use suggest::{LineEdit, PushTarget};
 pub use worktree::{

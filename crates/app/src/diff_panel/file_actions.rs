@@ -26,9 +26,13 @@ use crate::untrusted::is_web_url;
 
 impl DiffPanel {
     /// Records which files are collapsed now, for a diff of the same pull
-    /// request built later.
+    /// request built later. A commit's diff is not remembered.
     pub(super) fn remember_collapsed(&self, cx: &mut App) {
-        let Some(loaded) = self.loaded.as_ref().filter(|loaded| loaded.restored) else {
+        let Some(loaded) = self
+            .loaded
+            .as_ref()
+            .filter(|loaded| loaded.restored && loaded.commit.is_none())
+        else {
             return;
         };
         let view = loaded.view.read(cx);
@@ -52,6 +56,9 @@ impl DiffPanel {
             return;
         };
         loaded.restored = true;
+        if loaded.commit.is_some() {
+            return;
+        }
         let view = loaded.view.clone();
         let Some(memory) = cx
             .try_global::<CollapseMemory>()
@@ -266,21 +273,24 @@ impl DiffPanel {
         }
     }
 
-    /// Where the pull request's files are on the forge.
+    /// Where the pull request's files are on the forge: at its head, or
+    /// at the commit shown and its first parent.
     pub fn links(&self, cx: &App) -> Option<Links> {
         let key = self.binding.key(cx)?;
         let session = self.session.read(cx);
         let open = session.pr(&key)?;
         let head = open
-            .diff
-            .as_ref()
+            .shown_diff()
             .map(|diff| diff.head_sha.clone())
             .filter(|sha| !sha.is_empty());
-        let base = open
-            .forge_pr()
-            .map(|pr| pr.merge_base.as_ref().unwrap_or(&pr.base.sha))
-            .map(|sha| sha.as_str().to_owned())
-            .filter(|sha| !sha.is_empty());
+        let base = match &open.commit_view {
+            Some(view) => view.commit.parent.as_ref().map(ToString::to_string),
+            None => open
+                .forge_pr()
+                .map(|pr| pr.merge_base.as_ref().unwrap_or(&pr.base.sha))
+                .map(|sha| sha.as_str().to_owned()),
+        }
+        .filter(|sha| !sha.is_empty());
         Some(Links {
             forge: open.pr.forge,
             host: key.repo.host.clone(),
@@ -310,7 +320,20 @@ impl DiffPanel {
             collapsed: view.is_file_collapsed(file),
         };
         let lines = menu::target_lines(target, view.list().diff());
-        menu::entries(target, lines.as_ref(), &state)
+        let mut entries = menu::entries(target, lines.as_ref(), &state);
+        if self.read_only() {
+            for entry in &mut entries {
+                if let Entry::Item {
+                    action: MenuAction::Comment,
+                    disabled,
+                    ..
+                } = entry
+                {
+                    *disabled = Some(file_header::COMMIT_READ_ONLY.into());
+                }
+            }
+        }
+        entries
     }
 
     /// The link a link action on `target` copies or opens.

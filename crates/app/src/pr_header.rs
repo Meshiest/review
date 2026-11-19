@@ -111,7 +111,12 @@ fn state_style(t: &Theme, state: PrState) -> (&'static str, gpui::Hsla) {
 
 /// `host  owner/repo  #n  head -> base  author`, the state chip and the
 /// viewer's review, above the title.
-pub fn meta_row(open: &OpenPr, account: Option<&User>, cx: &App) -> AnyElement {
+pub fn meta_row(
+    open: &OpenPr,
+    account: Option<&User>,
+    commits: Option<AnyElement>,
+    cx: &App,
+) -> AnyElement {
     let t = ui::theme(cx);
     let c = &t.colors;
     let key = &open.key;
@@ -172,6 +177,7 @@ pub fn meta_row(open: &OpenPr, account: Option<&User>, cx: &App) -> AnyElement {
             cx,
         ))
         .when_some(branches, |el, branches| el.child(sep()).child(branches))
+        .when_some(commits, |el, commits| el.child(commits))
         .when(!pr.author.is_empty(), |el| {
             el.child(sep())
                 .child(ui::avatar(

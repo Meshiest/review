@@ -12,6 +12,7 @@ pub mod checks_panel;
 pub mod ci;
 pub mod claude_review;
 pub mod commands;
+pub mod commits;
 pub mod composer;
 pub mod config;
 pub mod conversation;
