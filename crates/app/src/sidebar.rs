@@ -468,22 +468,7 @@ impl Sidebar {
         self.session.read(cx).open_pr().map(Detail::of)
     }
 
-    /// Whether the focused pull request has anything for `section`, so its
-    /// panel takes space.
-    pub(crate) fn has_stack(&self, cx: &App) -> bool {
-        self.session
-            .read(cx)
-            .open_pr()
-            .is_some_and(|open| open.stack.members.len() >= 2)
-    }
-
-    pub(crate) fn has_threads(&self, cx: &App) -> bool {
-        self.session
-            .read(cx)
-            .open_pr()
-            .is_some_and(|open| open.threads.iter().any(|t| t.anchor.is_some()))
-    }
-
+    /// Whether a pull request is open, so the sections showing it take space.
     pub(crate) fn has_pr(&self, cx: &App) -> bool {
         self.session.read(cx).open_pr().is_some()
     }
@@ -541,7 +526,7 @@ impl Sidebar {
         let open = self.detail(cx)?;
         let stack = &open.stack;
         if stack.members.len() < 2 {
-            return None;
+            return Some(empty_note("Not stacked", t));
         }
         let c = &t.colors;
         let hover = c.hover;
@@ -753,7 +738,7 @@ impl Sidebar {
         let open = self.detail(cx)?;
         let order = thread_order(&open.threads);
         if order.is_empty() {
-            return None;
+            return Some(empty_note("No threads on lines", t));
         }
         let c = &t.colors;
         let hover = c.hover;
@@ -864,7 +849,10 @@ impl Sidebar {
         };
         match section {
             Section::Inbox | Section::Repos => String::new(),
-            Section::Stack => format!("{} pull requests", open.stack.members.len()),
+            Section::Stack => match open.stack.members.len() {
+                0 | 1 => String::new(),
+                n => format!("{n} pull requests"),
+            },
             Section::Checks => {
                 let failing = open
                     .checks
@@ -932,6 +920,21 @@ pub(crate) fn middle_path(t: &Theme, path: String) -> gpui::Div {
         .tiny(t)
         .text_color(t.colors.text_secondary)
         .child(path)
+}
+
+/// The one muted line a section of the open pull request shows when it has
+/// nothing: the section keeps its slot, so opening another pull request
+/// never moves the sections around it.
+fn empty_note(text: &'static str, t: &Theme) -> AnyElement {
+    div()
+        .w_full()
+        .h(px(ROW))
+        .px(px(10.0))
+        .flex()
+        .items_center()
+        .text_color(t.colors.text_muted)
+        .child(text)
+        .into_any_element()
 }
 
 /// The anchored threads, by file and then line, as indices.

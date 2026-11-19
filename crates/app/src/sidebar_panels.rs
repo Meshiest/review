@@ -253,15 +253,13 @@ impl SectionPanel {
         &self.slots
     }
 
-    /// Whether the section has something to show, so it takes space.
+    /// Whether the section has something to show, so it takes space. The
+    /// sections of a pull request take it whenever one is open, whatever it
+    /// holds: one hidden for this pull request and shown for the next would
+    /// hand its room to the dock's last open slot, often the inbox, which
+    /// would then change height as the selection moves.
     fn shows_something(&self, cx: &App) -> bool {
-        let sidebar = self.sidebar.read(cx);
-        match self.section {
-            Section::Inbox | Section::Repos => true,
-            Section::Stack => sidebar.has_stack(cx),
-            Section::Checks | Section::Files => sidebar.has_pr(cx),
-            Section::Threads => sidebar.has_threads(cx),
-        }
+        !self.section.of_pr() || self.sidebar.read(cx).has_pr(cx)
     }
 
     /// Folds the section's tab group to its header under the sidebar, or

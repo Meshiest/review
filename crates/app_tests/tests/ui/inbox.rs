@@ -491,6 +491,29 @@ fn inner_sections_keep_their_shares_through_outer_resizes(cx: &mut TestAppContex
     assert!(down[0] >= app::inbox::DRAG_MIN - 1.0, "not under two rows");
 }
 
+#[gpui::test]
+fn opening_another_pull_request_leaves_every_section_its_height(cx: &mut TestAppContext) {
+    let mut shell = open_shell(cx, Options::default());
+    let inbox_panel = |shell: &mut ShellWindow| {
+        shell.bounds_of(String::leak(format!("section-{}", Section::Inbox.name())))
+    };
+    // 42, in "Review requested", has no stack; 38, in "Created by me", is
+    // stacked. With Checks, Threads and Files folded the Stack slot is the
+    // only one under the inbox that a pull request's content could decide.
+    shell.click("inbox-row-42");
+    for section in ["Rollup", "Threads", "Files"] {
+        shell.click(String::leak(format!("section-toggle-{section}")));
+    }
+    let start = heights(&mut shell);
+    let panel = inbox_panel(&mut shell);
+    for row in ["inbox-row-38", "inbox-row-1288", "inbox-row-42"] {
+        shell.click(row);
+        assert_eq!(inbox_panel(&mut shell), panel, "{row} moved the inbox");
+        let now = heights(&mut shell);
+        assert!(near(&now, &start), "{row}: {start:?} -> {now:?}");
+    }
+}
+
 /// Opens exactly the sections in `open`, folds the rest.
 fn open_only(shell: &mut ShellWindow, open: &[usize]) {
     let sidebar = shell.sidebar();

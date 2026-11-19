@@ -500,11 +500,12 @@ fn drag_edge(shell: &mut ShellWindow, section: Section, dy: f32) {
 fn every_boundary_between_open_groups_drags(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
     shell.resize(1440.0, 1000.0);
-    // 42 has no stack, so the Stack slot under the inbox is hidden; Threads
-    // folded hides the slot over the Files and Checks group too.
+    // Stack folded hides the slot under the inbox; Threads folded hides the
+    // slot over the Files and Checks group too.
     shell.open_pr(42);
     checks_with_files(&mut shell);
     shell.click("section-title-Files");
+    shell.click("section-toggle-Stack");
     shell.click("section-toggle-Threads");
     let start = open_column(&mut shell);
     assert_eq!(sections(&start), [Section::Inbox, Section::Files]);
@@ -524,7 +525,7 @@ fn every_boundary_between_open_groups_drags(cx: &mut TestAppContext) {
         &[(Section::Inbox, 120.0), (Section::Files, -120.0)],
     );
 
-    // Threads open again between them, the Stack slot still hidden.
+    // Threads open again between them, the Stack slot still folded.
     shell.click("section-toggle-Threads");
     let start = open_column(&mut shell);
     assert_eq!(
