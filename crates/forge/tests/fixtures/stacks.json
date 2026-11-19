@@ -1,0 +1,129 @@
+{
+  "github_native": [
+    {
+      "name": "three entries, listed out of position order",
+      "target": 11,
+      "head": "feat-b",
+      "base": "feat-a",
+      "entries": [
+        {"position": 3, "number": 12, "state": "OPEN", "draft": false, "head": "feat-c", "base": "feat-b"},
+        {"position": 1, "number": 10, "state": "MERGED", "draft": false, "head": "feat-a", "base": "main"},
+        {"position": 2, "number": 11, "state": "OPEN", "draft": true, "head": "feat-b", "base": "feat-a"}
+      ],
+      "expected": [10, 11, 12]
+    },
+    {
+      "name": "an empty native stack falls back to the base-branch rule",
+      "target": 20,
+      "head": "solo",
+      "base": "main",
+      "entries": [],
+      "expected": [20]
+    }
+  ],
+  "gitlab_native": [
+    {
+      "name": "listed in chain order",
+      "target": 2,
+      "stack": [
+        {"iid": "1", "state": "opened", "head": "stack-1", "base": "main"},
+        {"iid": "2", "state": "opened", "head": "stack-2", "base": "stack-1"},
+        {"iid": "3", "state": "opened", "head": "stack-3", "base": "stack-2"}
+      ],
+      "expected": [1, 2, 3]
+    },
+    {
+      "name": "listed shuffled: the chain sets the order",
+      "target": 3,
+      "stack": [
+        {"iid": "3", "state": "opened", "head": "stack-3", "base": "stack-2"},
+        {"iid": "1", "state": "merged", "head": "stack-1", "base": "main"},
+        {"iid": "2", "state": "opened", "head": "stack-2", "base": "stack-1"}
+      ],
+      "expected": [1, 2, 3]
+    }
+  ],
+  "base_branch": [
+    {
+      "name": "a chain, seen from its middle",
+      "target": 40,
+      "prs": [
+        {"number": 38, "head": "pack", "base": "main"},
+        {"number": 39, "head": "tree", "base": "pack"},
+        {"number": 40, "head": "hunk", "base": "tree"},
+        {"number": 41, "head": "split", "base": "hunk"},
+        {"number": 50, "head": "other", "base": "main"}
+      ],
+      "expected": [38, 39, 40, 41]
+    },
+    {
+      "name": "a chain, seen from its top",
+      "target": 41,
+      "prs": [
+        {"number": 38, "head": "pack", "base": "main"},
+        {"number": 39, "head": "tree", "base": "pack"},
+        {"number": 41, "head": "split", "base": "tree"}
+      ],
+      "expected": [38, 39, 41]
+    },
+    {
+      "name": "not stacked",
+      "target": 50,
+      "prs": [
+        {"number": 38, "head": "pack", "base": "main"},
+        {"number": 50, "head": "other", "base": "main"}
+      ],
+      "expected": [50]
+    },
+    {
+      "name": "a fork's branch of the same name is not a parent",
+      "target": 63,
+      "prs": [
+        {"number": 60, "head": "pack", "base": "main", "fork": true},
+        {"number": 62, "head": "pack", "base": "main"},
+        {"number": 63, "head": "tree", "base": "pack"}
+      ],
+      "expected": [62, 63]
+    },
+    {
+      "name": "a fork in the middle ends the chain above it",
+      "target": 71,
+      "prs": [
+        {"number": 70, "head": "base-a", "base": "main"},
+        {"number": 71, "head": "base-b", "base": "base-a", "fork": true},
+        {"number": 72, "head": "base-c", "base": "base-b"}
+      ],
+      "expected": [70, 71]
+    },
+    {
+      "name": "a closed pull request is not part of the chain",
+      "target": 82,
+      "prs": [
+        {"number": 80, "head": "one", "base": "main", "state": "closed"},
+        {"number": 81, "head": "one", "base": "main"},
+        {"number": 82, "head": "two", "base": "one"}
+      ],
+      "expected": [81, 82]
+    },
+    {
+      "name": "two children: the lower number continues the stack",
+      "target": 90,
+      "prs": [
+        {"number": 90, "head": "root", "base": "main"},
+        {"number": 92, "head": "left", "base": "root"},
+        {"number": 91, "head": "right", "base": "root"}
+      ],
+      "expected": [90, 91]
+    },
+    {
+      "name": "a cycle stops instead of looping",
+      "target": 100,
+      "prs": [
+        {"number": 100, "head": "a", "base": "b"},
+        {"number": 101, "head": "b", "base": "c"},
+        {"number": 102, "head": "c", "base": "a"}
+      ],
+      "expected": [102, 101, 100]
+    }
+  ]
+}

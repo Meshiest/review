@@ -1,0 +1,27 @@
+[package]
+name = "repo"
+description = "Git object stores, fetch, diff and worktrees"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+diff.workspace = true
+gix = { version = "0.90", default-features = false, features = [
+    "max-performance",
+    "sha1",
+    "revision",
+    "blob-diff",
+] }
+# imara-diff 0.2.0 derives the Myers parity flag from file2 twice, which makes
+# its output differ from git. gix-imara-diff is the maintained fork with the fix.
+imara = { package = "gix-imara-diff", version = "0.3.3" }
+memchr = "2"
+thiserror.workspace = true
+
+[dev-dependencies]
+perf.workspace = true
+
+[lints]
+workspace = true

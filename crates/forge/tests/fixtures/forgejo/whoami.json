@@ -1,0 +1,61 @@
+{
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/version"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json;charset=utf-8"
+        },
+        "body": {
+          "json": {
+            "version": "17.0.1+gitea-1.22.0"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/user"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json;charset=utf-8"
+        },
+        "body": {
+          "json": {
+            "active": true,
+            "avatar_url": "https://forgejo.example.com/avatars/scrubbed",
+            "created": "2026-09-29T18:35:42Z",
+            "description": "",
+            "email": "user@example.invalid",
+            "followers_count": 0,
+            "following_count": 0,
+            "full_name": "",
+            "html_url": "https://forgejo.example.com/cora",
+            "id": 1,
+            "is_admin": true,
+            "language": "en-US",
+            "last_login": "2026-11-15T03:11:33Z",
+            "location": "",
+            "login": "cora",
+            "login_name": "",
+            "prohibit_login": false,
+            "pronouns": "",
+            "restricted": false,
+            "source_id": 0,
+            "starred_repos_count": 0,
+            "username": "cora",
+            "visibility": "public",
+            "website": ""
+          }
+        }
+      }
+    }
+  ]
+}

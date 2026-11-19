@@ -1,0 +1,22 @@
+[package]
+name = "diff_view"
+description = "gpui element that paints a virtualized diff"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+async-channel = "2.5.0"
+diff.workspace = true
+forge.workspace = true
+gpui.workspace = true
+perf.workspace = true
+scroll.workspace = true
+
+[dev-dependencies]
+gpui-platform.workspace = true
+theme.workspace = true
+
+[lints]
+workspace = true

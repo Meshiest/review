@@ -1,0 +1,3879 @@
+{
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "Whoami",
+        "variables": {}
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"3db8a76a30e76ef70b1a8889bdcc430e\"",
+          "ratelimit-remaining": "1996",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "currentUser": {
+                "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "bot": false,
+                "id": "gid://gitlab/User/7654321",
+                "name": "Ada L",
+                "username": "Lovelace"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"744ee2012782cd8a07ae8040b52a4f2a\"",
+          "ratelimit-remaining": "1995",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": null,
+                  "diffStatsSummary": {
+                    "additions": 0,
+                    "deletions": 0,
+                    "fileCount": 0
+                  },
+                  "draft": false,
+                  "headPipeline": null,
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:49Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/labels",
+        "query": [
+          [
+            "per_page",
+            "100"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"8fc5b89e2545351905521b35d854afb7\"",
+          "link": "<https://gitlab.com/api/v4/projects/Lovelace%2Freview-sandbox/labels?id=Lovelace%2Freview-sandbox&include_ancestor_groups=true&page=1&per_page=100&with_counts=false>; rel=\"first\", <https://gitlab.com/api/v4/projects/Lovelace%2Freview-sandbox/labels?id=Lovelace%2Freview-sandbox&include_ancestor_groups=true&page=1&per_page=100&with_counts=false>; rel=\"last\"",
+          "ratelimit-remaining": "1994",
+          "ratelimit-reset": "1794936180",
+          "x-next-page": "",
+          "x-page": "1",
+          "x-per-page": "100",
+          "x-total": "1",
+          "x-total-pages": "1"
+        },
+        "body": {
+          "json": [
+            {
+              "archived": false,
+              "color": "#1d76db",
+              "description": "Put on a scratch pull request by the people round trip",
+              "description_html": "Put on a scratch pull request by the people round trip",
+              "id": 55924262,
+              "is_project_label": true,
+              "name": "review-test",
+              "priority": null,
+              "subscribed": false,
+              "text_color": "#FFFFFF"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/users",
+        "query": [
+          [
+            "per_page",
+            "100"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"a838e4bfcfc45712de47c3f44db66756\"",
+          "link": "<https://gitlab.com/api/v4/projects/Lovelace%2Freview-sandbox/users?id=Lovelace%2Freview-sandbox&page=1&per_page=100>; rel=\"first\", <https://gitlab.com/api/v4/projects/Lovelace%2Freview-sandbox/users?id=Lovelace%2Freview-sandbox&page=1&per_page=100>; rel=\"last\"",
+          "ratelimit-remaining": "1993",
+          "ratelimit-reset": "1794936180",
+          "x-next-page": "",
+          "x-page": "1",
+          "x-per-page": "100",
+          "x-total": "1",
+          "x-total-pages": "1"
+        },
+        "body": {
+          "json": [
+            {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/users",
+        "query": [
+          [
+            "per_page",
+            "100"
+          ],
+          [
+            "search",
+            "lov"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"a838e4bfcfc45712de47c3f44db66756\"",
+          "link": "<https://gitlab.com/api/v4/projects/Lovelace%2Freview-sandbox/users?id=Lovelace%2Freview-sandbox&page=1&per_page=100&search=lov>; rel=\"first\", <https://gitlab.com/api/v4/projects/Lovelace%2Freview-sandbox/users?id=Lovelace%2Freview-sandbox&page=1&per_page=100&search=lov>; rel=\"last\"",
+          "ratelimit-remaining": "1992",
+          "ratelimit-reset": "1794936180",
+          "x-next-page": "",
+          "x-page": "1",
+          "x-per-page": "100",
+          "x-total": "1",
+          "x-total-pages": "1"
+        },
+        "body": {
+          "json": [
+            {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/users",
+        "query": [
+          [
+            "per_page",
+            "100"
+          ],
+          [
+            "search",
+            "zzzz-nobody"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"4f53cda18c2baa0c0354bb5f9a3ecbe5\"",
+          "link": "<https://gitlab.com/api/v4/projects/Lovelace%2Freview-sandbox/users?id=Lovelace%2Freview-sandbox&page=1&per_page=100&search=zzzz-nobody>; rel=\"first\", <https://gitlab.com/api/v4/projects/Lovelace%2Freview-sandbox/users?id=Lovelace%2Freview-sandbox&page=1&per_page=100&search=zzzz-nobody>; rel=\"last\"",
+          "ratelimit-remaining": "1991",
+          "ratelimit-reset": "1794936180",
+          "x-next-page": "",
+          "x-page": "1",
+          "x-per-page": "100",
+          "x-total": "0",
+          "x-total-pages": "1"
+        },
+        "body": {
+          "json": []
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"5ede33347cae4d6ec51f05e9fc8fbde4\"",
+          "ratelimit-remaining": "1990",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "CREATED"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:50Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/30",
+        "body": {
+          "add_labels": "review-test"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"a91e9ddbabf8eb2aadbd278d39e0d817\"",
+          "ratelimit-remaining": "1989",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:22:49.659Z",
+            "description": "Scratch pull request of the people round trip.",
+            "detailed_merge_status": "mergeable",
+            "diff_refs": {
+              "base_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+              "head_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "start_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:22:50.776Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080232552",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080232552,
+              "iid": 20,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/30/head",
+              "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:22:51.529Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:22:51.533Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080232552",
+              "yaml_errors": null
+            },
+            "id": 569839491,
+            "iid": 30,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [
+              "review-test"
+            ],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:22:50.498Z",
+            "project_id": 12345678,
+            "reference": "!30",
+            "references": {
+              "full": "Lovelace/review-sandbox!30",
+              "relative": "!30",
+              "short": "!30"
+            },
+            "reviewers": [],
+            "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+            "should_remove_source_branch": null,
+            "source_branch": "people/gitlab-1794936167",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "People people/gitlab-1794936167",
+            "updated_at": "2026-11-17T17:22:51.600Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"a954b080930c53ba02d2a6311fe1b5f3\"",
+          "ratelimit-remaining": "1988",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "#1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "title": "review-test"
+                      }
+                    ]
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"a954b080930c53ba02d2a6311fe1b5f3\"",
+          "ratelimit-remaining": "1987",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "#1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "title": "review-test"
+                      }
+                    ]
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/labels",
+        "query": [
+          [
+            "per_page",
+            "100"
+          ]
+        ]
+      },
+      "response": {
+        "status": 304,
+        "headers": {
+          "etag": "W/\"8fc5b89e2545351905521b35d854afb7\"",
+          "link": "<https://gitlab.com/api/v4/projects/Lovelace%2Freview-sandbox/labels?id=Lovelace%2Freview-sandbox&include_ancestor_groups=true&page=1&per_page=100&with_counts=false>; rel=\"first\", <https://gitlab.com/api/v4/projects/Lovelace%2Freview-sandbox/labels?id=Lovelace%2Freview-sandbox&include_ancestor_groups=true&page=1&per_page=100&with_counts=false>; rel=\"last\"",
+          "ratelimit-remaining": "1986",
+          "ratelimit-reset": "1794936180",
+          "x-next-page": "",
+          "x-page": "1",
+          "x-per-page": "100",
+          "x-total": "1",
+          "x-total-pages": "1"
+        },
+        "body": "empty"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"a954b080930c53ba02d2a6311fe1b5f3\"",
+          "ratelimit-remaining": "1985",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "#1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "title": "review-test"
+                      }
+                    ]
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/30"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"653febcafde2d1c60844fb327506593d\"",
+          "ratelimit-remaining": "1984",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:22:49.659Z",
+            "description": "Scratch pull request of the people round trip.",
+            "detailed_merge_status": "mergeable",
+            "diff_refs": {
+              "base_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+              "head_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "start_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_contribution": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:22:50.776Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080232552",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080232552,
+              "iid": 20,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/30/head",
+              "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:22:51.529Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:22:51.533Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080232552",
+              "yaml_errors": null
+            },
+            "id": 569839491,
+            "iid": 30,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [
+              "review-test"
+            ],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:22:50.498Z",
+            "project_id": 12345678,
+            "reference": "!30",
+            "references": {
+              "full": "Lovelace/review-sandbox!30",
+              "relative": "!30",
+              "short": "!30"
+            },
+            "reviewers": [],
+            "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+            "should_remove_source_branch": null,
+            "source_branch": "people/gitlab-1794936167",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "People people/gitlab-1794936167",
+            "updated_at": "2026-11-17T17:22:51.600Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/30",
+        "body": {
+          "assignee_ids": [
+            7654321
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"f8ab42f898873a0b7cbb4b245f5786b9\"",
+          "ratelimit-remaining": "1983",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "assignees": [
+              {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              }
+            ],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:22:49.659Z",
+            "description": "Scratch pull request of the people round trip.",
+            "detailed_merge_status": "mergeable",
+            "diff_refs": {
+              "base_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+              "head_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "start_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:22:50.776Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080232552",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080232552,
+              "iid": 20,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/30/head",
+              "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:22:51.529Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:22:51.533Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080232552",
+              "yaml_errors": null
+            },
+            "id": 569839491,
+            "iid": 30,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [
+              "review-test"
+            ],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:22:50.498Z",
+            "project_id": 12345678,
+            "reference": "!30",
+            "references": {
+              "full": "Lovelace/review-sandbox!30",
+              "relative": "!30",
+              "short": "!30"
+            },
+            "reviewers": [],
+            "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+            "should_remove_source_branch": null,
+            "source_branch": "people/gitlab-1794936167",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "People people/gitlab-1794936167",
+            "updated_at": "2026-11-17T17:22:53.464Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"2019d88d3861cddd9937e93267be42cf\"",
+          "ratelimit-remaining": "1982",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "#1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "title": "review-test"
+                      }
+                    ]
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"2019d88d3861cddd9937e93267be42cf\"",
+          "ratelimit-remaining": "1981",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "#1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "title": "review-test"
+                      }
+                    ]
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/30"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"512cb1fd8f05f07eeaa2f7cba7a275ba\"",
+          "ratelimit-remaining": "1980",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "assignees": [
+              {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              }
+            ],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:22:49.659Z",
+            "description": "Scratch pull request of the people round trip.",
+            "detailed_merge_status": "mergeable",
+            "diff_refs": {
+              "base_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+              "head_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "start_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_contribution": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:22:50.776Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080232552",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080232552,
+              "iid": 20,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/30/head",
+              "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:22:51.529Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:22:51.533Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080232552",
+              "yaml_errors": null
+            },
+            "id": 569839491,
+            "iid": 30,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [
+              "review-test"
+            ],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:22:50.498Z",
+            "project_id": 12345678,
+            "reference": "!30",
+            "references": {
+              "full": "Lovelace/review-sandbox!30",
+              "relative": "!30",
+              "short": "!30"
+            },
+            "reviewers": [],
+            "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+            "should_remove_source_branch": null,
+            "source_branch": "people/gitlab-1794936167",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "People people/gitlab-1794936167",
+            "updated_at": "2026-11-17T17:22:51.600Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/30",
+        "body": {
+          "reviewer_ids": [
+            7654321
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"8d4da92b4c0bda5ca1cc03c4b6f14c70\"",
+          "ratelimit-remaining": "1979",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "assignees": [
+              {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              }
+            ],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:22:49.659Z",
+            "description": "Scratch pull request of the people round trip.",
+            "detailed_merge_status": "mergeable",
+            "diff_refs": {
+              "base_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+              "head_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "start_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:22:50.776Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080232552",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080232552,
+              "iid": 20,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/30/head",
+              "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:22:51.529Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:22:51.533Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080232552",
+              "yaml_errors": null
+            },
+            "id": 569839491,
+            "iid": 30,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [
+              "review-test"
+            ],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:22:50.498Z",
+            "project_id": 12345678,
+            "reference": "!30",
+            "references": {
+              "full": "Lovelace/review-sandbox!30",
+              "relative": "!30",
+              "short": "!30"
+            },
+            "reviewers": [
+              {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              }
+            ],
+            "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+            "should_remove_source_branch": null,
+            "source_branch": "people/gitlab-1794936167",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "People people/gitlab-1794936167",
+            "updated_at": "2026-11-17T17:22:51.600Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"5833ee51680ac6cde1c92316c5c401a7\"",
+          "ratelimit-remaining": "1978",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "#1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "title": "review-test"
+                      }
+                    ]
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "mergeRequestInteraction": {
+                          "reviewState": "UNREVIEWED"
+                        },
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"5833ee51680ac6cde1c92316c5c401a7\"",
+          "ratelimit-remaining": "1977",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "#1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "title": "review-test"
+                      }
+                    ]
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "mergeRequestInteraction": {
+                          "reviewState": "UNREVIEWED"
+                        },
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"5833ee51680ac6cde1c92316c5c401a7\"",
+          "ratelimit-remaining": "1976",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "#1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "title": "review-test"
+                      }
+                    ]
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "mergeRequestInteraction": {
+                          "reviewState": "UNREVIEWED"
+                        },
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/30/discussions",
+        "query": [
+          [
+            "per_page",
+            "100"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"b4edbda641c7607706529a9bb4ffc874\"",
+          "link": "<https://gitlab.com/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/30/discussions?id=Lovelace%2Freview-sandbox&noteable_id=30&page=1&per_page=100>; rel=\"first\", <https://gitlab.com/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/30/discussions?id=Lovelace%2Freview-sandbox&noteable_id=30&page=1&per_page=100>; rel=\"last\"",
+          "ratelimit-remaining": "1974",
+          "ratelimit-reset": "1794936180",
+          "x-next-page": "",
+          "x-page": "1",
+          "x-per-page": "100",
+          "x-total": "2",
+          "x-total-pages": "1"
+        },
+        "body": {
+          "json": [
+            {
+              "id": "ca7a7f54cb2a51095e52b5094455c158b05c7a1b",
+              "individual_note": true,
+              "notes": [
+                {
+                  "author": {
+                    "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "id": 7654321,
+                    "locked": false,
+                    "name": "Ada L",
+                    "public_email": "user@example.invalid",
+                    "state": "active",
+                    "username": "Lovelace",
+                    "web_url": "https://gitlab.com/Lovelace"
+                  },
+                  "body": "assigned to @Lovelace",
+                  "commands_changes": {},
+                  "confidential": false,
+                  "created_at": "2026-11-17T17:22:53.576Z",
+                  "id": 4257193985,
+                  "imported": false,
+                  "imported_from": "none",
+                  "internal": false,
+                  "noteable_id": 569839491,
+                  "noteable_iid": 30,
+                  "noteable_type": "MergeRequest",
+                  "project_id": 12345678,
+                  "resolvable": false,
+                  "system": true,
+                  "type": null,
+                  "updated_at": "2026-11-17T17:22:53.577Z"
+                }
+              ],
+              "resolvable": false
+            },
+            {
+              "id": "d7ec8621b6748603ccb16957bcdacdb6ce200ebc",
+              "individual_note": true,
+              "notes": [
+                {
+                  "author": {
+                    "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "id": 7654321,
+                    "locked": false,
+                    "name": "Ada L",
+                    "public_email": "user@example.invalid",
+                    "state": "active",
+                    "username": "Lovelace",
+                    "web_url": "https://gitlab.com/Lovelace"
+                  },
+                  "body": "requested review from @Lovelace",
+                  "commands_changes": {},
+                  "confidential": false,
+                  "created_at": "2026-11-17T17:22:54.910Z",
+                  "id": 4257194140,
+                  "imported": false,
+                  "imported_from": "none",
+                  "internal": false,
+                  "noteable_id": 569839491,
+                  "noteable_iid": 30,
+                  "noteable_type": "MergeRequest",
+                  "project_id": 12345678,
+                  "resolvable": false,
+                  "system": true,
+                  "type": null,
+                  "updated_at": "2026-11-17T17:22:54.911Z"
+                }
+              ],
+              "resolvable": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "Snapshot",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"54eecaaec886b4adde14bc4982ffab48\"",
+          "ratelimit-remaining": "1975",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "stages": {
+                      "nodes": [
+                        {
+                          "jobs": {
+                            "nodes": [
+                              {
+                                "finishedAt": null,
+                                "id": "gid://gitlab/Ci::Build/18115786203",
+                                "name": "build",
+                                "startedAt": "2026-11-17T17:22:51Z",
+                                "status": "RUNNING",
+                                "webPath": "/Lovelace/review-sandbox/-/jobs/18115786203"
+                              }
+                            ],
+                            "pageInfo": {
+                              "hasNextPage": false
+                            }
+                          },
+                          "name": "build"
+                        },
+                        {
+                          "jobs": {
+                            "nodes": [
+                              {
+                                "finishedAt": null,
+                                "id": "gid://gitlab/Ci::Build/18115786204",
+                                "name": "test",
+                                "startedAt": "2026-11-17T17:22:51Z",
+                                "status": "RUNNING",
+                                "webPath": "/Lovelace/review-sandbox/-/jobs/18115786204"
+                              }
+                            ],
+                            "pageInfo": {
+                              "hasNextPage": false
+                            }
+                          },
+                          "name": "test"
+                        },
+                        {
+                          "jobs": {
+                            "nodes": [
+                              {
+                                "finishedAt": null,
+                                "id": "gid://gitlab/Ci::Build/18115786205",
+                                "name": "slow",
+                                "startedAt": "2026-11-17T17:22:51Z",
+                                "status": "RUNNING",
+                                "webPath": "/Lovelace/review-sandbox/-/jobs/18115786205"
+                              }
+                            ],
+                            "pageInfo": {
+                              "hasNextPage": false
+                            }
+                          },
+                          "name": "slow"
+                        }
+                      ],
+                      "pageInfo": {
+                        "hasNextPage": false
+                      }
+                    },
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "#1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "title": "review-test"
+                      }
+                    ]
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "mergeRequestInteraction": {
+                          "reviewState": "UNREVIEWED"
+                        },
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/30"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"286d3850afb404ff784add51434a27e4\"",
+          "ratelimit-remaining": "1973",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "assignees": [
+              {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              }
+            ],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:22:49.659Z",
+            "description": "Scratch pull request of the people round trip.",
+            "detailed_merge_status": "mergeable",
+            "diff_refs": {
+              "base_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+              "head_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "start_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_contribution": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:22:50.776Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080232552",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080232552,
+              "iid": 20,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/30/head",
+              "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:22:51.529Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:22:51.533Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080232552",
+              "yaml_errors": null
+            },
+            "id": 569839491,
+            "iid": 30,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [
+              "review-test"
+            ],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:22:50.498Z",
+            "project_id": 12345678,
+            "reference": "!30",
+            "references": {
+              "full": "Lovelace/review-sandbox!30",
+              "relative": "!30",
+              "short": "!30"
+            },
+            "reviewers": [
+              {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              }
+            ],
+            "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+            "should_remove_source_branch": null,
+            "source_branch": "people/gitlab-1794936167",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "People people/gitlab-1794936167",
+            "updated_at": "2026-11-17T17:22:51.600Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/30",
+        "body": {
+          "assignee_ids": [
+            0
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"838675d5771503f1a128678d08ecbf8e\"",
+          "ratelimit-remaining": "1972",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:22:49.659Z",
+            "description": "Scratch pull request of the people round trip.",
+            "detailed_merge_status": "mergeable",
+            "diff_refs": {
+              "base_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+              "head_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "start_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:22:50.776Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080232552",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080232552,
+              "iid": 20,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/30/head",
+              "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:22:51.529Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:22:51.533Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080232552",
+              "yaml_errors": null
+            },
+            "id": 569839491,
+            "iid": 30,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [
+              "review-test"
+            ],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:22:50.498Z",
+            "project_id": 12345678,
+            "reference": "!30",
+            "references": {
+              "full": "Lovelace/review-sandbox!30",
+              "relative": "!30",
+              "short": "!30"
+            },
+            "reviewers": [
+              {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              }
+            ],
+            "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+            "should_remove_source_branch": null,
+            "source_branch": "people/gitlab-1794936167",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "People people/gitlab-1794936167",
+            "updated_at": "2026-11-17T17:22:51.600Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"3dc165e733ae88546fb3817997bbaa78\"",
+          "ratelimit-remaining": "1971",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "#1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "title": "review-test"
+                      }
+                    ]
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "mergeRequestInteraction": {
+                          "reviewState": "UNREVIEWED"
+                        },
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"3dc165e733ae88546fb3817997bbaa78\"",
+          "ratelimit-remaining": "1970",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "#1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "title": "review-test"
+                      }
+                    ]
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "mergeRequestInteraction": {
+                          "reviewState": "UNREVIEWED"
+                        },
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"3dc165e733ae88546fb3817997bbaa78\"",
+          "ratelimit-remaining": "1969",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "#1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "title": "review-test"
+                      }
+                    ]
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "mergeRequestInteraction": {
+                          "reviewState": "UNREVIEWED"
+                        },
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/30",
+        "body": {
+          "remove_labels": "review-test"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"e4e583e96e7c4eff3fe93f8fd8bc7407\"",
+          "ratelimit-remaining": "1968",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:22:49.659Z",
+            "description": "Scratch pull request of the people round trip.",
+            "detailed_merge_status": "mergeable",
+            "diff_refs": {
+              "base_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+              "head_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "start_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:22:50.776Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080232552",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080232552,
+              "iid": 20,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/30/head",
+              "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:22:51.529Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:22:51.533Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080232552",
+              "yaml_errors": null
+            },
+            "id": 569839491,
+            "iid": 30,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:22:50.498Z",
+            "project_id": 12345678,
+            "reference": "!30",
+            "references": {
+              "full": "Lovelace/review-sandbox!30",
+              "relative": "!30",
+              "short": "!30"
+            },
+            "reviewers": [
+              {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              }
+            ],
+            "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+            "should_remove_source_branch": null,
+            "source_branch": "people/gitlab-1794936167",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "People people/gitlab-1794936167",
+            "updated_at": "2026-11-17T17:22:51.600Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"7bf986fb3b1f62f6e7bb7d6a5a8ed923\"",
+          "ratelimit-remaining": "1967",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "mergeRequestInteraction": {
+                          "reviewState": "UNREVIEWED"
+                        },
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"7bf986fb3b1f62f6e7bb7d6a5a8ed923\"",
+          "ratelimit-remaining": "1966",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": [
+                      {
+                        "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                        "bot": false,
+                        "id": "gid://gitlab/User/7654321",
+                        "mergeRequestInteraction": {
+                          "reviewState": "UNREVIEWED"
+                        },
+                        "name": "Ada L",
+                        "username": "Lovelace"
+                      }
+                    ]
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/30"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"5e88fbf69512f3d6f114cdc783f35e5e\"",
+          "ratelimit-remaining": "1965",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:22:49.659Z",
+            "description": "Scratch pull request of the people round trip.",
+            "detailed_merge_status": "mergeable",
+            "diff_refs": {
+              "base_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+              "head_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "start_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_contribution": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:22:50.776Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080232552",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080232552,
+              "iid": 20,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/30/head",
+              "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:22:51.529Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:22:51.533Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080232552",
+              "yaml_errors": null
+            },
+            "id": 569839491,
+            "iid": 30,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:22:50.498Z",
+            "project_id": 12345678,
+            "reference": "!30",
+            "references": {
+              "full": "Lovelace/review-sandbox!30",
+              "relative": "!30",
+              "short": "!30"
+            },
+            "reviewers": [
+              {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              }
+            ],
+            "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+            "should_remove_source_branch": null,
+            "source_branch": "people/gitlab-1794936167",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "People people/gitlab-1794936167",
+            "updated_at": "2026-11-17T17:22:51.600Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/30",
+        "body": {
+          "reviewer_ids": [
+            0
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"db02f9681b8b4134740b276d5d3f9ec5\"",
+          "ratelimit-remaining": "1964",
+          "ratelimit-reset": "1794936180"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:22:49.659Z",
+            "description": "Scratch pull request of the people round trip.",
+            "detailed_merge_status": "mergeable",
+            "diff_refs": {
+              "base_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+              "head_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "start_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:22:50.776Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080232552",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080232552,
+              "iid": 20,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/30/head",
+              "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:22:51.529Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:22:51.533Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080232552",
+              "yaml_errors": null
+            },
+            "id": 569839491,
+            "iid": 30,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:22:50.498Z",
+            "project_id": 12345678,
+            "reference": "!30",
+            "references": {
+              "full": "Lovelace/review-sandbox!30",
+              "relative": "!30",
+              "short": "!30"
+            },
+            "reviewers": [],
+            "sha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+            "should_remove_source_branch": null,
+            "source_branch": "people/gitlab-1794936167",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "People people/gitlab-1794936167",
+            "updated_at": "2026-11-17T17:22:51.600Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"efa840ea6941367657aad01906b050e1\"",
+          "ratelimit-remaining": "1963",
+          "ratelimit-reset": "1794936240"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "30",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"efa840ea6941367657aad01906b050e1\"",
+          "ratelimit-remaining": "1962",
+          "ratelimit-reset": "1794936240"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:22:49Z",
+                  "description": "Scratch pull request of the people round trip.",
+                  "diffHeadSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                  "diffRefs": {
+                    "baseSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+                    "headSha": "3fd8ef8f4fe66fb86943eaa1fc38b5293802ece1",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080232552",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569839491",
+                  "iid": "30",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "people/gitlab-1794936167",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "People people/gitlab-1794936167",
+                  "updatedAt": "2026-11-17T17:22:51Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/30"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,451 @@
+{
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestSnapshot",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 4,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4752",
+          "x-ratelimit-reset": "1794893969"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 10,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Carries review threads: resolved, unresolved with a reply, multi-line, removed-line and outdated.",
+                  "changedFiles": 1,
+                  "comments": {
+                    "nodes": [],
+                    "pageInfo": {
+                      "endCursor": null,
+                      "hasNextPage": false
+                    }
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                          "statusCheckRollup": null
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T04:44:54Z",
+                  "deletions": 6,
+                  "headRefName": "threads",
+                  "headRefOid": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABPu_ZnA",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 4,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "reviewThreads": {
+                    "nodes": [
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Should this saturate or wrap on overflow? Saturating is fine by me.",
+                              "commit": {
+                                "oid": "b4c0f065a76a078b65e2203939f82c430b7f4888"
+                              },
+                              "createdAt": "2026-11-17T04:44:56Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEeiKOg",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "5bbf11d305088e26e8381f041b04bfa976a11f55"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYaKkFg",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/4#discussion_r4595419706"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QwNDo0NDo1NlrPAAAAARHoijo=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64RllO",
+                        "isOutdated": false,
+                        "isResolved": true,
+                        "line": 8,
+                        "originalLine": 8,
+                        "originalStartLine": null,
+                        "path": "src/threads_target.rs",
+                        "resolvedBy": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "startDiffSide": null,
+                        "startLine": 8
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Nice simplification. Can you add a test for `b == 0`?",
+                              "commit": {
+                                "oid": "b4c0f065a76a078b65e2203939f82c430b7f4888"
+                              },
+                              "createdAt": "2026-11-17T04:44:57Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEeiKhQ",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "5bbf11d305088e26e8381f041b04bfa976a11f55"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYaKkhg",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/4#discussion_r4595419781"
+                            },
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Will do, tracking it in a follow-up.",
+                              "commit": {
+                                "oid": "b4c0f065a76a078b65e2203939f82c430b7f4888"
+                              },
+                              "createdAt": "2026-11-17T04:44:57Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEeiKwQ",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "5bbf11d305088e26e8381f041b04bfa976a11f55"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYaKlAg",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/4#discussion_r4595419841"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QwNDo0NDo1N1rPAAAAARHoisE=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64Rll-",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 16,
+                        "originalLine": 16,
+                        "originalStartLine": null,
+                        "path": "src/threads_target.rs",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 16
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "This loop can overflow for large exponents. Consider `checked_mul`.",
+                              "commit": {
+                                "oid": "b4c0f065a76a078b65e2203939f82c430b7f4888"
+                              },
+                              "createdAt": "2026-11-17T04:44:59Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEeiLSg",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "5bbf11d305088e26e8381f041b04bfa976a11f55"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYaKlvA",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/4#discussion_r4595419978"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QwNDo0NDo1OVrPAAAAARHoi0o=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64Rln_",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 31,
+                        "originalLine": 31,
+                        "originalStartLine": 29,
+                        "path": "src/threads_target.rs",
+                        "resolvedBy": null,
+                        "startDiffSide": "RIGHT",
+                        "startLine": 29
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Why drop the plain subtraction?",
+                              "commit": {
+                                "oid": "b4c0f065a76a078b65e2203939f82c430b7f4888"
+                              },
+                              "createdAt": "2026-11-17T04:44:59Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEeiLpA",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "5bbf11d305088e26e8381f041b04bfa976a11f55"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYaKmUg",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/4#discussion_r4595420068"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QwNDo0NDo1OVrPAAAAARHoi6Q=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "LEFT",
+                        "id": "PRRT_kwDOVxPcWM64Rlo2",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 8,
+                        "originalLine": 8,
+                        "originalStartLine": null,
+                        "path": "src/threads_target.rs",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 8
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Prefer `% 2` here, it reads better.",
+                              "commit": {
+                                "oid": "5bbf11d305088e26e8381f041b04bfa976a11f55"
+                              },
+                              "createdAt": "2026-11-17T04:45:00Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEeiL6Q",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "5bbf11d305088e26e8381f041b04bfa976a11f55"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYaKm8A",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/4#discussion_r4595420137"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QwNDo0NTowMFrPAAAAARHoi-k=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64Rlph",
+                        "isOutdated": true,
+                        "isResolved": false,
+                        "line": null,
+                        "originalLine": 24,
+                        "originalStartLine": null,
+                        "path": "src/threads_target.rs",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": null
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QwNDo0NTowMFrOuEZaYQ==",
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviews": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "createdAt": "2026-11-17T04:44:56Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYaKkFg",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/4#pullrequestreview-5933016086"
+                      },
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "createdAt": "2026-11-17T04:44:57Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYaKkhg",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/4#pullrequestreview-5933016198"
+                      },
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "createdAt": "2026-11-17T04:44:57Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYaKlAg",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/4#pullrequestreview-5933016322"
+                      },
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "createdAt": "2026-11-17T04:44:59Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYaKlvA",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/4#pullrequestreview-5933016508"
+                      },
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "createdAt": "2026-11-17T04:44:59Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYaKmUg",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/4#pullrequestreview-5933016658"
+                      },
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "createdAt": "2026-11-17T04:45:00Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYaKm8A",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/4#pullrequestreview-5933016816"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMS0xN1QwNDo0NTowMFq0MjAyNi0xMS0xN1QwNDo0NTowMFrPAAAAAWGipvA=",
+                      "hasNextPage": false
+                    }
+                  },
+                  "state": "OPEN",
+                  "title": "Threads: review comments on several lines",
+                  "updatedAt": "2026-11-17T04:45:05Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/4"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

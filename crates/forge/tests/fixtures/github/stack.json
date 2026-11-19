@@ -1,0 +1,2114 @@
+{
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestStack",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 1,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4755",
+          "x-ratelimit-reset": "1794893969"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 5,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "First pull request of a 3-PR stack. Based on `main`.",
+                  "changedFiles": 2,
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                          "statusCheckRollup": null
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T04:44:36Z",
+                  "deletions": 1,
+                  "headRefName": "stack-1",
+                  "headRefOid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABPu_Kmg",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 1,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "stack": null,
+                  "state": "OPEN",
+                  "title": "Stack 1/3: bump version, add triple",
+                  "updatedAt": "2026-11-17T04:44:36Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "OpenPullRequests",
+        "variables": {
+          "after": null,
+          "name": "review-sandbox",
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4892",
+          "x-ratelimit-reset": "1794893522"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequests": {
+                  "nodes": [
+                    {
+                      "additions": 5,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "First pull request of a 3-PR stack. Based on `main`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:36Z",
+                      "deletions": 1,
+                      "headRefName": "stack-1",
+                      "headRefOid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_Kmg",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 1,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 1/3: bump version, add triple",
+                      "updatedAt": "2026-11-17T04:44:36Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/1"
+                    },
+                    {
+                      "additions": 5,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "stack-1",
+                      "baseRefOid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Second pull request of a 3-PR stack. Based on `stack-1`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:40Z",
+                      "deletions": 1,
+                      "headRefName": "stack-2",
+                      "headRefOid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_NmA",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 2,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 2/3: add whisper, expand guide",
+                      "updatedAt": "2026-11-17T04:44:40Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/2"
+                    },
+                    {
+                      "additions": 3,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "stack-2",
+                      "baseRefOid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Third pull request of a 3-PR stack. Based on `stack-2`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "a6d42e21e30f75e11c6c688ac9c1058644ea3e57",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:43Z",
+                      "deletions": 1,
+                      "headRefName": "stack-3",
+                      "headRefOid": "a6d42e21e30f75e11c6c688ac9c1058644ea3e57",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_P7Q",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 3,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 3/3: log to stderr, link guide",
+                      "updatedAt": "2026-11-17T04:44:43Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/3"
+                    },
+                    {
+                      "additions": 10,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Carries review threads: resolved, unresolved with a reply, multi-line, removed-line and outdated.",
+                      "changedFiles": 1,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:54Z",
+                      "deletions": 6,
+                      "headRefName": "threads",
+                      "headRefOid": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_ZnA",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 4,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Threads: review comments on several lines",
+                      "updatedAt": "2026-11-17T04:45:05Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/4"
+                    },
+                    {
+                      "additions": 72,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "About 25 files: a rename, a deletion, a mode change, a binary change, CRLF and no-trailing-newline edits.",
+                      "changedFiles": 27,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "0823ee3065bbeba11885fb5a81b56ca03b6f0921",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:45:06Z",
+                      "deletions": 28,
+                      "headRefName": "big",
+                      "headRefOid": "0823ee3065bbeba11885fb5a81b56ca03b6f0921",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_i9g",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 5,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Big: modules, rename, deletion, mode change",
+                      "updatedAt": "2026-11-17T04:45:06Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/5"
+                    },
+                    {
+                      "additions": 3,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "62784116ead4e6e6e3b3fad993b3647d50e38868",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Draft on purpose.",
+                      "changedFiles": 1,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "bcd30bfd8c7bf28df442849efba28d830cb3d610",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:45:21Z",
+                      "deletions": 0,
+                      "headRefName": "draft-wip",
+                      "headRefOid": "bcd30bfd8c7bf28df442849efba28d830cb3d610",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_uiw",
+                      "isDraft": true,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 8,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Start a feature",
+                      "updatedAt": "2026-11-17T04:46:38Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/8"
+                    }
+                  ],
+                  "pageInfo": {
+                    "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QwNDo0NToyMVrPAAAAAT7v7os=",
+                    "hasNextPage": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestStack",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 2,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4746",
+          "x-ratelimit-reset": "1794893969"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 5,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "stack-1",
+                  "baseRefOid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Second pull request of a 3-PR stack. Based on `stack-1`.",
+                  "changedFiles": 2,
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                          "statusCheckRollup": null
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T04:44:40Z",
+                  "deletions": 1,
+                  "headRefName": "stack-2",
+                  "headRefOid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABPu_NmA",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 2,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "stack": null,
+                  "state": "OPEN",
+                  "title": "Stack 2/3: add whisper, expand guide",
+                  "updatedAt": "2026-11-17T04:44:40Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/2"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "OpenPullRequests",
+        "variables": {
+          "after": null,
+          "name": "review-sandbox",
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4886",
+          "x-ratelimit-reset": "1794893522"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequests": {
+                  "nodes": [
+                    {
+                      "additions": 5,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "First pull request of a 3-PR stack. Based on `main`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:36Z",
+                      "deletions": 1,
+                      "headRefName": "stack-1",
+                      "headRefOid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_Kmg",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 1,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 1/3: bump version, add triple",
+                      "updatedAt": "2026-11-17T04:44:36Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/1"
+                    },
+                    {
+                      "additions": 5,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "stack-1",
+                      "baseRefOid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Second pull request of a 3-PR stack. Based on `stack-1`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:40Z",
+                      "deletions": 1,
+                      "headRefName": "stack-2",
+                      "headRefOid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_NmA",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 2,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 2/3: add whisper, expand guide",
+                      "updatedAt": "2026-11-17T04:44:40Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/2"
+                    },
+                    {
+                      "additions": 3,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "stack-2",
+                      "baseRefOid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Third pull request of a 3-PR stack. Based on `stack-2`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "a6d42e21e30f75e11c6c688ac9c1058644ea3e57",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:43Z",
+                      "deletions": 1,
+                      "headRefName": "stack-3",
+                      "headRefOid": "a6d42e21e30f75e11c6c688ac9c1058644ea3e57",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_P7Q",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 3,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 3/3: log to stderr, link guide",
+                      "updatedAt": "2026-11-17T04:44:43Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/3"
+                    },
+                    {
+                      "additions": 10,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Carries review threads: resolved, unresolved with a reply, multi-line, removed-line and outdated.",
+                      "changedFiles": 1,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:54Z",
+                      "deletions": 6,
+                      "headRefName": "threads",
+                      "headRefOid": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_ZnA",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 4,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Threads: review comments on several lines",
+                      "updatedAt": "2026-11-17T04:45:05Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/4"
+                    },
+                    {
+                      "additions": 72,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "About 25 files: a rename, a deletion, a mode change, a binary change, CRLF and no-trailing-newline edits.",
+                      "changedFiles": 27,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "0823ee3065bbeba11885fb5a81b56ca03b6f0921",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:45:06Z",
+                      "deletions": 28,
+                      "headRefName": "big",
+                      "headRefOid": "0823ee3065bbeba11885fb5a81b56ca03b6f0921",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_i9g",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 5,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Big: modules, rename, deletion, mode change",
+                      "updatedAt": "2026-11-17T04:45:06Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/5"
+                    },
+                    {
+                      "additions": 3,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "62784116ead4e6e6e3b3fad993b3647d50e38868",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Draft on purpose.",
+                      "changedFiles": 1,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "bcd30bfd8c7bf28df442849efba28d830cb3d610",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:45:21Z",
+                      "deletions": 0,
+                      "headRefName": "draft-wip",
+                      "headRefOid": "bcd30bfd8c7bf28df442849efba28d830cb3d610",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_uiw",
+                      "isDraft": true,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 8,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Start a feature",
+                      "updatedAt": "2026-11-17T04:46:38Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/8"
+                    }
+                  ],
+                  "pageInfo": {
+                    "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QwNDo0NToyMVrPAAAAAT7v7os=",
+                    "hasNextPage": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestStack",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 3,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4733",
+          "x-ratelimit-reset": "1794893969"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 3,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "stack-2",
+                  "baseRefOid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Third pull request of a 3-PR stack. Based on `stack-2`.",
+                  "changedFiles": 2,
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "a6d42e21e30f75e11c6c688ac9c1058644ea3e57",
+                          "statusCheckRollup": null
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T04:44:43Z",
+                  "deletions": 1,
+                  "headRefName": "stack-3",
+                  "headRefOid": "a6d42e21e30f75e11c6c688ac9c1058644ea3e57",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABPu_P7Q",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 3,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "stack": null,
+                  "state": "OPEN",
+                  "title": "Stack 3/3: log to stderr, link guide",
+                  "updatedAt": "2026-11-17T04:44:43Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/3"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "OpenPullRequests",
+        "variables": {
+          "after": null,
+          "name": "review-sandbox",
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4726",
+          "x-ratelimit-reset": "1794893969"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequests": {
+                  "nodes": [
+                    {
+                      "additions": 5,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "First pull request of a 3-PR stack. Based on `main`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:36Z",
+                      "deletions": 1,
+                      "headRefName": "stack-1",
+                      "headRefOid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_Kmg",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 1,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 1/3: bump version, add triple",
+                      "updatedAt": "2026-11-17T04:44:36Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/1"
+                    },
+                    {
+                      "additions": 5,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "stack-1",
+                      "baseRefOid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Second pull request of a 3-PR stack. Based on `stack-1`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:40Z",
+                      "deletions": 1,
+                      "headRefName": "stack-2",
+                      "headRefOid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_NmA",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 2,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 2/3: add whisper, expand guide",
+                      "updatedAt": "2026-11-17T04:44:40Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/2"
+                    },
+                    {
+                      "additions": 3,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "stack-2",
+                      "baseRefOid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Third pull request of a 3-PR stack. Based on `stack-2`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "a6d42e21e30f75e11c6c688ac9c1058644ea3e57",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:43Z",
+                      "deletions": 1,
+                      "headRefName": "stack-3",
+                      "headRefOid": "a6d42e21e30f75e11c6c688ac9c1058644ea3e57",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_P7Q",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 3,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 3/3: log to stderr, link guide",
+                      "updatedAt": "2026-11-17T04:44:43Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/3"
+                    },
+                    {
+                      "additions": 10,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Carries review threads: resolved, unresolved with a reply, multi-line, removed-line and outdated.",
+                      "changedFiles": 1,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:54Z",
+                      "deletions": 6,
+                      "headRefName": "threads",
+                      "headRefOid": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_ZnA",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 4,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Threads: review comments on several lines",
+                      "updatedAt": "2026-11-17T04:45:05Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/4"
+                    },
+                    {
+                      "additions": 72,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "About 25 files: a rename, a deletion, a mode change, a binary change, CRLF and no-trailing-newline edits.",
+                      "changedFiles": 27,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "0823ee3065bbeba11885fb5a81b56ca03b6f0921",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:45:06Z",
+                      "deletions": 28,
+                      "headRefName": "big",
+                      "headRefOid": "0823ee3065bbeba11885fb5a81b56ca03b6f0921",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_i9g",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 5,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Big: modules, rename, deletion, mode change",
+                      "updatedAt": "2026-11-17T04:45:06Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/5"
+                    },
+                    {
+                      "additions": 3,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "62784116ead4e6e6e3b3fad993b3647d50e38868",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Draft on purpose.",
+                      "changedFiles": 1,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "bcd30bfd8c7bf28df442849efba28d830cb3d610",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:45:21Z",
+                      "deletions": 0,
+                      "headRefName": "draft-wip",
+                      "headRefOid": "bcd30bfd8c7bf28df442849efba28d830cb3d610",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_uiw",
+                      "isDraft": true,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 8,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Start a feature",
+                      "updatedAt": "2026-11-17T04:46:38Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/8"
+                    }
+                  ],
+                  "pageInfo": {
+                    "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QwNDo0NToyMVrPAAAAAT7v7os=",
+                    "hasNextPage": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestStack",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 2,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4885",
+          "x-ratelimit-reset": "1794893522"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 5,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "stack-1",
+                  "baseRefOid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Second pull request of a 3-PR stack. Based on `stack-1`.",
+                  "changedFiles": 2,
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                          "statusCheckRollup": null
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T04:44:40Z",
+                  "deletions": 1,
+                  "headRefName": "stack-2",
+                  "headRefOid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABPu_NmA",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 2,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "stack": null,
+                  "state": "OPEN",
+                  "title": "Stack 2/3: add whisper, expand guide",
+                  "updatedAt": "2026-11-17T04:44:40Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/2"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "OpenPullRequests",
+        "variables": {
+          "after": null,
+          "name": "review-sandbox",
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4883",
+          "x-ratelimit-reset": "1794893522"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequests": {
+                  "nodes": [
+                    {
+                      "additions": 5,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "First pull request of a 3-PR stack. Based on `main`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:36Z",
+                      "deletions": 1,
+                      "headRefName": "stack-1",
+                      "headRefOid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_Kmg",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 1,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 1/3: bump version, add triple",
+                      "updatedAt": "2026-11-17T04:44:36Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/1"
+                    },
+                    {
+                      "additions": 5,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "stack-1",
+                      "baseRefOid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Second pull request of a 3-PR stack. Based on `stack-1`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:40Z",
+                      "deletions": 1,
+                      "headRefName": "stack-2",
+                      "headRefOid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_NmA",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 2,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 2/3: add whisper, expand guide",
+                      "updatedAt": "2026-11-17T04:44:40Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/2"
+                    },
+                    {
+                      "additions": 3,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "stack-2",
+                      "baseRefOid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Third pull request of a 3-PR stack. Based on `stack-2`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "a6d42e21e30f75e11c6c688ac9c1058644ea3e57",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:43Z",
+                      "deletions": 1,
+                      "headRefName": "stack-3",
+                      "headRefOid": "a6d42e21e30f75e11c6c688ac9c1058644ea3e57",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_P7Q",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 3,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 3/3: log to stderr, link guide",
+                      "updatedAt": "2026-11-17T04:44:43Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/3"
+                    },
+                    {
+                      "additions": 10,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Carries review threads: resolved, unresolved with a reply, multi-line, removed-line and outdated.",
+                      "changedFiles": 1,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:54Z",
+                      "deletions": 6,
+                      "headRefName": "threads",
+                      "headRefOid": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_ZnA",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 4,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Threads: review comments on several lines",
+                      "updatedAt": "2026-11-17T04:45:05Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/4"
+                    },
+                    {
+                      "additions": 72,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "About 25 files: a rename, a deletion, a mode change, a binary change, CRLF and no-trailing-newline edits.",
+                      "changedFiles": 27,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "0823ee3065bbeba11885fb5a81b56ca03b6f0921",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:45:06Z",
+                      "deletions": 28,
+                      "headRefName": "big",
+                      "headRefOid": "0823ee3065bbeba11885fb5a81b56ca03b6f0921",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_i9g",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 5,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Big: modules, rename, deletion, mode change",
+                      "updatedAt": "2026-11-17T04:45:06Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/5"
+                    },
+                    {
+                      "additions": 3,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "62784116ead4e6e6e3b3fad993b3647d50e38868",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Draft on purpose.",
+                      "changedFiles": 1,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "bcd30bfd8c7bf28df442849efba28d830cb3d610",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:45:21Z",
+                      "deletions": 0,
+                      "headRefName": "draft-wip",
+                      "headRefOid": "bcd30bfd8c7bf28df442849efba28d830cb3d610",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_uiw",
+                      "isDraft": true,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 8,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Start a feature",
+                      "updatedAt": "2026-11-17T04:46:38Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/8"
+                    }
+                  ],
+                  "pageInfo": {
+                    "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QwNDo0NToyMVrPAAAAAT7v7os=",
+                    "hasNextPage": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestStack",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 4,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4724",
+          "x-ratelimit-reset": "1794893969"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 10,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Carries review threads: resolved, unresolved with a reply, multi-line, removed-line and outdated.",
+                  "changedFiles": 1,
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                          "statusCheckRollup": null
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T04:44:54Z",
+                  "deletions": 6,
+                  "headRefName": "threads",
+                  "headRefOid": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABPu_ZnA",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 4,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "stack": null,
+                  "state": "OPEN",
+                  "title": "Threads: review comments on several lines",
+                  "updatedAt": "2026-11-17T04:45:05Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/4"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "OpenPullRequests",
+        "variables": {
+          "after": null,
+          "name": "review-sandbox",
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4722",
+          "x-ratelimit-reset": "1794893969"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequests": {
+                  "nodes": [
+                    {
+                      "additions": 5,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "First pull request of a 3-PR stack. Based on `main`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:36Z",
+                      "deletions": 1,
+                      "headRefName": "stack-1",
+                      "headRefOid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_Kmg",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 1,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 1/3: bump version, add triple",
+                      "updatedAt": "2026-11-17T04:44:36Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/1"
+                    },
+                    {
+                      "additions": 5,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "stack-1",
+                      "baseRefOid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Second pull request of a 3-PR stack. Based on `stack-1`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:40Z",
+                      "deletions": 1,
+                      "headRefName": "stack-2",
+                      "headRefOid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_NmA",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 2,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 2/3: add whisper, expand guide",
+                      "updatedAt": "2026-11-17T04:44:40Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/2"
+                    },
+                    {
+                      "additions": 3,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "stack-2",
+                      "baseRefOid": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Third pull request of a 3-PR stack. Based on `stack-2`.",
+                      "changedFiles": 2,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "a6d42e21e30f75e11c6c688ac9c1058644ea3e57",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:43Z",
+                      "deletions": 1,
+                      "headRefName": "stack-3",
+                      "headRefOid": "a6d42e21e30f75e11c6c688ac9c1058644ea3e57",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_P7Q",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 3,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Stack 3/3: log to stderr, link guide",
+                      "updatedAt": "2026-11-17T04:44:43Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/3"
+                    },
+                    {
+                      "additions": 10,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Carries review threads: resolved, unresolved with a reply, multi-line, removed-line and outdated.",
+                      "changedFiles": 1,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:44:54Z",
+                      "deletions": 6,
+                      "headRefName": "threads",
+                      "headRefOid": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_ZnA",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 4,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Threads: review comments on several lines",
+                      "updatedAt": "2026-11-17T04:45:05Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/4"
+                    },
+                    {
+                      "additions": 72,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "About 25 files: a rename, a deletion, a mode change, a binary change, CRLF and no-trailing-newline edits.",
+                      "changedFiles": 27,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "0823ee3065bbeba11885fb5a81b56ca03b6f0921",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:45:06Z",
+                      "deletions": 28,
+                      "headRefName": "big",
+                      "headRefOid": "0823ee3065bbeba11885fb5a81b56ca03b6f0921",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_i9g",
+                      "isDraft": false,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 5,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Big: modules, rename, deletion, mode change",
+                      "updatedAt": "2026-11-17T04:45:06Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/5"
+                    },
+                    {
+                      "additions": 3,
+                      "author": {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      },
+                      "baseRefName": "main",
+                      "baseRefOid": "62784116ead4e6e6e3b3fad993b3647d50e38868",
+                      "baseRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "body": "Draft on purpose.",
+                      "changedFiles": 1,
+                      "commits": {
+                        "nodes": [
+                          {
+                            "commit": {
+                              "oid": "bcd30bfd8c7bf28df442849efba28d830cb3d610",
+                              "statusCheckRollup": null
+                            }
+                          }
+                        ]
+                      },
+                      "createdAt": "2026-11-17T04:45:21Z",
+                      "deletions": 0,
+                      "headRefName": "draft-wip",
+                      "headRefOid": "bcd30bfd8c7bf28df442849efba28d830cb3d610",
+                      "headRepository": {
+                        "nameWithOwner": "Lovelace/review-sandbox"
+                      },
+                      "id": "PR_kwDOVxPcWM8AAAABPu_uiw",
+                      "isDraft": true,
+                      "labels": {
+                        "nodes": []
+                      },
+                      "latestReviews": {
+                        "nodes": []
+                      },
+                      "number": 8,
+                      "reviewDecision": null,
+                      "reviewRequests": {
+                        "nodes": []
+                      },
+                      "state": "OPEN",
+                      "title": "Start a feature",
+                      "updatedAt": "2026-11-17T04:46:38Z",
+                      "url": "https://github.com/Lovelace/review-sandbox/pull/8"
+                    }
+                  ],
+                  "pageInfo": {
+                    "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QwNDo0NToyMVrPAAAAAT7v7os=",
+                    "hasNextPage": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

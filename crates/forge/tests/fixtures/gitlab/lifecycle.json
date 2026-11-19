@@ -1,0 +1,3051 @@
+{
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"a19519c04a6d1c06f3e69e207967df7e\"",
+          "ratelimit-remaining": "1997",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "_links": {
+              "cluster_agents": "https://gitlab.com/api/v4/projects/12345678/cluster_agents",
+              "events": "https://gitlab.com/api/v4/projects/12345678/events",
+              "issues": "https://gitlab.com/api/v4/projects/12345678/issues",
+              "labels": "https://gitlab.com/api/v4/projects/12345678/labels",
+              "members": "https://gitlab.com/api/v4/projects/12345678/members",
+              "merge_requests": "https://gitlab.com/api/v4/projects/12345678/merge_requests",
+              "repo_branches": "https://gitlab.com/api/v4/projects/12345678/repository/branches",
+              "self": "https://gitlab.com/api/v4/projects/12345678"
+            },
+            "allow_merge_on_skipped_pipeline": null,
+            "analytics_access_level": "enabled",
+            "archived": false,
+            "auto_cancel_pending_pipelines": "enabled",
+            "auto_devops_deploy_strategy": "continuous",
+            "auto_devops_enabled": false,
+            "autoclose_referenced_issues": true,
+            "automatic_rebase_enabled": false,
+            "avatar_url": null,
+            "build_git_strategy": "fetch",
+            "build_timeout": 3600,
+            "builds_access_level": "enabled",
+            "can_create_merge_request_in": true,
+            "ci_allow_fork_pipelines_to_run_in_parent_project": true,
+            "ci_config_path": "",
+            "ci_default_git_depth": 20,
+            "ci_delete_pipelines_in_seconds": null,
+            "ci_display_pipeline_variables": false,
+            "ci_forward_deployment_enabled": true,
+            "ci_forward_deployment_rollback_allowed": true,
+            "ci_id_token_sub_claim_components": [
+              "project_path",
+              "ref_type",
+              "ref"
+            ],
+            "ci_job_token_scope_enabled": false,
+            "ci_pipeline_variables_minimum_override_role": "developer",
+            "ci_push_repository_for_job_token_allowed": false,
+            "ci_separated_caches": true,
+            "ci_skip_branch_pipelines_for_mrs": false,
+            "cicd_catalog_enabled": false,
+            "compliance_frameworks": [],
+            "container_expiration_policy": {
+              "cadence": "1d",
+              "enabled": false,
+              "keep_n": 10,
+              "name_regex": ".*",
+              "name_regex_keep": null,
+              "next_run_at": "2026-11-18T04:41:03.578Z",
+              "older_than": "90d"
+            },
+            "container_registry_access_level": "enabled",
+            "container_registry_enabled": true,
+            "container_registry_image_prefix": "registry.gitlab.com/lovelace/review-sandbox",
+            "created_at": "2026-11-17T04:41:03.551Z",
+            "creator_id": 7654321,
+            "default_branch": "main",
+            "description": "Sandbox for the review app's live tests",
+            "description_html": "<p data-sourcepos=\"1:1-1:39\" dir=\"auto\">Sandbox for the review app's live tests</p>",
+            "emails_disabled": false,
+            "emails_enabled": true,
+            "empty_repo": false,
+            "enforce_auth_checks_on_uploads": true,
+            "environments_access_level": "enabled",
+            "external_authorization_classification_label": "",
+            "feature_flags_access_level": "enabled",
+            "forking_access_level": "enabled",
+            "forks_count": 0,
+            "group_runners_enabled": true,
+            "http_url_to_repo": "https://gitlab.com/Lovelace/review-sandbox.git",
+            "id": 12345678,
+            "import_error": null,
+            "import_status": "none",
+            "import_type": null,
+            "import_url": null,
+            "infrastructure_access_level": "enabled",
+            "issue_branch_template": null,
+            "issues_access_level": "enabled",
+            "issues_enabled": true,
+            "jobs_enabled": true,
+            "keep_latest_artifact": true,
+            "last_activity_at": "2026-11-17T17:04:13.034Z",
+            "lfs_enabled": true,
+            "marked_for_deletion_at": null,
+            "marked_for_deletion_on": null,
+            "max_artifacts_size": null,
+            "merge_commit_template": null,
+            "merge_method": "merge",
+            "merge_requests_access_level": "enabled",
+            "merge_requests_enabled": true,
+            "model_experiments_access_level": "private",
+            "model_registry_access_level": "private",
+            "monitor_access_level": "enabled",
+            "mr_default_title_template": null,
+            "name": "review-sandbox",
+            "name_with_namespace": "Ada L / review-sandbox",
+            "namespace": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "full_path": "Lovelace",
+              "id": 2011406,
+              "kind": "user",
+              "name": "Ada L",
+              "parent_id": null,
+              "path": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "only_allow_merge_if_all_discussions_are_resolved": false,
+            "only_allow_merge_if_pipeline_succeeds": false,
+            "open_issues_count": 0,
+            "owner": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "package_registry_access_level": "enabled",
+            "packages_enabled": true,
+            "pages_access_level": "private",
+            "path": "review-sandbox",
+            "path_with_namespace": "Lovelace/review-sandbox",
+            "permissions": {
+              "group_access": null,
+              "project_access": {
+                "access_level": 50,
+                "notification_level": 3
+              }
+            },
+            "printing_merge_request_link_enabled": true,
+            "protect_merge_request_pipelines": true,
+            "public_jobs": true,
+            "readme_url": "https://gitlab.com/Lovelace/review-sandbox/-/blob/main/README.md",
+            "releases_access_level": "enabled",
+            "remove_source_branch_after_merge": true,
+            "repository_access_level": "enabled",
+            "repository_object_format": "sha1",
+            "request_access_enabled": true,
+            "requirements_access_level": "enabled",
+            "requirements_enabled": false,
+            "resolve_outdated_diff_discussions": false,
+            "resource_group_default_process_mode": "unordered",
+            "restrict_user_defined_variables": false,
+            "runner_token_expiration_interval": null,
+            "runners_token": "***",
+            "security_and_compliance_access_level": "private",
+            "security_and_compliance_enabled": true,
+            "service_desk_address": "user@example.invalid",
+            "service_desk_enabled": true,
+            "shared_runners_enabled": true,
+            "shared_with_groups": [],
+            "show_diff_preview_in_email": true,
+            "snippets_access_level": "enabled",
+            "snippets_enabled": true,
+            "squash_commit_template": null,
+            "squash_option": "default_off",
+            "ssh_url_to_repo": "git@gitlab.com:Lovelace/review-sandbox.git",
+            "star_count": 0,
+            "suggestion_commit_message": null,
+            "tag_list": [],
+            "topics": [],
+            "updated_at": "2026-11-17T17:10:38.492Z",
+            "visibility": "private",
+            "warn_about_potentially_unwanted_characters": true,
+            "web_based_commit_signing_enabled": false,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox",
+            "wiki_access_level": "enabled",
+            "wiki_enabled": true
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/28"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"536c7b088125a14724e1b2372317bcb1\"",
+          "ratelimit-remaining": "1996",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:10:38.997Z",
+            "description": "Scratch pull request of the lifecycle round trip.",
+            "detailed_merge_status": "checking",
+            "diff_refs": {
+              "base_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+              "head_sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "start_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_contribution": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:10:40.088Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080185154",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080185154,
+              "iid": 15,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/28/head",
+              "sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:10:40.749Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:10:40.755Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080185154",
+              "yaml_errors": null
+            },
+            "id": 569824884,
+            "iid": 28,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "checking",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:10:39.989Z",
+            "project_id": 12345678,
+            "reference": "!28",
+            "references": {
+              "full": "Lovelace/review-sandbox!28",
+              "relative": "!28",
+              "short": "!28"
+            },
+            "reviewers": [],
+            "sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+            "should_remove_source_branch": null,
+            "source_branch": "lifecycle/gitlab-1794935436-merge",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "Lifecycle lifecycle/gitlab-1794935436-merge",
+            "updated_at": "2026-11-17T17:10:39.994Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/28",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/28"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"7ef9c718b05830ee364cb84bde664544\"",
+          "ratelimit-remaining": "1995",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:10:38.997Z",
+            "description": "Scratch pull request of the lifecycle round trip.",
+            "detailed_merge_status": "mergeable",
+            "diff_refs": {
+              "base_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+              "head_sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "start_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_contribution": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:10:40.088Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080185154",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080185154,
+              "iid": 15,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/28/head",
+              "sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:10:40.749Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:10:40.755Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080185154",
+              "yaml_errors": null
+            },
+            "id": 569824884,
+            "iid": 28,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:10:39.989Z",
+            "project_id": 12345678,
+            "reference": "!28",
+            "references": {
+              "full": "Lovelace/review-sandbox!28",
+              "relative": "!28",
+              "short": "!28"
+            },
+            "reviewers": [],
+            "sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+            "should_remove_source_branch": null,
+            "source_branch": "lifecycle/gitlab-1794935436-merge",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "Lifecycle lifecycle/gitlab-1794935436-merge",
+            "updated_at": "2026-11-17T17:10:39.994Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/28",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "MergeRequestSetDraft",
+        "variables": {
+          "draft": true,
+          "iid": "28",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"de17b6fc7774902f062e51a993305db6\"",
+          "ratelimit-remaining": "1994",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "mergeRequestSetDraft": {
+                "errors": [],
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:38Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                    "startSha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": true,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185154",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824884",
+                  "iid": "28",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-merge",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Draft: Lifecycle lifecycle/gitlab-1794935436-merge",
+                  "updatedAt": "2026-11-17T17:10:44Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/28"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "28",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"b87b8d9e1d22ffe4f93b24ba9f22f5f9\"",
+          "ratelimit-remaining": "1993",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:38Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                    "startSha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": true,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185154",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824884",
+                  "iid": "28",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-merge",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Draft: Lifecycle lifecycle/gitlab-1794935436-merge",
+                  "updatedAt": "2026-11-17T17:10:44Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/28"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/28"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"48bad422bf19110722b1efd7e36573e3\"",
+          "ratelimit-remaining": "1992",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:10:38.997Z",
+            "description": "Scratch pull request of the lifecycle round trip.",
+            "detailed_merge_status": "draft_status",
+            "diff_refs": {
+              "base_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+              "head_sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "start_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": true,
+            "first_contribution": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:10:40.088Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080185154",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080185154,
+              "iid": 15,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/28/head",
+              "sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:10:40.749Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:10:40.755Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080185154",
+              "yaml_errors": null
+            },
+            "id": 569824884,
+            "iid": 28,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:10:39.989Z",
+            "project_id": 12345678,
+            "reference": "!28",
+            "references": {
+              "full": "Lovelace/review-sandbox!28",
+              "relative": "!28",
+              "short": "!28"
+            },
+            "reviewers": [],
+            "sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+            "should_remove_source_branch": null,
+            "source_branch": "lifecycle/gitlab-1794935436-merge",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "Draft: Lifecycle lifecycle/gitlab-1794935436-merge",
+            "updated_at": "2026-11-17T17:10:44.279Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/28",
+            "work_in_progress": true
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "MergeRequestSetDraft",
+        "variables": {
+          "draft": false,
+          "iid": "28",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"77e72974b60a93d48f79d06ed9345d1f\"",
+          "ratelimit-remaining": "1991",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "mergeRequestSetDraft": {
+                "errors": [],
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:38Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                    "startSha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185154",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824884",
+                  "iid": "28",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-merge",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Lifecycle lifecycle/gitlab-1794935436-merge",
+                  "updatedAt": "2026-11-17T17:10:46Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/28"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "28",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"6db04ab17347916333470a51ab0eee94\"",
+          "ratelimit-remaining": "1990",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:38Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                    "startSha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185154",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824884",
+                  "iid": "28",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-merge",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Lifecycle lifecycle/gitlab-1794935436-merge",
+                  "updatedAt": "2026-11-17T17:10:46Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/28"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/28"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"0de96065aaed4abfeb1e2e321a3942d7\"",
+          "ratelimit-remaining": "1989",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:10:38.997Z",
+            "description": "Scratch pull request of the lifecycle round trip.",
+            "detailed_merge_status": "mergeable",
+            "diff_refs": {
+              "base_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+              "head_sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "start_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_contribution": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:10:40.088Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080185154",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080185154,
+              "iid": 15,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/28/head",
+              "sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:10:40.749Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:10:40.755Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080185154",
+              "yaml_errors": null
+            },
+            "id": 569824884,
+            "iid": 28,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:10:39.989Z",
+            "project_id": 12345678,
+            "reference": "!28",
+            "references": {
+              "full": "Lovelace/review-sandbox!28",
+              "relative": "!28",
+              "short": "!28"
+            },
+            "reviewers": [],
+            "sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+            "should_remove_source_branch": null,
+            "source_branch": "lifecycle/gitlab-1794935436-merge",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "Lifecycle lifecycle/gitlab-1794935436-merge",
+            "updated_at": "2026-11-17T17:10:46.817Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/28",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox"
+      },
+      "response": {
+        "status": 304,
+        "headers": {
+          "etag": "W/\"a19519c04a6d1c06f3e69e207967df7e\"",
+          "ratelimit-remaining": "1988",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": "empty"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "29",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"4b9d0279dc24e8fad69d5b0981be354f\"",
+          "ratelimit-remaining": "1987",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:41Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                    "startSha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185313",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824926",
+                  "iid": "29",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-close",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Lifecycle lifecycle/gitlab-1794935436-close",
+                  "updatedAt": "2026-11-17T17:10:42Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/29"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/29/merge",
+        "body": {
+          "sha": "0000000000000000000000000000000000000000",
+          "should_remove_source_branch": false,
+          "squash": false
+        }
+      },
+      "response": {
+        "status": 409,
+        "headers": {
+          "content-type": "application/json",
+          "ratelimit-remaining": "1986",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "message": "SHA does not match HEAD of source branch: 4d194d86a0f79dfcc8733a02d065b92e64293811"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "29",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"4b9d0279dc24e8fad69d5b0981be354f\"",
+          "ratelimit-remaining": "1985",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:41Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                    "startSha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185313",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824926",
+                  "iid": "29",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-close",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Lifecycle lifecycle/gitlab-1794935436-close",
+                  "updatedAt": "2026-11-17T17:10:42Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/29"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "28",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"6db04ab17347916333470a51ab0eee94\"",
+          "ratelimit-remaining": "1984",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:38Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                    "startSha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185154",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824884",
+                  "iid": "28",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-merge",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Lifecycle lifecycle/gitlab-1794935436-merge",
+                  "updatedAt": "2026-11-17T17:10:46Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/28"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox"
+      },
+      "response": {
+        "status": 304,
+        "headers": {
+          "etag": "W/\"a19519c04a6d1c06f3e69e207967df7e\"",
+          "ratelimit-remaining": "1983",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": "empty"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox"
+      },
+      "response": {
+        "status": 304,
+        "headers": {
+          "etag": "W/\"a19519c04a6d1c06f3e69e207967df7e\"",
+          "ratelimit-remaining": "1982",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": "empty"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "28",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"6db04ab17347916333470a51ab0eee94\"",
+          "ratelimit-remaining": "1981",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:38Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                    "startSha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185154",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824884",
+                  "iid": "28",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-merge",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Lifecycle lifecycle/gitlab-1794935436-merge",
+                  "updatedAt": "2026-11-17T17:10:46Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/28"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/28/merge",
+        "body": {
+          "merge_commit_message": "Lifecycle scratch merge\n\nScratch change of the lifecycle round trip.",
+          "sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+          "should_remove_source_branch": true,
+          "squash": true,
+          "squash_commit_message": "Lifecycle scratch merge\n\nScratch change of the lifecycle round trip."
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"28dd8371eed8f49520803bd25e1934c7\"",
+          "ratelimit-remaining": "1980",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:10:38.997Z",
+            "description": "Scratch pull request of the lifecycle round trip.",
+            "detailed_merge_status": "not_open",
+            "diff_refs": {
+              "base_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+              "head_sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "start_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:10:40.088Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080185154",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080185154,
+              "iid": 15,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/28/head",
+              "sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:10:40.749Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:10:40.755Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080185154",
+              "yaml_errors": null
+            },
+            "id": 569824884,
+            "iid": 28,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": "2026-11-17T17:10:52.355Z",
+            "merged_by": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:10:39.989Z",
+            "project_id": 12345678,
+            "reference": "!28",
+            "references": {
+              "full": "Lovelace/review-sandbox!28",
+              "relative": "!28",
+              "short": "!28"
+            },
+            "reviewers": [],
+            "sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+            "should_remove_source_branch": true,
+            "source_branch": "lifecycle/gitlab-1794935436-merge",
+            "source_project_id": 12345678,
+            "squash": true,
+            "squash_commit_sha": "59bc6e6e0053d5fd549080652ad6aa3a198ef453",
+            "squash_on_merge": true,
+            "state": "merged",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "Lifecycle lifecycle/gitlab-1794935436-merge",
+            "updated_at": "2026-11-17T17:10:52.761Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/28",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "28",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"aad0c9ec5475c5ff63fbed41e37a5651\"",
+          "ratelimit-remaining": "1979",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:38Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                    "startSha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185154",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824884",
+                  "iid": "28",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-merge",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "merged",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Lifecycle lifecycle/gitlab-1794935436-merge",
+                  "updatedAt": "2026-11-17T17:10:52Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/28"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "28",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"680b60e680bd37ea1318d6481391b257\"",
+          "ratelimit-remaining": "1978",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:38Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+                    "startSha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185154",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824884",
+                  "iid": "28",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-merge",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "merged",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Lifecycle lifecycle/gitlab-1794935436-merge",
+                  "updatedAt": "2026-11-17T17:10:52Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": false
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/28"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/28"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"77738833b3430e2a7140fe8bdf9a63dc\"",
+          "ratelimit-remaining": "1977",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:10:38.997Z",
+            "description": "Scratch pull request of the lifecycle round trip.",
+            "detailed_merge_status": "not_open",
+            "diff_refs": {
+              "base_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+              "head_sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "start_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_contribution": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:10:40.088Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080185154",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080185154,
+              "iid": 15,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/28/head",
+              "sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:10:40.749Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:10:40.755Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080185154",
+              "yaml_errors": null
+            },
+            "id": 569824884,
+            "iid": 28,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489",
+            "merge_error": null,
+            "merge_status": "can_be_merged",
+            "merge_user": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": "2026-11-17T17:10:52.355Z",
+            "merged_by": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:10:39.989Z",
+            "project_id": 12345678,
+            "reference": "!28",
+            "references": {
+              "full": "Lovelace/review-sandbox!28",
+              "relative": "!28",
+              "short": "!28"
+            },
+            "reviewers": [],
+            "sha": "1a0572e07739135984a4dd302cbe75abf4bc4281",
+            "should_remove_source_branch": true,
+            "source_branch": "lifecycle/gitlab-1794935436-merge",
+            "source_project_id": 12345678,
+            "squash": true,
+            "squash_commit_sha": "59bc6e6e0053d5fd549080652ad6aa3a198ef453",
+            "squash_on_merge": true,
+            "state": "merged",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "Lifecycle lifecycle/gitlab-1794935436-merge",
+            "updated_at": "2026-11-17T17:10:52.761Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/28",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/29",
+        "body": {
+          "state_event": "close"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"e05197e385c735442b573ce5fcc55433\"",
+          "ratelimit-remaining": "1976",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": "2026-11-17T17:10:55.719Z",
+            "closed_by": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "created_at": "2026-11-17T17:10:41.855Z",
+            "description": "Scratch pull request of the lifecycle round trip.",
+            "detailed_merge_status": "unchecked",
+            "diff_refs": {
+              "base_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+              "head_sha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+              "start_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:10:42.998Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080185313",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080185313,
+              "iid": 17,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/29/head",
+              "sha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:10:43.626Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:10:43.630Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080185313",
+              "yaml_errors": null
+            },
+            "id": 569824926,
+            "iid": 29,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "unchecked",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:10:42.796Z",
+            "project_id": 12345678,
+            "reference": "!29",
+            "references": {
+              "full": "Lovelace/review-sandbox!29",
+              "relative": "!29",
+              "short": "!29"
+            },
+            "reviewers": [],
+            "sha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+            "should_remove_source_branch": null,
+            "source_branch": "lifecycle/gitlab-1794935436-close",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "closed",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "Lifecycle lifecycle/gitlab-1794935436-close",
+            "updated_at": "2026-11-17T17:10:56.166Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/29",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "29",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"56b0a296515369d0cb55c19548697fbc\"",
+          "ratelimit-remaining": "1975",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:41Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                    "startSha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185313",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824926",
+                  "iid": "29",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-close",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "closed",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Lifecycle lifecycle/gitlab-1794935436-close",
+                  "updatedAt": "2026-11-17T17:10:56Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/29"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "29",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"56b0a296515369d0cb55c19548697fbc\"",
+          "ratelimit-remaining": "1974",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:41Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                    "startSha": "4cd998622b8edccb04b2a5cc51c2785533edc537"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185313",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824926",
+                  "iid": "29",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-close",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "closed",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Lifecycle lifecycle/gitlab-1794935436-close",
+                  "updatedAt": "2026-11-17T17:10:56Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/29"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/29",
+        "body": {
+          "state_event": "reopen"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"c636aab3781b85a549b252ea5fe18e62\"",
+          "ratelimit-remaining": "1973",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": null,
+            "closed_by": null,
+            "created_at": "2026-11-17T17:10:41.855Z",
+            "description": "Scratch pull request of the lifecycle round trip.",
+            "detailed_merge_status": "unchecked",
+            "diff_refs": {
+              "base_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+              "head_sha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+              "start_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:10:42.998Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080185313",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080185313,
+              "iid": 17,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/29/head",
+              "sha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:10:43.626Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:10:43.630Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080185313",
+              "yaml_errors": null
+            },
+            "id": 569824926,
+            "iid": 29,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "unchecked",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:10:42.796Z",
+            "project_id": 12345678,
+            "reference": "!29",
+            "references": {
+              "full": "Lovelace/review-sandbox!29",
+              "relative": "!29",
+              "short": "!29"
+            },
+            "reviewers": [],
+            "sha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+            "should_remove_source_branch": null,
+            "source_branch": "lifecycle/gitlab-1794935436-close",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "opened",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "Lifecycle lifecycle/gitlab-1794935436-close",
+            "updated_at": "2026-11-17T17:10:57.237Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/29",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "29",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"2b8a7862c430ae44173edcfe649394a5\"",
+          "ratelimit-remaining": "1972",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:41Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185313",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824926",
+                  "iid": "29",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-close",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Lifecycle lifecycle/gitlab-1794935436-close",
+                  "updatedAt": "2026-11-17T17:10:57Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/29"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "29",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"2b8a7862c430ae44173edcfe649394a5\"",
+          "ratelimit-remaining": "1971",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:41Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185313",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824926",
+                  "iid": "29",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-close",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Lifecycle lifecycle/gitlab-1794935436-close",
+                  "updatedAt": "2026-11-17T17:10:57Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/29"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/29",
+        "body": {
+          "state_event": "close"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"6131e5ccf8ff8b80fba7d4a24c4ff7c0\"",
+          "ratelimit-remaining": "1970",
+          "ratelimit-reset": "1794935460"
+        },
+        "body": {
+          "json": {
+            "approvals_before_merge": null,
+            "assignee": null,
+            "assignees": [],
+            "author": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "bot": false,
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "blocking_discussions_resolved": true,
+            "changes_count": "1",
+            "closed_at": "2026-11-17T17:10:59.374Z",
+            "closed_by": {
+              "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+              "id": 7654321,
+              "locked": false,
+              "name": "Ada L",
+              "public_email": "user@example.invalid",
+              "state": "active",
+              "username": "Lovelace",
+              "web_url": "https://gitlab.com/Lovelace"
+            },
+            "created_at": "2026-11-17T17:10:41.855Z",
+            "description": "Scratch pull request of the lifecycle round trip.",
+            "detailed_merge_status": "unchecked",
+            "diff_refs": {
+              "base_sha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+              "head_sha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+              "start_sha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+            },
+            "discussion_locked": null,
+            "downvotes": 0,
+            "draft": false,
+            "first_deployed_to_production_at": null,
+            "force_remove_source_branch": true,
+            "has_conflicts": false,
+            "head_pipeline": {
+              "archived": false,
+              "before_sha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+              "committed_at": null,
+              "coverage": null,
+              "created_at": "2026-11-17T17:10:42.998Z",
+              "detailed_status": {
+                "details_path": "/Lovelace/review-sandbox/-/pipelines/3080185313",
+                "favicon": "/assets/ci_favicons/favicon_status_running-9c635b2419a8e1ec991c993061b89cc5aefc0743bb238ecd0c381e7741a70e8c.png",
+                "group": "running",
+                "has_details": true,
+                "icon": "status_running",
+                "illustration": null,
+                "label": "running",
+                "text": "Running",
+                "tooltip": "running"
+              },
+              "duration": null,
+              "finished_at": null,
+              "id": 3080185313,
+              "iid": 17,
+              "project_id": 12345678,
+              "queued_duration": null,
+              "ref": "refs/merge-requests/29/head",
+              "sha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+              "source": "merge_request_event",
+              "started_at": "2026-11-17T17:10:43.626Z",
+              "status": "running",
+              "tag": false,
+              "updated_at": "2026-11-17T17:10:43.630Z",
+              "user": {
+                "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                "id": 7654321,
+                "locked": false,
+                "name": "Ada L",
+                "public_email": "user@example.invalid",
+                "state": "active",
+                "username": "Lovelace",
+                "web_url": "https://gitlab.com/Lovelace"
+              },
+              "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/pipelines/3080185313",
+              "yaml_errors": null
+            },
+            "id": 569824926,
+            "iid": 29,
+            "imported": false,
+            "imported_from": "none",
+            "labels": [],
+            "latest_build_finished_at": null,
+            "latest_build_started_at": null,
+            "merge_after": null,
+            "merge_commit_sha": null,
+            "merge_error": null,
+            "merge_status": "unchecked",
+            "merge_user": null,
+            "merge_when_pipeline_succeeds": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "pipeline": null,
+            "prepared_at": "2026-11-17T17:10:42.796Z",
+            "project_id": 12345678,
+            "reference": "!29",
+            "references": {
+              "full": "Lovelace/review-sandbox!29",
+              "relative": "!29",
+              "short": "!29"
+            },
+            "reviewers": [],
+            "sha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+            "should_remove_source_branch": null,
+            "source_branch": "lifecycle/gitlab-1794935436-close",
+            "source_project_id": 12345678,
+            "squash": false,
+            "squash_commit_sha": null,
+            "squash_on_merge": false,
+            "state": "closed",
+            "subscribed": true,
+            "target_branch": "main",
+            "target_project_id": 12345678,
+            "task_completion_status": {
+              "completed_count": 0,
+              "count": 0
+            },
+            "time_stats": {
+              "human_time_estimate": null,
+              "human_total_time_spent": null,
+              "time_estimate": 0,
+              "total_time_spent": 0
+            },
+            "title": "Lifecycle lifecycle/gitlab-1794935436-close",
+            "updated_at": "2026-11-17T17:10:59.310Z",
+            "upvotes": 0,
+            "user": {
+              "can_merge": true
+            },
+            "user_notes_count": 0,
+            "web_url": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/29",
+            "work_in_progress": false
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "29",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"505d68d06e86bcd99712097c0cc60022\"",
+          "ratelimit-remaining": "1969",
+          "ratelimit-reset": "1794935520"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:41Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185313",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824926",
+                  "iid": "29",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-close",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "closed",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Lifecycle lifecycle/gitlab-1794935436-close",
+                  "updatedAt": "2026-11-17T17:10:59Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/29"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "29",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"505d68d06e86bcd99712097c0cc60022\"",
+          "ratelimit-remaining": "1968",
+          "ratelimit-reset": "1794935520"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T17:10:41Z",
+                  "description": "Scratch pull request of the lifecycle round trip.",
+                  "diffHeadSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                  "diffRefs": {
+                    "baseSha": "4cd998622b8edccb04b2a5cc51c2785533edc537",
+                    "headSha": "4d194d86a0f79dfcc8733a02d065b92e64293811",
+                    "startSha": "dae9bfa107b5eb3061f59e08c7d39e9c254aa489"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 1,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": {
+                    "id": "gid://gitlab/Ci::Pipeline/3080185313",
+                    "status": "RUNNING"
+                  },
+                  "id": "gid://gitlab/MergeRequest/569824926",
+                  "iid": "29",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "resolvableDiscussionsCount": 0,
+                  "resolvedDiscussionsCount": 0,
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "lifecycle/gitlab-1794935436-close",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "closed",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Lifecycle lifecycle/gitlab-1794935436-close",
+                  "updatedAt": "2026-11-17T17:10:59Z",
+                  "userNotesCount": 0,
+                  "userPermissions": {
+                    "pushToSourceBranch": true
+                  },
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/29"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+size 120x36 history 0
+cursor line 32 col 2 style CursorStyle { shape: Block, blinking: false }
+mode TermMode(SHOW_CURSOR | BRACKETED_PASTE | SGR_MOUSE | MOUSE_MOTION | LINE_WRAP | FOCUS_IN_OUT | ALT_SCREEN | ALTERNATE_SCROLL | URGENCY_HINTS)
+    0 |
+    1 | ▐▛███▛█   Claude Code v2.1.325
+        @0-1 fg=#d77757
+        @2-7 fg=#d77757 bg=#000000
+        @11-21 flags=BOLD
+        @23-30 fg=#999999
+    2 |▝▜██████▀  Opus 5.5 with high effort · Claude Ultra
+        @0-1 fg=#d77757
+        @2-6 fg=#d77757 bg=#000000
+        @7-10 fg=#d77757
+        @11-50 fg=#999999
+    3 | ▝▝   ▝▝   ~\Downloads\temp
+        @0-10 fg=#d77757
+        @11-26 fg=#999999
+    4 |
+    5 |
+    6 |
+    7 |
+    8 |
+    9 |
+   10 |
+   11 |
+   12 |
+   13 |
+   14 |
+   15 |
+   16 |
+   17 |
+   18 |
+   19 |
+   20 |
+   21 |
+   22 |
+   23 |
+   24 |
+   25 |
+   26 |
+   27 |
+   28 |
+   29 |
+   30 |                                                                                                      ● high · /effort
+        @102-119 fg=#999999
+   31 |────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        @0-118 fg=#888888
+        @119-119 fg=#888888 flags=WRAPLINE
+   32 |❯ Try "how do I log an error?"
+        @2-29 flags=DIM
+   33 |────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        @0-118 fg=#888888
+        @119-119 fg=#888888 flags=WRAPLINE
+   34 |  ⚠ Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_PE…
+        @2-73 fg=#ffc107
+        @74-119 fg=#999999
+   35 |  ⏵⏵ auto mode on (shift+tab to cycle)
+        @2-17 fg=#ffc107
+        @18-37 fg=#999999

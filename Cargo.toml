@@ -1,0 +1,52 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "AGPL-3.0-or-later"
+publish = false
+
+[workspace.dependencies]
+# gpui-pre is the weekly crates.io snapshot of Zed's gpui. Pinned exactly to
+# the version gpui-component pins, so both see the same gpui types.
+gpui = { package = "gpui-pre", version = "=0.3.12" }
+gpui-platform = { package = "gpui-pre-platform", version = "=0.3.12" }
+gpui-kit = { version = "=0.10.0", features = ["component", "assets"] }
+
+forge = { path = "crates/forge" }
+store = { path = "crates/store" }
+repo = { path = "crates/repo" }
+diff = { path = "crates/diff" }
+diff_view = { path = "crates/diff_view" }
+term = { path = "crates/term" }
+term_view = { path = "crates/term_view" }
+perf = { path = "crates/perf" }
+theme = { path = "crates/theme" }
+scroll = { path = "crates/scroll" }
+log_view = { path = "crates/log_view" }
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+anyhow = "1"
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+
+# Debug builds stay small: line tables for our crates (enough for backtraces),
+# no debug info for dependencies. Full debug info for every test, example
+# and benchmark binary once filled the disk (169 GB of target/debug).
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+opt-level = 2
+debug = false
+
+[profile.release]
+debug = "line-tables-only"

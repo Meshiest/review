@@ -1,0 +1,4 @@
+[build]
+# sccache passes long command lines without a response file, and gpui-pre's
+# crates exceed the Windows limit (os error 206).
+rustc-wrapper = ""

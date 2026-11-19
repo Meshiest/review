@@ -1,0 +1,44 @@
+{
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestChecks",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 1,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4894",
+          "x-ratelimit-reset": "1794893522"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                          "statusCheckRollup": null
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

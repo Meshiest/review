@@ -1,0 +1,20 @@
+[package]
+name = "term_view"
+description = "gpui element that paints a terminal grid"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+term.workspace = true
+theme.workspace = true
+scroll.workspace = true
+gpui.workspace = true
+async-channel = "2"
+
+[dev-dependencies]
+gpui-platform.workspace = true
+
+[lints]
+workspace = true

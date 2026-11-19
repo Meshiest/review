@@ -1,0 +1,35 @@
+{
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "Checks",
+        "variables": {
+          "iid": "4",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"9dec6230fbeec63228941ae722b225f2\"",
+          "ratelimit-remaining": "1979",
+          "ratelimit-reset": "1794892860"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "headPipeline": null
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

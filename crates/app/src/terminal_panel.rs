@@ -1,0 +1,364 @@
+//! A terminal as a dock panel: a shell on this PC or over SSH, in the main
+//! area or beside the CI log, moved by drag like any panel. Its tab says
+//! the machine, the directory and whether the program ended; closing the
+//! tab ends the program. It follows the theme and the buffer font.
+//!
+//! Terminals are not restarted with the app: a restored layout holds a
+//! placeholder that offers to open the same terminal again.
+
+use gpui::prelude::FluentBuilder as _;
+use gpui::{
+    App, AppContext as _, Context, Entity, EntityId, FocusHandle, Focusable,
+    InteractiveElement as _, IntoElement, ParentElement, Render, SharedString, Styled,
+    Subscription, Task, Window, div, px,
+};
+use gpui_kit::assets::IconName;
+use gpui_kit::component::dock::{
+    BasePanel, Panel, PanelEvent, PanelInfo, PanelState, panel_handle, register_panel,
+};
+use gpui_kit::component::{Icon, h_flex, v_flex};
+use term::{ExitState, SessionConfig};
+use term_view::{TermStyle, TerminalEvent, TerminalView};
+use theme::ActiveTheme;
+
+use crate::panels::{close_button, tab_label};
+use crate::terminals::TerminalSpec;
+use crate::ui::{self, Button, ButtonKind, TextExt as _};
+
+pub const TERMINAL: &str = "Terminal";
+
+/// Where the panel's program is.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum RunState {
+    /// Finding the programs on the PATH, off the UI thread.
+    Starting,
+    Running,
+    /// The program ended; the screen stays readable.
+    Exited(Option<i32>),
+    /// Restored from a saved layout: nothing runs until the user asks.
+    NotStarted,
+    Failed(SharedString),
+}
+
+pub struct TerminalPanel {
+    id: EntityId,
+    focus: FocusHandle,
+    spec: TerminalSpec,
+    view: Option<Entity<TerminalView>>,
+    state: RunState,
+    /// The view takes focus once it is up, if the panel holds it then.
+    focus_view: bool,
+    _starting: Option<Task<()>>,
+    _subscriptions: Vec<Subscription>,
+}
+
+impl gpui::EventEmitter<PanelEvent> for TerminalPanel {}
+
+/// The theme's terminal look, with the grid kept off the pane's edges.
+fn term_style(cx: &App) -> TermStyle {
+    let mut style = TermStyle::from_theme(&ui::theme(cx));
+    style.padding = px(ui::space::PANE_INSET);
+    style
+}
+
+pub fn register(cx: &mut App) {
+    register_panel(cx, TERMINAL, |build, _, cx| {
+        let spec = match build.info() {
+            PanelInfo::Panel(value) => serde_json::from_value(value.clone()).unwrap_or_default(),
+            _ => TerminalSpec::default(),
+        };
+        panel_handle(TerminalPanel::placeholder(spec, cx))
+    });
+}
+
+impl TerminalPanel {
+    /// Starts `spec`'s program in a new panel.
+    pub fn spawn(spec: TerminalSpec, cx: &mut App) -> Entity<Self> {
+        cx.new(|cx| {
+            let mut panel = Self::new(spec, cx);
+            panel.start(cx);
+            panel
+        })
+    }
+
+    /// Starts `config` (a benchmark's own program) in a panel titled as
+    /// `spec`, which "Run again" starts instead.
+    pub fn spawn_config(spec: TerminalSpec, config: SessionConfig, cx: &mut App) -> Entity<Self> {
+        cx.new(|cx| {
+            let mut panel = Self::new(spec, cx);
+            panel.start_config(Ok(config), cx);
+            panel
+        })
+    }
+
+    /// A panel that runs nothing until "Reopen".
+    pub fn placeholder(spec: TerminalSpec, cx: &mut App) -> Entity<Self> {
+        cx.new(|cx| Self::new(spec, cx))
+    }
+
+    fn new(spec: TerminalSpec, cx: &mut Context<Self>) -> Self {
+        let theme = cx.observe_global::<ActiveTheme>(|this: &mut Self, cx| {
+            let style = term_style(cx);
+            if let Some(view) = &this.view {
+                view.update(cx, |view, cx| view.set_style(style, cx));
+            }
+            cx.notify();
+        });
+        Self {
+            id: cx.entity_id(),
+            focus: cx.focus_handle(),
+            spec,
+            view: None,
+            state: RunState::NotStarted,
+            focus_view: false,
+            _starting: None,
+            _subscriptions: vec![theme],
+        }
+    }
+
+    /// Starts the program; a running one is ended first. The programs are
+    /// looked up on a background thread, so it runs a moment later.
+    pub fn start(&mut self, cx: &mut Context<Self>) {
+        self.stop(cx);
+        self.view = None;
+        self.state = RunState::Starting;
+        self.focus_view = true;
+        let spec = self.spec.clone();
+        let config = cx
+            .background_executor()
+            .spawn(async move { spec.session_config() });
+        self._starting = Some(cx.spawn(async move |this, cx| {
+            let config = config.await;
+            let _ = this.update(cx, |this, cx| this.start_config(config, cx));
+        }));
+        cx.notify();
+    }
+
+    fn start_config(&mut self, config: Result<SessionConfig, String>, cx: &mut Context<Self>) {
+        self.stop(cx);
+        let config = match config {
+            Ok(config) => config,
+            Err(error) => {
+                self.state = RunState::Failed(error.into());
+                cx.notify();
+                return;
+            }
+        };
+        let style = term_style(cx);
+        match TerminalView::spawn(config, style, cx) {
+            Ok(view) => {
+                self._subscriptions.truncate(1);
+                self._subscriptions.push(cx.subscribe(
+                    &view,
+                    |this, _, event: &TerminalEvent, cx| {
+                        let TerminalEvent::Exited(state) = event;
+                        let code = match state {
+                            ExitState::Exited(status) => status.and_then(|s| s.code()),
+                            ExitState::Running => return,
+                        };
+                        this.state = RunState::Exited(code);
+                        cx.notify();
+                    },
+                ));
+                self.view = Some(view);
+                self.state = RunState::Running;
+            }
+            Err(error) => {
+                self.state = RunState::Failed(format!("{error}").into());
+            }
+        }
+        cx.notify();
+    }
+
+    /// Ends the program and everything it started, without waiting.
+    fn stop(&mut self, cx: &mut Context<Self>) {
+        if let Some(view) = &self.view {
+            view.update(cx, |view, cx| view.close(cx));
+        }
+    }
+
+    /// Starts it again from a placeholder, or after it ended.
+    pub fn reopen(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.start(cx);
+        window.focus(&self.focus, cx);
+    }
+
+    #[must_use]
+    pub fn spec(&self) -> &TerminalSpec {
+        &self.spec
+    }
+
+    #[must_use]
+    pub fn state(&self) -> &RunState {
+        &self.state
+    }
+
+    #[must_use]
+    pub fn view(&self) -> Option<&Entity<TerminalView>> {
+        self.view.as_ref()
+    }
+
+    fn badge(&self) -> Option<(String, bool)> {
+        match &self.state {
+            RunState::Running => None,
+            RunState::Starting => Some(("starting".to_owned(), false)),
+            RunState::Exited(Some(0)) => Some(("exited".to_owned(), false)),
+            RunState::Exited(Some(code)) => Some((format!("exited {code}"), true)),
+            RunState::Exited(None) => Some(("ended".to_owned(), false)),
+            RunState::NotStarted => Some(("closed".to_owned(), false)),
+            RunState::Failed(_) => Some(("failed".to_owned(), true)),
+        }
+    }
+
+    fn closed_note(&self, cx: &mut Context<Self>) -> gpui::AnyElement {
+        let t = ui::theme(cx);
+        let c = &t.colors;
+        let (text, error) = match &self.state {
+            RunState::NotStarted => (
+                format!(
+                    "This terminal on {} was closed when the app quit.",
+                    self.spec.machine
+                ),
+                false,
+            ),
+            RunState::Failed(error) => (format!("Could not start: {error}"), true),
+            RunState::Starting => ("Starting...".to_owned(), false),
+            RunState::Running | RunState::Exited(_) => (String::new(), false),
+        };
+        // An agent's review token ended with it; "Review with agent" starts
+        // a new one.
+        let reopen =
+            (!matches!(self.state, RunState::Starting) && self.spec.agent.is_none()).then(|| {
+                Button::toolbar("terminal-reopen", "Reopen")
+                    .on_click(cx.listener(|this, _, window, cx| this.reopen(window, cx)))
+            });
+        v_flex()
+            .size_full()
+            .items_center()
+            .justify_center()
+            .gap(px(10.0))
+            .child(
+                div()
+                    .text_color(if error { c.danger } else { c.text_secondary })
+                    .child(text),
+            )
+            .when_some(self.spec.cwd.clone(), |el, cwd| {
+                el.child(div().mono(&t).small(&t).text_color(c.text_muted).child(cwd))
+            })
+            .children(reopen)
+            .into_any_element()
+    }
+}
+
+impl Focusable for TerminalPanel {
+    fn focus_handle(&self, cx: &App) -> FocusHandle {
+        match &self.view {
+            Some(view) => view.focus_handle(cx),
+            None => self.focus.clone(),
+        }
+    }
+}
+
+impl BasePanel for TerminalPanel {
+    fn panel_name(&self) -> &'static str {
+        TERMINAL
+    }
+
+    fn on_removed(&mut self, _: &mut Window, cx: &mut Context<Self>) {
+        self.stop(cx);
+    }
+
+    fn dump(&self, _: &App) -> PanelState {
+        PanelState {
+            panel_name: TERMINAL.to_owned(),
+            children: Vec::new(),
+            info: PanelInfo::panel(serde_json::to_value(&self.spec).unwrap_or_default()),
+        }
+    }
+}
+
+impl Panel for TerminalPanel {
+    fn title(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let t = ui::theme(cx);
+        let c = &t.colors;
+        let badge = self.badge().map(|(text, bad)| {
+            div()
+                .flex_none()
+                .tiny(&t)
+                .text_color(if bad { c.danger } else { c.text_muted })
+                .child(text)
+        });
+        let selector = format!("close-terminal-{}", self.id.as_u64());
+        h_flex()
+            .cursor_pointer()
+            .gap(px(6.0))
+            .items_center()
+            .child(
+                Icon::new(IconName::SquareTerminal)
+                    .size(px(12.0))
+                    .text_color(c.text_muted),
+            )
+            .child(tab_label(div()).child(self.spec.title()))
+            .children(badge)
+            .child(close_button(self.id, selector, cx))
+    }
+
+    fn inner_padding(&self, _: &App) -> bool {
+        false
+    }
+}
+
+impl Render for TerminalPanel {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if self.focus_view
+            && let Some(view) = self.view.clone()
+        {
+            self.focus_view = false;
+            if self.focus.is_focused(window) {
+                cx.defer_in(window, move |_, window, cx| {
+                    window.focus(&view.focus_handle(cx), cx);
+                });
+            }
+        }
+        let t = ui::theme(cx);
+        let c = &t.colors;
+        let body = match (&self.view, &self.state) {
+            (Some(view), RunState::Running | RunState::Exited(_)) => div()
+                .flex_1()
+                .min_h_0()
+                .child(view.clone())
+                .into_any_element(),
+            _ => self.closed_note(cx),
+        };
+        let ended = matches!(self.state, RunState::Exited(_)).then(|| {
+            h_flex()
+                .flex_none()
+                .h(px(28.0))
+                .px(px(10.0))
+                .gap(px(10.0))
+                .items_center()
+                .border_t_1()
+                .border_color(c.border)
+                .small(&t)
+                .text_color(c.text_muted)
+                .child(self.badge().map(|(text, _)| text).unwrap_or_default())
+                .child(div().flex_1())
+                .when(self.spec.agent.is_some(), |el| {
+                    el.child("Review with agent starts a new session")
+                })
+                .when(self.spec.agent.is_none(), |el| {
+                    el.child(
+                        Button::new("terminal-restart", "Run again", ButtonKind::Ghost)
+                            .on_click(cx.listener(|this, _, window, cx| this.reopen(window, cx))),
+                    )
+                })
+        });
+        v_flex()
+            .id(("terminal-panel", self.id.as_u64()))
+            .size_full()
+            .bg(gpui::Rgba::from(t.terminal.background))
+            .track_focus(&self.focus)
+            .child(body)
+            .children(ended)
+    }
+}

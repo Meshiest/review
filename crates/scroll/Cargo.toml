@@ -1,0 +1,13 @@
+[package]
+name = "scroll"
+description = "Shared scrolling: draggable scrollbar and middle-click autoscroll for gpui views"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+gpui.workspace = true
+
+[lints]
+workspace = true

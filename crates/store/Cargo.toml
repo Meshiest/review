@@ -1,0 +1,24 @@
+[package]
+name = "store"
+description = "SQLite cache of forge state, drafts and viewed files"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+forge.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+chrono = { version = "0.4.42", default-features = false, features = ["std"] }
+crossbeam-channel = "0.5.15"
+rusqlite = { version = "0.42", features = ["bundled"] }
+# Only the oneshot channel: it is awaitable without a tokio runtime.
+tokio = { version = "1.47", features = ["sync"] }
+
+[dev-dependencies]
+perf.workspace = true
+
+[lints]
+workspace = true

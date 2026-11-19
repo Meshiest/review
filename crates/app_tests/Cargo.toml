@@ -1,0 +1,31 @@
+[package]
+name = "app_tests"
+description = "Headless UI tests of the review shell on gpui's test platform"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+# Everything is a dev-dependency: `gpui/test-support` then applies only to
+# builds of this crate's tests, never to `app`'s binary or its benchmarks.
+[dev-dependencies]
+app = { path = "../app" }
+diff.workspace = true
+diff_view.workspace = true
+forge.workspace = true
+store.workspace = true
+theme.workspace = true
+term.workspace = true
+gpui = { workspace = true, features = ["test-support"] }
+gpui-kit.workspace = true
+# The observation gpui-component's buttons, checkboxes and tabs register
+# with (gpui-kit's own `test-support` would pull a second renderer stack).
+# The same versions gpui-kit pins; `test-support` must be on for both.
+gpui-base = { version = "=0.10.0", features = ["test-support"] }
+gpui-component = { version = "=0.10.0", features = ["test-support"] }
+async-trait = "0.1.89"
+serde_json.workspace = true
+futures = "0.3.31"
+
+[lints]
+workspace = true

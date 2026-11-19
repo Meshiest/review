@@ -1,0 +1,105 @@
+# Vercel, light: built from Vercel's Geist design system (vercel.com/geist/colors,
+# /materials, /typography; values read from the site's stylesheet on 2026-11-16).
+# Grays are Geist's HSL values; hues are its sRGB hex fallbacks. "derived" marks
+# values Geist does not define, with how they were made.
+
+name = "Vercel"
+mode = "light"
+
+[radius]  # px
+sm = 4  # Geist --ds-popover-row-radius
+md = 6  # Geist --geist-radius, material-base
+lg = 8  # Geist --geist-marketing-radius
+
+[fonts.interface]  # Geist text-copy-13: 13px / 18px
+family = "Geist"
+size = 13
+line_height = 18  # whole px
+fallbacks = ["Segoe UI", "Helvetica Neue", "Arial"]
+
+[fonts.buffer]  # Geist text-label-13-mono: 13px / 20px
+family = "Geist Mono"
+size = 13
+line_height = 20  # whole px
+fallbacks = ["Cascadia Mono", "Consolas", "Menlo"]
+
+[colors]
+background           = "#fafafa"  # Geist background-200 (light): hsl(0 0% 98%)
+surface              = "#ffffff"  # Geist background-100 (light): hsl(0 0% 100%)
+surface_raised       = "#f2f2f2"  # Geist gray-100 (light): hsl(0 0% 95%)
+surface_menu         = "#ffffff"  # Geist background-100 (light): menus are drawn on it, edged by a border
+field                = "#ffffff"  # Geist background-100 (light): hsl(0 0% 100%)
+border               = "#ebebeb"  # Geist gray-400 (light): hsl(0 0% 92%)
+border_strong        = "#c9c9c9"  # Geist gray-500 (light): hsl(0 0% 79%)
+control_border       = "#8f8f8f"  # Geist gray-700 (light): hsl(0 0% 56%)
+text                 = "#171717"  # Geist gray-1000 (light): hsl(0 0% 9%)
+text_secondary       = "#4c4c4c"  # Geist gray-900 (light): hsl(0 0% 30%)
+text_muted           = "#666666"  # derived: Geist light gray-900 before its 2025 darkening (40%); gray-800 is under 4.5:1 on white
+text_faint           = "#7d7d7d"  # Geist gray-800 (light): hsl(0 0% 49%)
+accent               = "#171717"  # Geist gray-1000: primary buttons are the text color
+accent_text          = "#ffffff"  # Geist background-100: text on primary buttons
+accent_fg            = "#171717"  # Geist gray-1000
+accent_2             = "#007a6e"  # Geist teal-900 (light): #007a6e
+focus                = "#0070f7"  # Geist blue-700 (light): #0070f7
+link                 = "#0064e2"  # Geist blue-900 (light): #0064e2
+ok                   = "#107d32"  # Geist green-900 (light): #107d32
+warn                 = "#a64f00"  # Geist amber-900 (light): #a64f00
+danger               = "#d60020"  # Geist red-900 (light): #d60020
+info                 = "#0064e2"  # Geist blue-900 (light): #0064e2
+state_text           = "#ffffff"  # Geist background-100: text on a solid state color
+selection            = "#0070f766"  # derived: Geist blue-700 at 40%
+hover                = "#00000014"  # Geist gray-alpha-200 (light): #00000014
+active               = "#0000001a"  # Geist gray-alpha-300 (light): #0000001a
+selected             = "#0000001a"  # Geist gray-alpha-300 (light): #0000001a
+diff_add_bg          = "#ecfdec"  # Geist green-100 (light): #ecfdec
+diff_remove_bg       = "#ffeef0"  # Geist red-100 (light): #ffeef0
+diff_add_emphasis    = "#d3fad1"  # Geist green-300 (light): #d3fad1
+diff_remove_emphasis = "#ffe4e5"  # Geist red-300 (light): #ffe4e5
+diff_add_gutter      = "#e5fce7"  # Geist green-200 (light): #e5fce7
+diff_remove_gutter   = "#ffe9ea"  # Geist red-200 (light): #ffe9ea
+gutter_bg            = "#fafafa"  # Geist background-200 (light): hsl(0 0% 98%)
+gutter_text          = "#737373"  # derived: between Geist light gray-800 and gray-900, for 4.5:1 on the change gutters
+diff_empty_bg        = "#f2f2f2"  # Geist gray-100 (light): hsl(0 0% 95%)
+diff_hunk_bg         = "#f0f7ff"  # Geist blue-100 (light): #f0f7ff
+diff_hunk_text       = "#0064e2"  # Geist blue-900 (light): #0064e2
+
+[chips]
+fill_alpha   = 0.08  # tint: 6-15% fill
+border_alpha = 0.5  # tint: 40-60% border
+
+[syntax]
+keyword     = "#c41562"  # Geist pink-900 (light): #c41562
+function    = "#7c00c9"  # Geist purple-900 (light): #7c00c9
+type        = "#007a6e"  # Geist teal-900 (light): #007a6e
+string      = "#107d32"  # Geist green-900 (light): #107d32
+number      = "#0064e2"  # Geist blue-900 (light): #0064e2
+comment     = "#4c4c4c"  # Geist gray-900 (light): hsl(0 0% 30%)
+constant    = "#0064e2"  # Geist blue-900 (light): #0064e2
+operator    = "#c41562"  # Geist pink-900 (light): #c41562
+punctuation = "#4c4c4c"  # Geist gray-900 (light): hsl(0 0% 30%)
+property    = "#a64f00"  # Geist amber-900 (light): #a64f00
+variable    = "#171717"  # Geist gray-1000 (light): hsl(0 0% 9%)
+attribute   = "#a64f00"  # Geist amber-900 (light): #a64f00
+tag         = "#c41562"  # Geist pink-900 (light): #c41562
+plain       = "#171717"  # Geist gray-1000 (light): hsl(0 0% 9%)
+
+[terminal]
+background     = "#ffffff"  # Geist background-100 (light): hsl(0 0% 100%)
+foreground     = "#171717"  # Geist gray-1000 (light): hsl(0 0% 9%)
+cursor         = "#0070f7"  # Geist blue-700 (light): #0070f7
+black          = "#171717"  # Geist gray-1000 (light): hsl(0 0% 9%)
+red            = "#d60020"  # Geist red-900 (light): #d60020
+green          = "#107d32"  # Geist green-900 (light): #107d32
+yellow         = "#a64f00"  # Geist amber-900 (light): #a64f00
+blue           = "#0064e2"  # Geist blue-900 (light): #0064e2
+magenta        = "#7c00c9"  # Geist purple-900 (light): #7c00c9
+cyan           = "#007a6e"  # Geist teal-900 (light): #007a6e
+white          = "#c9c9c9"  # Geist gray-500 (light): hsl(0 0% 79%)
+bright_black   = "#8f8f8f"  # Geist gray-700 (light): hsl(0 0% 56%)
+bright_red     = "#e70022"  # Geist red-800 (light): #e70022
+bright_green   = "#279141"  # Geist green-800 (light): #279141
+bright_yellow  = "#a64f00"  # derived: Geist amber-900; amber-800 is under 3:1 on white
+bright_blue    = "#005edc"  # Geist blue-800 (light): #005edc
+bright_magenta = "#8400cd"  # Geist purple-800 (light): #8400cd
+bright_cyan    = "#008d7d"  # Geist teal-800 (light): #008d7d
+bright_white   = "#f2f2f2"  # Geist gray-100 (light): hsl(0 0% 95%)

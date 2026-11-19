@@ -1,0 +1,1638 @@
+{
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "MergeMethods",
+        "variables": {
+          "name": "review-sandbox",
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4921",
+          "x-ratelimit-reset": "1794937578"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "mergeCommitAllowed": true,
+                "rebaseMergeAllowed": true,
+                "squashMergeAllowed": true,
+                "viewerDefaultMergeMethod": "SQUASH"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestMergeability",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 25,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4777",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "autoMergeRequest": null,
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "isDraft": false,
+                  "mergeStateStatus": "UNSTABLE",
+                  "mergeable": "MERGEABLE",
+                  "reviewDecision": null,
+                  "state": "OPEN"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestId",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 25,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4776",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "id": "PR_kwDOVxPcWM8AAAABP5FcLQ"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "ConvertPullRequestToDraft",
+        "variables": {
+          "pullRequestId": "PR_kwDOVxPcWM8AAAABP5FcLQ"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4775",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "convertPullRequestToDraft": {
+                "pullRequest": {
+                  "additions": 1,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "c1448d79e08b6bac1f4a1eb69cab2d40a6c48cad",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the lifecycle round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:10:09Z",
+                  "deletions": 0,
+                  "headRefName": "lifecycle/github-1794935406-merge",
+                  "headRefOid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5FcLQ",
+                  "isDraft": true,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 25,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "Lifecycle lifecycle/github-1794935406-merge",
+                  "updatedAt": "2026-11-17T17:10:16Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/25",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 25,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4920",
+          "x-ratelimit-reset": "1794937578"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "c1448d79e08b6bac1f4a1eb69cab2d40a6c48cad",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the lifecycle round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:10:09Z",
+                  "deletions": 0,
+                  "headRefName": "lifecycle/github-1794935406-merge",
+                  "headRefOid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5FcLQ",
+                  "isDraft": true,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 25,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "Lifecycle lifecycle/github-1794935406-merge",
+                  "updatedAt": "2026-11-17T17:10:16Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/25",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestMergeability",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 25,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4774",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "autoMergeRequest": null,
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "isDraft": true,
+                  "mergeStateStatus": "UNSTABLE",
+                  "mergeable": "MERGEABLE",
+                  "reviewDecision": null,
+                  "state": "OPEN"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "MarkPullRequestReadyForReview",
+        "variables": {
+          "pullRequestId": "PR_kwDOVxPcWM8AAAABP5FcLQ"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4773",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "markPullRequestReadyForReview": {
+                "pullRequest": {
+                  "additions": 1,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "c1448d79e08b6bac1f4a1eb69cab2d40a6c48cad",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the lifecycle round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:10:09Z",
+                  "deletions": 0,
+                  "headRefName": "lifecycle/github-1794935406-merge",
+                  "headRefOid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5FcLQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 25,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "Lifecycle lifecycle/github-1794935406-merge",
+                  "updatedAt": "2026-11-17T17:10:18Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/25",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 25,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4919",
+          "x-ratelimit-reset": "1794937578"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "c1448d79e08b6bac1f4a1eb69cab2d40a6c48cad",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the lifecycle round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:10:09Z",
+                  "deletions": 0,
+                  "headRefName": "lifecycle/github-1794935406-merge",
+                  "headRefOid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5FcLQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 25,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "Lifecycle lifecycle/github-1794935406-merge",
+                  "updatedAt": "2026-11-17T17:10:18Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/25",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestMergeability",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 25,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4918",
+          "x-ratelimit-reset": "1794937578"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "autoMergeRequest": null,
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "isDraft": false,
+                  "mergeStateStatus": "UNSTABLE",
+                  "mergeable": "MERGEABLE",
+                  "reviewDecision": null,
+                  "state": "OPEN"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestId",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 26,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4772",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "id": "PR_kwDOVxPcWM8AAAABP5FhgA"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "MergePullRequest",
+        "variables": {
+          "expectedHeadOid": "0000000000000000000000000000000000000000",
+          "mergeMethod": "MERGE",
+          "pullRequestId": "PR_kwDOVxPcWM8AAAABP5FhgA"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4771",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "mergePullRequest": null
+            },
+            "errors": [
+              {
+                "locations": [
+                  {
+                    "column": 154,
+                    "line": 1
+                  }
+                ],
+                "message": "Head branch was modified. Review and try the merge again.",
+                "path": [
+                  "mergePullRequest"
+                ],
+                "type": "UNPROCESSABLE"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 26,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4917",
+          "x-ratelimit-reset": "1794937578"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "c1448d79e08b6bac1f4a1eb69cab2d40a6c48cad",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the lifecycle round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "c22f59d6d178bca8c2dfa135d538bb1c4f145c02",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:10:14Z",
+                  "deletions": 0,
+                  "headRefName": "lifecycle/github-1794935406-close",
+                  "headRefOid": "c22f59d6d178bca8c2dfa135d538bb1c4f145c02",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5FhgA",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 26,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "Lifecycle lifecycle/github-1794935406-close",
+                  "updatedAt": "2026-11-17T17:10:14Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/26",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 25,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4916",
+          "x-ratelimit-reset": "1794937578"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "c1448d79e08b6bac1f4a1eb69cab2d40a6c48cad",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the lifecycle round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:10:09Z",
+                  "deletions": 0,
+                  "headRefName": "lifecycle/github-1794935406-merge",
+                  "headRefOid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5FcLQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 25,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "Lifecycle lifecycle/github-1794935406-merge",
+                  "updatedAt": "2026-11-17T17:10:18Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/25",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "MergeMethods",
+        "variables": {
+          "name": "review-sandbox",
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4770",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "mergeCommitAllowed": true,
+                "rebaseMergeAllowed": true,
+                "squashMergeAllowed": true,
+                "viewerDefaultMergeMethod": "SQUASH"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "MergePullRequest",
+        "variables": {
+          "commitBody": "Scratch change of the lifecycle round trip.",
+          "commitHeadline": "Lifecycle scratch merge",
+          "expectedHeadOid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+          "mergeMethod": "SQUASH",
+          "pullRequestId": "PR_kwDOVxPcWM8AAAABP5FcLQ"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4769",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "mergePullRequest": {
+                "pullRequest": {
+                  "additions": 1,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "c1448d79e08b6bac1f4a1eb69cab2d40a6c48cad",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the lifecycle round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:10:09Z",
+                  "deletions": 0,
+                  "headRefName": "lifecycle/github-1794935406-merge",
+                  "headRefOid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5FcLQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 25,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "MERGED",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "Lifecycle lifecycle/github-1794935406-merge",
+                  "updatedAt": "2026-11-17T17:10:24Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/25",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "DELETE",
+        "path": "/repos/Lovelace/review-sandbox/git/refs/heads/lifecycle/github-1794935406-merge"
+      },
+      "response": {
+        "status": 204,
+        "headers": {
+          "x-ratelimit-remaining": "4995",
+          "x-ratelimit-reset": "1794939023"
+        },
+        "body": "empty"
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 25,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4768",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "c1448d79e08b6bac1f4a1eb69cab2d40a6c48cad",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the lifecycle round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:10:09Z",
+                  "deletions": 0,
+                  "headRefName": "lifecycle/github-1794935406-merge",
+                  "headRefOid": "055c989e95c8b1c466be291c1fc7a1cb8188e7ad",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5FcLQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 25,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "MERGED",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "Lifecycle lifecycle/github-1794935406-merge",
+                  "updatedAt": "2026-11-17T17:10:24Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/25",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestMergeability",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 25,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4915",
+          "x-ratelimit-reset": "1794937578"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "autoMergeRequest": null,
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "isDraft": false,
+                  "mergeStateStatus": "UNKNOWN",
+                  "mergeable": "UNKNOWN",
+                  "reviewDecision": null,
+                  "state": "MERGED"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "ClosePullRequest",
+        "variables": {
+          "pullRequestId": "PR_kwDOVxPcWM8AAAABP5FhgA"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4767",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "closePullRequest": {
+                "pullRequest": {
+                  "additions": 1,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "c1448d79e08b6bac1f4a1eb69cab2d40a6c48cad",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the lifecycle round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "c22f59d6d178bca8c2dfa135d538bb1c4f145c02",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:10:14Z",
+                  "deletions": 0,
+                  "headRefName": "lifecycle/github-1794935406-close",
+                  "headRefOid": "c22f59d6d178bca8c2dfa135d538bb1c4f145c02",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5FhgA",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 26,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "CLOSED",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "Lifecycle lifecycle/github-1794935406-close",
+                  "updatedAt": "2026-11-17T17:10:28Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/26",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 26,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4766",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "c1448d79e08b6bac1f4a1eb69cab2d40a6c48cad",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the lifecycle round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "c22f59d6d178bca8c2dfa135d538bb1c4f145c02",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:10:14Z",
+                  "deletions": 0,
+                  "headRefName": "lifecycle/github-1794935406-close",
+                  "headRefOid": "c22f59d6d178bca8c2dfa135d538bb1c4f145c02",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5FhgA",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 26,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "CLOSED",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "Lifecycle lifecycle/github-1794935406-close",
+                  "updatedAt": "2026-11-17T17:10:28Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/26",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "ReopenPullRequest",
+        "variables": {
+          "pullRequestId": "PR_kwDOVxPcWM8AAAABP5FhgA"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4765",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "reopenPullRequest": {
+                "pullRequest": {
+                  "additions": 1,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the lifecycle round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "c22f59d6d178bca8c2dfa135d538bb1c4f145c02",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:10:14Z",
+                  "deletions": 0,
+                  "headRefName": "lifecycle/github-1794935406-close",
+                  "headRefOid": "c22f59d6d178bca8c2dfa135d538bb1c4f145c02",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5FhgA",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 26,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "Lifecycle lifecycle/github-1794935406-close",
+                  "updatedAt": "2026-11-17T17:10:30Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/26",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 26,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4764",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the lifecycle round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "c22f59d6d178bca8c2dfa135d538bb1c4f145c02",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:10:14Z",
+                  "deletions": 0,
+                  "headRefName": "lifecycle/github-1794935406-close",
+                  "headRefOid": "c22f59d6d178bca8c2dfa135d538bb1c4f145c02",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5FhgA",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 26,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "Lifecycle lifecycle/github-1794935406-close",
+                  "updatedAt": "2026-11-17T17:10:30Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/26",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "ClosePullRequest",
+        "variables": {
+          "pullRequestId": "PR_kwDOVxPcWM8AAAABP5FhgA"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4763",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "closePullRequest": {
+                "pullRequest": {
+                  "additions": 1,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the lifecycle round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "c22f59d6d178bca8c2dfa135d538bb1c4f145c02",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:10:14Z",
+                  "deletions": 0,
+                  "headRefName": "lifecycle/github-1794935406-close",
+                  "headRefOid": "c22f59d6d178bca8c2dfa135d538bb1c4f145c02",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5FhgA",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 26,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "CLOSED",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "Lifecycle lifecycle/github-1794935406-close",
+                  "updatedAt": "2026-11-17T17:10:32Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/26",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 26,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4762",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the lifecycle round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "c22f59d6d178bca8c2dfa135d538bb1c4f145c02",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:10:14Z",
+                  "deletions": 0,
+                  "headRefName": "lifecycle/github-1794935406-close",
+                  "headRefOid": "c22f59d6d178bca8c2dfa135d538bb1c4f145c02",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5FhgA",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 26,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "CLOSED",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "Lifecycle lifecycle/github-1794935406-close",
+                  "updatedAt": "2026-11-17T17:10:32Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/26",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

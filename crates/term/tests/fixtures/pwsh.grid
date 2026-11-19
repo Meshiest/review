@@ -1,0 +1,75 @@
+size 100x24 history 3
+cursor line 23 col 0 style CursorStyle { shape: Block, blinking: false }
+mode TermMode(SHOW_CURSOR | LINE_WRAP | FOCUS_IN_OUT | ALTERNATE_SCROLL | URGENCY_HINTS)
+   -3 |PS C:\Users\cora\dev\rust\review> Write-Host "build ok" -ForegroundColor Green; Write-Host "warning:
+        @34-44 fg=BrightYellow
+        @45-55 fg=Cyan
+        @56-72 fg=BrightBlack
+        @73-79 fg=White
+        @80-90 fg=BrightYellow
+        @91-98 fg=Cyan
+        @99-99 fg=Cyan flags=WRAPLINE
+   -2 | red on blue" -ForegroundColor Red -BackgroundColor Blue
+        @0-13 fg=Cyan
+        @14-30 fg=BrightBlack
+        @31-34 fg=White
+        @35-51 fg=BrightBlack
+        @52-55 fg=White
+   -1 |build ok
+        @0-7 fg=i10
+    0 |warning: red on blue
+        @0-19 fg=i9 bg=i12
+    1 |PS C:\Users\cora\dev\rust\review> "0123456789" * 24
+        @34-46 fg=Cyan
+        @47-48 fg=BrightBlack
+        @49-50 fg=BrightWhite
+    2 |0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+        @99-99 flags=WRAPLINE
+    3 |0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+        @99-99 flags=WRAPLINE
+    4 |0123456789012345678901234567890123456789
+    5 |PS C:\Users\cora\dev\rust\review> Write-Output "日本語 wide ok"
+        @34-46 fg=BrightYellow
+        @47-47 fg=Cyan
+        @48-48 fg=Cyan flags=WIDE_CHAR
+        @49-49 fg=Cyan flags=WIDE_CHAR_SPACER
+        @50-50 fg=Cyan flags=WIDE_CHAR
+        @51-51 fg=Cyan flags=WIDE_CHAR_SPACER
+        @52-52 fg=Cyan flags=WIDE_CHAR
+        @53-53 fg=Cyan flags=WIDE_CHAR_SPACER
+        @54-62 fg=Cyan
+    6 |日本語 wide ok
+        @0-0 flags=WIDE_CHAR
+        @1-1 flags=WIDE_CHAR_SPACER
+        @2-2 flags=WIDE_CHAR
+        @3-3 flags=WIDE_CHAR_SPACER
+        @4-4 flags=WIDE_CHAR
+        @5-5 flags=WIDE_CHAR_SPACER
+    7 |PS C:\Users\cora\dev\rust\review> 1..14 | ForEach-Object { "line $_" }
+        @34-34 fg=BrightWhite
+        @35-36 fg=BrightBlack
+        @37-39 fg=BrightWhite
+        @40-41 fg=White
+        @42-56 fg=BrightYellow
+        @57-58 fg=White
+        @59-64 fg=Cyan
+        @65-66 fg=BrightGreen
+        @67-68 fg=Cyan
+        @69-69 fg=White
+    8 |line 1
+    9 |line 2
+   10 |line 3
+   11 |line 4
+   12 |line 5
+   13 |line 6
+   14 |line 7
+   15 |line 8
+   16 |line 9
+   17 |line 10
+   18 |line 11
+   19 |line 12
+   20 |line 13
+   21 |line 14
+   22 |PS C:\Users\cora\dev\rust\review> exit
+        @34-37 fg=BrightGreen
+   23 |

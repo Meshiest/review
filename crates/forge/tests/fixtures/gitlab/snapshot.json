@@ -1,0 +1,548 @@
+{
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "Snapshot",
+        "variables": {
+          "iid": "4",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"146cdc8068af35402ca49ee5323e5f92\"",
+          "ratelimit-remaining": "1977",
+          "ratelimit-reset": "1794892860"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T04:45:46Z",
+                  "description": "Carries review threads: resolved, unresolved with a reply, multi-line, removed-line and outdated.",
+                  "diffHeadSha": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                  "diffRefs": {
+                    "baseSha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                    "headSha": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                    "startSha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 10,
+                    "deletions": 6,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": null,
+                  "id": "gid://gitlab/MergeRequest/569326782",
+                  "iid": "4",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "threads",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Threads: review comments on several lines",
+                  "updatedAt": "2026-11-17T04:45:47Z",
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/4"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/4/discussions",
+        "query": [
+          [
+            "per_page",
+            "100"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "etag": "W/\"b5d0b92886ca9297187b2c7798d7c29e\"",
+          "link": "<https://gitlab.com/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/4/discussions?id=Lovelace%2Freview-sandbox&noteable_id=4&page=1&per_page=100>; rel=\"first\", <https://gitlab.com/api/v4/projects/Lovelace%2Freview-sandbox/merge_requests/4/discussions?id=Lovelace%2Freview-sandbox&noteable_id=4&page=1&per_page=100>; rel=\"last\"",
+          "ratelimit-remaining": "1976",
+          "ratelimit-reset": "1794892860",
+          "x-next-page": "",
+          "x-page": "1",
+          "x-per-page": "100",
+          "x-total": "7",
+          "x-total-pages": "1"
+        },
+        "body": {
+          "json": [
+            {
+              "id": "251958fbe0a8a73032374cb88fca7fde597a08b0",
+              "individual_note": false,
+              "notes": [
+                {
+                  "author": {
+                    "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "id": 7654321,
+                    "locked": false,
+                    "name": "Ada L",
+                    "public_email": "user@example.invalid",
+                    "state": "active",
+                    "username": "Lovelace",
+                    "web_url": "https://gitlab.com/Lovelace"
+                  },
+                  "body": "Should this saturate or wrap on overflow? Saturating is fine by me.",
+                  "commands_changes": {},
+                  "commit_id": null,
+                  "confidential": false,
+                  "created_at": "2026-11-17T04:45:48.419Z",
+                  "id": 4251182693,
+                  "imported": false,
+                  "imported_from": "none",
+                  "internal": false,
+                  "noteable_id": 569326782,
+                  "noteable_iid": 4,
+                  "noteable_type": "MergeRequest",
+                  "position": {
+                    "base_sha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                    "head_sha": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                    "line_range": null,
+                    "new_line": 8,
+                    "new_path": "src/threads_target.rs",
+                    "old_line": null,
+                    "old_path": "src/threads_target.rs",
+                    "position_type": "text",
+                    "start_sha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4"
+                  },
+                  "project_id": 12345678,
+                  "resolvable": true,
+                  "resolved": true,
+                  "resolved_at": "2026-11-17T04:45:49.154Z",
+                  "resolved_by": {
+                    "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "id": 7654321,
+                    "locked": false,
+                    "name": "Ada L",
+                    "public_email": "user@example.invalid",
+                    "state": "active",
+                    "username": "Lovelace",
+                    "web_url": "https://gitlab.com/Lovelace"
+                  },
+                  "suggestions": [],
+                  "system": false,
+                  "type": "DiffNote",
+                  "updated_at": "2026-11-17T04:45:49.154Z"
+                }
+              ],
+              "resolvable": true,
+              "resolved": true
+            },
+            {
+              "id": "c239094763f496a31977a845a73284698a034101",
+              "individual_note": true,
+              "notes": [
+                {
+                  "author": {
+                    "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "id": 7654321,
+                    "locked": false,
+                    "name": "Ada L",
+                    "public_email": "user@example.invalid",
+                    "state": "active",
+                    "username": "Lovelace",
+                    "web_url": "https://gitlab.com/Lovelace"
+                  },
+                  "body": "resolved all threads",
+                  "commands_changes": {},
+                  "confidential": false,
+                  "created_at": "2026-11-17T04:45:49.170Z",
+                  "id": 4251182745,
+                  "imported": false,
+                  "imported_from": "none",
+                  "internal": false,
+                  "noteable_id": 569326782,
+                  "noteable_iid": 4,
+                  "noteable_type": "MergeRequest",
+                  "project_id": 12345678,
+                  "resolvable": false,
+                  "system": true,
+                  "type": null,
+                  "updated_at": "2026-11-17T04:45:49.174Z"
+                }
+              ],
+              "resolvable": false
+            },
+            {
+              "id": "8d041e0cc85e0f0c62b5f72dec5c6f625dbfc51e",
+              "individual_note": false,
+              "notes": [
+                {
+                  "author": {
+                    "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "id": 7654321,
+                    "locked": false,
+                    "name": "Ada L",
+                    "public_email": "user@example.invalid",
+                    "state": "active",
+                    "username": "Lovelace",
+                    "web_url": "https://gitlab.com/Lovelace"
+                  },
+                  "body": "Nice simplification. Can you add a test for `b == 0`?",
+                  "commands_changes": {},
+                  "commit_id": null,
+                  "confidential": false,
+                  "created_at": "2026-11-17T04:45:49.641Z",
+                  "id": 4251182781,
+                  "imported": false,
+                  "imported_from": "none",
+                  "internal": false,
+                  "noteable_id": 569326782,
+                  "noteable_iid": 4,
+                  "noteable_type": "MergeRequest",
+                  "position": {
+                    "base_sha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                    "head_sha": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                    "line_range": null,
+                    "new_line": 16,
+                    "new_path": "src/threads_target.rs",
+                    "old_line": null,
+                    "old_path": "src/threads_target.rs",
+                    "position_type": "text",
+                    "start_sha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4"
+                  },
+                  "project_id": 12345678,
+                  "resolvable": true,
+                  "resolved": false,
+                  "resolved_at": null,
+                  "resolved_by": null,
+                  "suggestions": [],
+                  "system": false,
+                  "type": "DiffNote",
+                  "updated_at": "2026-11-17T04:45:49.641Z"
+                },
+                {
+                  "author": {
+                    "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "id": 7654321,
+                    "locked": false,
+                    "name": "Ada L",
+                    "public_email": "user@example.invalid",
+                    "state": "active",
+                    "username": "Lovelace",
+                    "web_url": "https://gitlab.com/Lovelace"
+                  },
+                  "body": "Will do, tracking it in a follow-up.",
+                  "commands_changes": {},
+                  "commit_id": null,
+                  "confidential": false,
+                  "created_at": "2026-11-17T04:45:50.274Z",
+                  "id": 4251182861,
+                  "imported": false,
+                  "imported_from": "none",
+                  "internal": false,
+                  "noteable_id": 569326782,
+                  "noteable_iid": 4,
+                  "noteable_type": "MergeRequest",
+                  "position": {
+                    "base_sha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                    "head_sha": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                    "line_range": null,
+                    "new_line": 16,
+                    "new_path": "src/threads_target.rs",
+                    "old_line": null,
+                    "old_path": "src/threads_target.rs",
+                    "position_type": "text",
+                    "start_sha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4"
+                  },
+                  "project_id": 12345678,
+                  "resolvable": true,
+                  "resolved": false,
+                  "resolved_at": null,
+                  "resolved_by": null,
+                  "suggestions": [],
+                  "system": false,
+                  "type": "DiffNote",
+                  "updated_at": "2026-11-17T04:45:50.274Z"
+                }
+              ],
+              "resolvable": true,
+              "resolved": false
+            },
+            {
+              "id": "1e3efe7f9fc5bd12f15476a09ae2813a64c607bc",
+              "individual_note": false,
+              "notes": [
+                {
+                  "author": {
+                    "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "id": 7654321,
+                    "locked": false,
+                    "name": "Ada L",
+                    "public_email": "user@example.invalid",
+                    "state": "active",
+                    "username": "Lovelace",
+                    "web_url": "https://gitlab.com/Lovelace"
+                  },
+                  "body": "This loop can overflow for large exponents. Consider `checked_mul`.",
+                  "commands_changes": {},
+                  "commit_id": null,
+                  "confidential": false,
+                  "created_at": "2026-11-17T04:45:50.918Z",
+                  "id": 4251182913,
+                  "imported": false,
+                  "imported_from": "none",
+                  "internal": false,
+                  "noteable_id": 569326782,
+                  "noteable_iid": 4,
+                  "noteable_type": "MergeRequest",
+                  "position": {
+                    "base_sha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                    "head_sha": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                    "line_range": {
+                      "end": {
+                        "line_code": "cae73e3f5e1a4534b7bec59a16047863c2655302_30_31",
+                        "new_line": 31,
+                        "old_line": null,
+                        "type": "new"
+                      },
+                      "start": {
+                        "line_code": "cae73e3f5e1a4534b7bec59a16047863c2655302_30_29",
+                        "new_line": 29,
+                        "old_line": null,
+                        "type": "new"
+                      }
+                    },
+                    "new_line": 31,
+                    "new_path": "src/threads_target.rs",
+                    "old_line": null,
+                    "old_path": "src/threads_target.rs",
+                    "position_type": "text",
+                    "start_sha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4"
+                  },
+                  "project_id": 12345678,
+                  "resolvable": true,
+                  "resolved": false,
+                  "resolved_at": null,
+                  "resolved_by": null,
+                  "suggestions": [],
+                  "system": false,
+                  "type": "DiffNote",
+                  "updated_at": "2026-11-17T04:45:50.918Z"
+                }
+              ],
+              "resolvable": true,
+              "resolved": false
+            },
+            {
+              "id": "42b1ba7ce3e7030fb90cdfd5d1beb7b1fb88faa1",
+              "individual_note": false,
+              "notes": [
+                {
+                  "author": {
+                    "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "id": 7654321,
+                    "locked": false,
+                    "name": "Ada L",
+                    "public_email": "user@example.invalid",
+                    "state": "active",
+                    "username": "Lovelace",
+                    "web_url": "https://gitlab.com/Lovelace"
+                  },
+                  "body": "Why drop the plain subtraction?",
+                  "commands_changes": {},
+                  "commit_id": null,
+                  "confidential": false,
+                  "created_at": "2026-11-17T04:45:51.722Z",
+                  "id": 4251182981,
+                  "imported": false,
+                  "imported_from": "none",
+                  "internal": false,
+                  "noteable_id": 569326782,
+                  "noteable_iid": 4,
+                  "noteable_type": "MergeRequest",
+                  "position": {
+                    "base_sha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                    "head_sha": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                    "line_range": null,
+                    "new_line": null,
+                    "new_path": "src/threads_target.rs",
+                    "old_line": 8,
+                    "old_path": "src/threads_target.rs",
+                    "position_type": "text",
+                    "start_sha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4"
+                  },
+                  "project_id": 12345678,
+                  "resolvable": true,
+                  "resolved": false,
+                  "resolved_at": null,
+                  "resolved_by": null,
+                  "suggestions": [],
+                  "system": false,
+                  "type": "DiffNote",
+                  "updated_at": "2026-11-17T04:45:51.722Z"
+                }
+              ],
+              "resolvable": true,
+              "resolved": false
+            },
+            {
+              "id": "c9edb5afb9b643978ab1290d9de24df60dce0c05",
+              "individual_note": false,
+              "notes": [
+                {
+                  "author": {
+                    "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "id": 7654321,
+                    "locked": false,
+                    "name": "Ada L",
+                    "public_email": "user@example.invalid",
+                    "state": "active",
+                    "username": "Lovelace",
+                    "web_url": "https://gitlab.com/Lovelace"
+                  },
+                  "body": "Prefer `% 2` here, it reads better.",
+                  "commands_changes": {},
+                  "commit_id": null,
+                  "confidential": false,
+                  "created_at": "2026-11-17T04:45:52.571Z",
+                  "id": 4251183088,
+                  "imported": false,
+                  "imported_from": "none",
+                  "internal": false,
+                  "noteable_id": 569326782,
+                  "noteable_iid": 4,
+                  "noteable_type": "MergeRequest",
+                  "position": {
+                    "base_sha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                    "head_sha": "5bbf11d305088e26e8381f041b04bfa976a11f55",
+                    "line_range": null,
+                    "new_line": 24,
+                    "new_path": "src/threads_target.rs",
+                    "old_line": null,
+                    "old_path": "src/threads_target.rs",
+                    "position_type": "text",
+                    "start_sha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4"
+                  },
+                  "project_id": 12345678,
+                  "resolvable": true,
+                  "resolved": false,
+                  "resolved_at": null,
+                  "resolved_by": null,
+                  "suggestions": [],
+                  "system": false,
+                  "type": "DiffNote",
+                  "updated_at": "2026-11-17T04:45:52.571Z"
+                },
+                {
+                  "author": {
+                    "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "id": 7654321,
+                    "locked": false,
+                    "name": "Ada L",
+                    "public_email": "user@example.invalid",
+                    "state": "active",
+                    "username": "Lovelace",
+                    "web_url": "https://gitlab.com/Lovelace"
+                  },
+                  "body": "changed this line in [version 2 of the diff](/Lovelace/review-sandbox/-/merge_requests/4/diffs?diff_id=2212489137&start_sha=5bbf11d305088e26e8381f041b04bfa976a11f55#cae73e3f5e1a4534b7bec59a16047863c2655302_24_24)",
+                  "commands_changes": {},
+                  "commit_id": null,
+                  "confidential": false,
+                  "created_at": "2026-11-17T04:45:56.194Z",
+                  "id": 4251183425,
+                  "imported": false,
+                  "imported_from": "none",
+                  "internal": false,
+                  "noteable_id": 569326782,
+                  "noteable_iid": 4,
+                  "noteable_type": "MergeRequest",
+                  "position": {
+                    "base_sha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                    "head_sha": "5bbf11d305088e26e8381f041b04bfa976a11f55",
+                    "line_range": null,
+                    "new_line": 24,
+                    "new_path": "src/threads_target.rs",
+                    "old_line": null,
+                    "old_path": "src/threads_target.rs",
+                    "position_type": "text",
+                    "start_sha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4"
+                  },
+                  "project_id": 12345678,
+                  "resolvable": false,
+                  "suggestions": [],
+                  "system": true,
+                  "type": "DiffNote",
+                  "updated_at": "2026-11-17T04:45:56.194Z"
+                }
+              ],
+              "resolvable": true,
+              "resolved": false
+            },
+            {
+              "id": "c8bbaf19182c03f1cfbb6a58936ba49b2231e107",
+              "individual_note": true,
+              "notes": [
+                {
+                  "author": {
+                    "avatar_url": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "id": 7654321,
+                    "locked": false,
+                    "name": "Ada L",
+                    "public_email": "user@example.invalid",
+                    "state": "active",
+                    "username": "Lovelace",
+                    "web_url": "https://gitlab.com/Lovelace"
+                  },
+                  "body": "added 1 commit\n\n<ul><li>b4c0f065a76a078b65e2203939f82c430b7f4888 - Address review feedback on is_even</li></ul>\n\n[Compare with previous version](/Lovelace/review-sandbox/-/merge_requests/4/diffs?diff_id=2212489137&start_sha=5bbf11d305088e26e8381f041b04bfa976a11f55)",
+                  "commands_changes": {},
+                  "confidential": false,
+                  "created_at": "2026-11-17T04:45:56.379Z",
+                  "id": 4251183447,
+                  "imported": false,
+                  "imported_from": "none",
+                  "internal": false,
+                  "noteable_id": 569326782,
+                  "noteable_iid": 4,
+                  "noteable_type": "MergeRequest",
+                  "project_id": 12345678,
+                  "resolvable": false,
+                  "system": true,
+                  "type": null,
+                  "updated_at": "2026-11-17T04:45:56.381Z"
+                }
+              ],
+              "resolvable": false
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

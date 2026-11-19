@@ -1,0 +1,23 @@
+[package]
+name = "log_view"
+description = "Virtualized CI log viewer with ANSI colors and tailing"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+async-channel = "2.5.0"
+gpui.workspace = true
+memchr = "2.7"
+scroll.workspace = true
+theme.workspace = true
+vte = "0.15"
+
+[dev-dependencies]
+diff_view.workspace = true
+gpui-platform.workspace = true
+perf.workspace = true
+
+[lints]
+workspace = true

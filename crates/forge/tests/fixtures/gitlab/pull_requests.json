@@ -1,0 +1,641 @@
+{
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "1",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"429b251f107b2b80ecaead4695b3055b\"",
+          "ratelimit-remaining": "1980",
+          "ratelimit-reset": "1794892860"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T04:45:37Z",
+                  "description": "First pull request of a 3-PR stack. Based on `main`.",
+                  "diffHeadSha": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                  "diffRefs": {
+                    "baseSha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                    "headSha": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                    "startSha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 5,
+                    "deletions": 1,
+                    "fileCount": 2
+                  },
+                  "draft": false,
+                  "headPipeline": null,
+                  "id": "gid://gitlab/MergeRequest/569326740",
+                  "iid": "1",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "stack-1",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Stack 1/3: bump version, add triple",
+                  "updatedAt": "2026-11-17T04:45:38Z",
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "2",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"3c7f78046d93d570ede77044a0b14eff\"",
+          "ratelimit-remaining": "1973",
+          "ratelimit-reset": "1794892860"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T04:45:40Z",
+                  "description": "Second pull request of a 3-PR stack. Based on `stack-1`.",
+                  "diffHeadSha": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                  "diffRefs": {
+                    "baseSha": "3801d3ed0f2245e438b894b470fef14b0c854a45",
+                    "headSha": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                    "startSha": "3801d3ed0f2245e438b894b470fef14b0c854a45"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 5,
+                    "deletions": 1,
+                    "fileCount": 2
+                  },
+                  "draft": false,
+                  "headPipeline": null,
+                  "id": "gid://gitlab/MergeRequest/569326755",
+                  "iid": "2",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "stack-2",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "stack-1",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Stack 2/3: add whisper, expand guide",
+                  "updatedAt": "2026-11-17T04:45:41Z",
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/2"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "3",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"817f232399cfa7b5fa638904b33a9914\"",
+          "ratelimit-remaining": "1971",
+          "ratelimit-reset": "1794892860"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T04:45:43Z",
+                  "description": "Third pull request of a 3-PR stack. Based on `stack-2`.",
+                  "diffHeadSha": "a6d42e21e30f75e11c6c688ac9c1058644ea3e57",
+                  "diffRefs": {
+                    "baseSha": "90102e0c959f12b8026b0dea2b151b23f047a597",
+                    "headSha": "a6d42e21e30f75e11c6c688ac9c1058644ea3e57",
+                    "startSha": "90102e0c959f12b8026b0dea2b151b23f047a597"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 3,
+                    "deletions": 1,
+                    "fileCount": 2
+                  },
+                  "draft": false,
+                  "headPipeline": null,
+                  "id": "gid://gitlab/MergeRequest/569326769",
+                  "iid": "3",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "stack-3",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "stack-2",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Stack 3/3: log to stderr, link guide",
+                  "updatedAt": "2026-11-17T04:45:44Z",
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/3"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "4",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"146cdc8068af35402ca49ee5323e5f92\"",
+          "ratelimit-remaining": "1968",
+          "ratelimit-reset": "1794892860"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T04:45:46Z",
+                  "description": "Carries review threads: resolved, unresolved with a reply, multi-line, removed-line and outdated.",
+                  "diffHeadSha": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                  "diffRefs": {
+                    "baseSha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                    "headSha": "b4c0f065a76a078b65e2203939f82c430b7f4888",
+                    "startSha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 10,
+                    "deletions": 6,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": null,
+                  "id": "gid://gitlab/MergeRequest/569326782",
+                  "iid": "4",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "threads",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Threads: review comments on several lines",
+                  "updatedAt": "2026-11-17T04:45:47Z",
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/4"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "5",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"e7a9829609ab60954ae16333ecbc0425\"",
+          "ratelimit-remaining": "1966",
+          "ratelimit-reset": "1794892860"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T04:45:57Z",
+                  "description": "About 25 files: a rename, a deletion, a mode change, a binary change, CRLF and no-trailing-newline edits.",
+                  "diffHeadSha": "0823ee3065bbeba11885fb5a81b56ca03b6f0921",
+                  "diffRefs": {
+                    "baseSha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                    "headSha": "0823ee3065bbeba11885fb5a81b56ca03b6f0921",
+                    "startSha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 72,
+                    "deletions": 28,
+                    "fileCount": 27
+                  },
+                  "draft": false,
+                  "headPipeline": null,
+                  "id": "gid://gitlab/MergeRequest/569326829",
+                  "iid": "5",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "big",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Big: modules, rename, deletion, mode change",
+                  "updatedAt": "2026-11-17T04:45:58Z",
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/5"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "6",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"632afc46549dc5cd8a8822d82b4356e7\"",
+          "ratelimit-remaining": "1964",
+          "ratelimit-reset": "1794892860"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T04:45:59Z",
+                  "description": "Merged on purpose.",
+                  "diffHeadSha": "2c2860902d6fe0d64abaaca1f17c6b2185fa0b9e",
+                  "diffRefs": {
+                    "baseSha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                    "headSha": "2c2860902d6fe0d64abaaca1f17c6b2185fa0b9e",
+                    "startSha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 3,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": null,
+                  "id": "gid://gitlab/MergeRequest/569326840",
+                  "iid": "6",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "feature-merged",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "merged",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Merged: add a note",
+                  "updatedAt": "2026-11-17T04:46:04Z",
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/6"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "7",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"7b1d68547059d6773bde9b7d0c1fc2c4\"",
+          "ratelimit-remaining": "1963",
+          "ratelimit-reset": "1794892860"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T04:46:06Z",
+                  "description": "Closed without merging on purpose.",
+                  "diffHeadSha": "138fa62f171982aee82056014ec3e871350fb7d4",
+                  "diffRefs": {
+                    "baseSha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                    "headSha": "138fa62f171982aee82056014ec3e871350fb7d4",
+                    "startSha": "58f7d98aa420b62ff76fde57ecda2c5d7389e868"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 3,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": false,
+                  "headPipeline": null,
+                  "id": "gid://gitlab/MergeRequest/569326876",
+                  "iid": "7",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "feature-closed",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "closed",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Closed: add a note, never merged",
+                  "updatedAt": "2026-11-17T04:46:08Z",
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/7"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "8",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"dd139d7ae7e36802e3f9e1a90b092ef4\"",
+          "ratelimit-remaining": "1962",
+          "ratelimit-reset": "1794892860"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": {
+                  "approved": false,
+                  "approvedBy": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "avatarUrl": "https://secure.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?s=80&d=identicon",
+                    "bot": false,
+                    "id": "gid://gitlab/User/7654321",
+                    "name": "Ada L",
+                    "username": "Lovelace"
+                  },
+                  "createdAt": "2026-11-17T04:46:10Z",
+                  "description": "Draft on purpose.",
+                  "diffHeadSha": "bcd30bfd8c7bf28df442849efba28d830cb3d610",
+                  "diffRefs": {
+                    "baseSha": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+                    "headSha": "bcd30bfd8c7bf28df442849efba28d830cb3d610",
+                    "startSha": "58f7d98aa420b62ff76fde57ecda2c5d7389e868"
+                  },
+                  "diffStatsSummary": {
+                    "additions": 3,
+                    "deletions": 0,
+                    "fileCount": 1
+                  },
+                  "draft": true,
+                  "headPipeline": null,
+                  "id": "gid://gitlab/MergeRequest/569326895",
+                  "iid": "8",
+                  "labels": {
+                    "nodes": []
+                  },
+                  "reviewers": {
+                    "nodes": []
+                  },
+                  "sourceBranch": "draft-wip",
+                  "sourceProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "state": "opened",
+                  "targetBranch": "main",
+                  "targetProject": {
+                    "fullPath": "Lovelace/review-sandbox"
+                  },
+                  "title": "Draft: Start a feature",
+                  "updatedAt": "2026-11-17T04:46:33Z",
+                  "webUrl": "https://gitlab.com/Lovelace/review-sandbox/-/merge_requests/8"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/api/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "iid": "99",
+          "path": "Lovelace/review-sandbox"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"94918c7c73123a29f33440c9aa0ca56d\"",
+          "ratelimit-remaining": "1961",
+          "ratelimit-reset": "1794892860"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "project": {
+                "mergeRequest": null
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,3563 @@
+{
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4913",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 3,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "62784116ead4e6e6e3b3fad993b3647d50e38868",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the M3 round trip; closed when it ends.",
+                  "changedFiles": 1,
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2",
+                          "statusCheckRollup": null
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T11:55:32Z",
+                  "deletions": 1,
+                  "headRefName": "round-trip/github-1794916529",
+                  "headRefOid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP0NQ8A",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 11,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "title": "Round trip round-trip/github-1794916529",
+                  "updatedAt": "2026-11-17T11:55:32Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/11"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestId",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4912",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "id": "PR_kwDOVxPcWM8AAAABP0NQ8A"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "AddPullRequestReview",
+        "variables": {
+          "commitOID": "74fd4e38ad9c2165e8d6442afbfba169b22826c2",
+          "pullRequestId": "PR_kwDOVxPcWM8AAAABP0NQ8A"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4911",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "addPullRequestReview": {
+                "pullRequestReview": {
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "body": "",
+                  "commit": {
+                    "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                  },
+                  "id": "PRR_kwDOVxPcWM8AAAABYe212Q",
+                  "state": "PENDING",
+                  "submittedAt": null,
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937935833"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "AddPullRequestReviewThread",
+        "variables": {
+          "body": "Round trip: a draft, deleted before submitting.",
+          "line": 3,
+          "path": "docs/intro.md",
+          "pullRequestReviewId": "PRR_kwDOVxPcWM8AAAABYe212Q",
+          "side": "RIGHT",
+          "subjectType": "LINE"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4910",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "addPullRequestReviewThread": {
+                "thread": {
+                  "comments": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip: a draft, deleted before submitting.",
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "createdAt": "2026-11-17T11:55:35Z",
+                        "id": "PRRC_kwDOVxPcWM8AAAABEiJQZA",
+                        "lastEditedAt": null,
+                        "originalCommit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "pullRequestReview": {
+                          "id": "PRR_kwDOVxPcWM8AAAABYe212Q",
+                          "state": "PENDING"
+                        },
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599205988"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTozNVrPAAAAARIiUGQ=",
+                      "hasNextPage": false
+                    }
+                  },
+                  "diffSide": "RIGHT",
+                  "id": "PRRT_kwDOVxPcWM64akrQ",
+                  "isOutdated": false,
+                  "isResolved": false,
+                  "line": 3,
+                  "originalLine": 3,
+                  "originalStartLine": null,
+                  "path": "docs/intro.md",
+                  "resolvedBy": null,
+                  "startDiffSide": null,
+                  "startLine": 3,
+                  "subjectType": "LINE"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "AddPullRequestReviewThread",
+        "variables": {
+          "body": "Round trip: a draft, discarded with its review.",
+          "path": "docs/intro.md",
+          "pullRequestReviewId": "PRR_kwDOVxPcWM8AAAABYe212Q",
+          "subjectType": "FILE"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4909",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "addPullRequestReviewThread": {
+                "thread": {
+                  "comments": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip: a draft, discarded with its review.",
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "createdAt": "2026-11-17T11:55:36Z",
+                        "id": "PRRC_kwDOVxPcWM8AAAABEiJREA",
+                        "lastEditedAt": null,
+                        "originalCommit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "pullRequestReview": {
+                          "id": "PRR_kwDOVxPcWM8AAAABYe212Q",
+                          "state": "PENDING"
+                        },
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206160"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTozNlrPAAAAARIiURA=",
+                      "hasNextPage": false
+                    }
+                  },
+                  "diffSide": "RIGHT",
+                  "id": "PRRT_kwDOVxPcWM64aks4",
+                  "isOutdated": false,
+                  "isResolved": false,
+                  "line": 1,
+                  "originalLine": 1,
+                  "originalStartLine": null,
+                  "path": "docs/intro.md",
+                  "resolvedBy": null,
+                  "startDiffSide": null,
+                  "startLine": null,
+                  "subjectType": "FILE"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PendingReview",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4908",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "reviewThreads": {
+                    "nodes": [
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a draft, deleted before submitting.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:35Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJQZA",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe212Q",
+                                "state": "PENDING"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599205988"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTozNVrPAAAAARIiUGQ=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64akrQ",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a draft, discarded with its review.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:36Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJREA",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe212Q",
+                                "state": "PENDING"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206160"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTozNlrPAAAAARIiURA=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64aks4",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 1,
+                        "originalLine": 1,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": null,
+                        "subjectType": "FILE"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTozNlrOuGpLOA==",
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviews": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "id": "PRR_kwDOVxPcWM8AAAABYe212Q",
+                        "state": "PENDING",
+                        "submittedAt": null,
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937935833"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "DeletePullRequestReviewComment",
+        "variables": {
+          "id": "PRRC_kwDOVxPcWM8AAAABEiJQZA"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4907",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "deletePullRequestReviewComment": {
+                "pullRequestReview": {
+                  "id": "PRR_kwDOVxPcWM8AAAABYe212Q"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PendingReview",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4906",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "reviewThreads": {
+                    "nodes": [
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a draft, discarded with its review.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:36Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJREA",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe212Q",
+                                "state": "PENDING"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206160"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTozNlrPAAAAARIiURA=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64aks4",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 1,
+                        "originalLine": 1,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": null,
+                        "subjectType": "FILE"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTozNlrOuGpLOA==",
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviews": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "id": "PRR_kwDOVxPcWM8AAAABYe212Q",
+                        "state": "PENDING",
+                        "submittedAt": null,
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937935833"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "DeletePullRequestReview",
+        "variables": {
+          "pullRequestReviewId": "PRR_kwDOVxPcWM8AAAABYe212Q"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4905",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "deletePullRequestReview": {
+                "pullRequestReview": {
+                  "id": "PRR_kwDOVxPcWM8AAAABYe212Q"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PendingReview",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4904",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "reviewThreads": {
+                    "nodes": [
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a draft, discarded with its review.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:36Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJREA",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": null,
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206160"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTozNlrPAAAAARIiURA=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64aks4",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 1,
+                        "originalLine": 1,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": null,
+                        "subjectType": "FILE"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTozNlrOuGpLOA==",
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviews": {
+                    "nodes": []
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4903",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 3,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "62784116ead4e6e6e3b3fad993b3647d50e38868",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the M3 round trip; closed when it ends.",
+                  "changedFiles": 1,
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2",
+                          "statusCheckRollup": null
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T11:55:32Z",
+                  "deletions": 1,
+                  "headRefName": "round-trip/github-1794916529",
+                  "headRefOid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP0NQ8A",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 11,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "title": "Round trip round-trip/github-1794916529",
+                  "updatedAt": "2026-11-17T11:55:32Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/11"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "AddPullRequestReview",
+        "variables": {
+          "commitOID": "74fd4e38ad9c2165e8d6442afbfba169b22826c2",
+          "pullRequestId": "PR_kwDOVxPcWM8AAAABP0NQ8A"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4902",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "addPullRequestReview": {
+                "pullRequestReview": {
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "body": "",
+                  "commit": {
+                    "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                  },
+                  "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                  "state": "PENDING",
+                  "submittedAt": null,
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937936877"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "AddPullRequestReviewThread",
+        "variables": {
+          "body": "Round trip: a single line.",
+          "line": 3,
+          "path": "docs/intro.md",
+          "pullRequestReviewId": "PRR_kwDOVxPcWM8AAAABYe257Q",
+          "side": "RIGHT",
+          "subjectType": "LINE"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4901",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "addPullRequestReviewThread": {
+                "thread": {
+                  "comments": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip: a single line.",
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "createdAt": "2026-11-17T11:55:40Z",
+                        "id": "PRRC_kwDOVxPcWM8AAAABEiJTnQ",
+                        "lastEditedAt": null,
+                        "originalCommit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "pullRequestReview": {
+                          "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                          "state": "PENDING"
+                        },
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206813"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MFrPAAAAARIiU50=",
+                      "hasNextPage": false
+                    }
+                  },
+                  "diffSide": "RIGHT",
+                  "id": "PRRT_kwDOVxPcWM64aky_",
+                  "isOutdated": false,
+                  "isResolved": false,
+                  "line": 3,
+                  "originalLine": 3,
+                  "originalStartLine": null,
+                  "path": "docs/intro.md",
+                  "resolvedBy": null,
+                  "startDiffSide": null,
+                  "startLine": 3,
+                  "subjectType": "LINE"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "AddPullRequestReviewThread",
+        "variables": {
+          "body": "Round trip: three lines.",
+          "line": 5,
+          "path": "docs/intro.md",
+          "pullRequestReviewId": "PRR_kwDOVxPcWM8AAAABYe257Q",
+          "side": "RIGHT",
+          "startLine": 3,
+          "startSide": "RIGHT",
+          "subjectType": "LINE"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4900",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "addPullRequestReviewThread": {
+                "thread": {
+                  "comments": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip: three lines.",
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "createdAt": "2026-11-17T11:55:40Z",
+                        "id": "PRRC_kwDOVxPcWM8AAAABEiJT6Q",
+                        "lastEditedAt": null,
+                        "originalCommit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "pullRequestReview": {
+                          "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                          "state": "PENDING"
+                        },
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206889"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MFrPAAAAARIiU-k=",
+                      "hasNextPage": false
+                    }
+                  },
+                  "diffSide": "RIGHT",
+                  "id": "PRRT_kwDOVxPcWM64akzs",
+                  "isOutdated": false,
+                  "isResolved": false,
+                  "line": 5,
+                  "originalLine": 5,
+                  "originalStartLine": 3,
+                  "path": "docs/intro.md",
+                  "resolvedBy": null,
+                  "startDiffSide": "RIGHT",
+                  "startLine": 3,
+                  "subjectType": "LINE"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "AddPullRequestReviewThread",
+        "variables": {
+          "body": "Round trip: a removed line.",
+          "line": 3,
+          "path": "docs/intro.md",
+          "pullRequestReviewId": "PRR_kwDOVxPcWM8AAAABYe257Q",
+          "side": "LEFT",
+          "subjectType": "LINE"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4899",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "addPullRequestReviewThread": {
+                "thread": {
+                  "comments": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip: a removed line.",
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "createdAt": "2026-11-17T11:55:41Z",
+                        "id": "PRRC_kwDOVxPcWM8AAAABEiJUPg",
+                        "lastEditedAt": null,
+                        "originalCommit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "pullRequestReview": {
+                          "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                          "state": "PENDING"
+                        },
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206974"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MVrPAAAAARIiVD4=",
+                      "hasNextPage": false
+                    }
+                  },
+                  "diffSide": "LEFT",
+                  "id": "PRRT_kwDOVxPcWM64ak0i",
+                  "isOutdated": false,
+                  "isResolved": false,
+                  "line": 3,
+                  "originalLine": 3,
+                  "originalStartLine": null,
+                  "path": "docs/intro.md",
+                  "resolvedBy": null,
+                  "startDiffSide": null,
+                  "startLine": 3,
+                  "subjectType": "LINE"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PendingReview",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4898",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "reviewThreads": {
+                    "nodes": [
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a single line.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:40Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJTnQ",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "PENDING"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206813"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MFrPAAAAARIiU50=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64aky_",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: three lines.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:40Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJT6Q",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "PENDING"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206889"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MFrPAAAAARIiU-k=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64akzs",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 5,
+                        "originalLine": 5,
+                        "originalStartLine": 3,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": "RIGHT",
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a removed line.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:41Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJUPg",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "PENDING"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206974"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MVrPAAAAARIiVD4=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "LEFT",
+                        "id": "PRRT_kwDOVxPcWM64ak0i",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MVrOuGpNIg==",
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviews": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                        "state": "PENDING",
+                        "submittedAt": null,
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937936877"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "SubmitPullRequestReview",
+        "variables": {
+          "body": "Round trip review.",
+          "event": "COMMENT",
+          "pullRequestReviewId": "PRR_kwDOVxPcWM8AAAABYe257Q"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4897",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "submitPullRequestReview": {
+                "pullRequestReview": {
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "body": "Round trip review.",
+                  "commit": {
+                    "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                  },
+                  "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                  "state": "COMMENTED",
+                  "submittedAt": "2026-11-17T11:55:41Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937936877"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestThreads",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4896",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "comments": {
+                    "nodes": [],
+                    "pageInfo": {
+                      "endCursor": null,
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviewThreads": {
+                    "nodes": [
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a single line.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:40Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJTnQ",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206813"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MFrPAAAAARIiU50=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64aky_",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: three lines.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:40Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJT6Q",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206889"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MFrPAAAAARIiU-k=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64akzs",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 5,
+                        "originalLine": 5,
+                        "originalStartLine": 3,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": "RIGHT",
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a removed line.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:41Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJUPg",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206974"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MVrPAAAAARIiVD4=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "LEFT",
+                        "id": "PRRT_kwDOVxPcWM64ak0i",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MVrOuGpNIg==",
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviews": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip review.",
+                        "createdAt": "2026-11-17T11:55:39Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937936877"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMS0xN1QxMTo1NTo0MVq0MjAyNi0xMS0xN1QxMTo1NTozOVrPAAAAAWHtue0=",
+                      "hasNextPage": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "AddPullRequestReviewThreadReply",
+        "variables": {
+          "body": "Round trip reply.",
+          "pullRequestReviewThreadId": "PRRT_kwDOVxPcWM64aky_"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4895",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "addPullRequestReviewThreadReply": {
+                "comment": {
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "body": "Round trip reply.",
+                  "commit": {
+                    "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                  },
+                  "createdAt": "2026-11-17T11:55:43Z",
+                  "id": "PRRC_kwDOVxPcWM8AAAABEiJVuA",
+                  "lastEditedAt": null,
+                  "originalCommit": {
+                    "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                  },
+                  "pullRequestReview": {
+                    "id": "PRR_kwDOVxPcWM8AAAABYe284Q",
+                    "state": "COMMENTED"
+                  },
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599207352"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestThreads",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4894",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "comments": {
+                    "nodes": [],
+                    "pageInfo": {
+                      "endCursor": null,
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviewThreads": {
+                    "nodes": [
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a single line.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:40Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJTnQ",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206813"
+                            },
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip reply.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:43Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJVuA",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe284Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599207352"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0M1rPAAAAARIiVbg=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64aky_",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: three lines.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:40Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJT6Q",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206889"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MFrPAAAAARIiU-k=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64akzs",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 5,
+                        "originalLine": 5,
+                        "originalStartLine": 3,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": "RIGHT",
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a removed line.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:41Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJUPg",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206974"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MVrPAAAAARIiVD4=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "LEFT",
+                        "id": "PRRT_kwDOVxPcWM64ak0i",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MVrOuGpNIg==",
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviews": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip review.",
+                        "createdAt": "2026-11-17T11:55:39Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937936877"
+                      },
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "createdAt": "2026-11-17T11:55:43Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYe284Q",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937937633"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMS0xN1QxMTo1NTo0M1q0MjAyNi0xMS0xN1QxMTo1NTo0M1rPAAAAAWHtvOE=",
+                      "hasNextPage": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "ResolveReviewThread",
+        "variables": {
+          "threadId": "PRRT_kwDOVxPcWM64aky_"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4893",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "resolveReviewThread": {
+                "thread": {
+                  "comments": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip: a single line.",
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "createdAt": "2026-11-17T11:55:40Z",
+                        "id": "PRRC_kwDOVxPcWM8AAAABEiJTnQ",
+                        "lastEditedAt": null,
+                        "originalCommit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "pullRequestReview": {
+                          "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                          "state": "COMMENTED"
+                        },
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206813"
+                      },
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip reply.",
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "createdAt": "2026-11-17T11:55:43Z",
+                        "id": "PRRC_kwDOVxPcWM8AAAABEiJVuA",
+                        "lastEditedAt": null,
+                        "originalCommit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "pullRequestReview": {
+                          "id": "PRR_kwDOVxPcWM8AAAABYe284Q",
+                          "state": "COMMENTED"
+                        },
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599207352"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0M1rPAAAAARIiVbg=",
+                      "hasNextPage": false
+                    }
+                  },
+                  "diffSide": "RIGHT",
+                  "id": "PRRT_kwDOVxPcWM64aky_",
+                  "isOutdated": false,
+                  "isResolved": true,
+                  "line": 3,
+                  "originalLine": 3,
+                  "originalStartLine": null,
+                  "path": "docs/intro.md",
+                  "resolvedBy": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "startDiffSide": null,
+                  "startLine": 3,
+                  "subjectType": "LINE"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestThreads",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4892",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "comments": {
+                    "nodes": [],
+                    "pageInfo": {
+                      "endCursor": null,
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviewThreads": {
+                    "nodes": [
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a single line.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:40Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJTnQ",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206813"
+                            },
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip reply.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:43Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJVuA",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe284Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599207352"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0M1rPAAAAARIiVbg=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64aky_",
+                        "isOutdated": false,
+                        "isResolved": true,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: three lines.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:40Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJT6Q",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206889"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MFrPAAAAARIiU-k=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64akzs",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 5,
+                        "originalLine": 5,
+                        "originalStartLine": 3,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": "RIGHT",
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a removed line.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:41Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJUPg",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206974"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MVrPAAAAARIiVD4=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "LEFT",
+                        "id": "PRRT_kwDOVxPcWM64ak0i",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MVrOuGpNIg==",
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviews": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip review.",
+                        "createdAt": "2026-11-17T11:55:39Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937936877"
+                      },
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "createdAt": "2026-11-17T11:55:43Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYe284Q",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937937633"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMS0xN1QxMTo1NTo0M1q0MjAyNi0xMS0xN1QxMTo1NTo0M1rPAAAAAWHtvOE=",
+                      "hasNextPage": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "UnresolveReviewThread",
+        "variables": {
+          "threadId": "PRRT_kwDOVxPcWM64aky_"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4891",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "unresolveReviewThread": {
+                "thread": {
+                  "comments": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip: a single line.",
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "createdAt": "2026-11-17T11:55:40Z",
+                        "id": "PRRC_kwDOVxPcWM8AAAABEiJTnQ",
+                        "lastEditedAt": null,
+                        "originalCommit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "pullRequestReview": {
+                          "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                          "state": "COMMENTED"
+                        },
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206813"
+                      },
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip reply.",
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "createdAt": "2026-11-17T11:55:43Z",
+                        "id": "PRRC_kwDOVxPcWM8AAAABEiJVuA",
+                        "lastEditedAt": null,
+                        "originalCommit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "pullRequestReview": {
+                          "id": "PRR_kwDOVxPcWM8AAAABYe284Q",
+                          "state": "COMMENTED"
+                        },
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599207352"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0M1rPAAAAARIiVbg=",
+                      "hasNextPage": false
+                    }
+                  },
+                  "diffSide": "RIGHT",
+                  "id": "PRRT_kwDOVxPcWM64aky_",
+                  "isOutdated": false,
+                  "isResolved": false,
+                  "line": 3,
+                  "originalLine": 3,
+                  "originalStartLine": null,
+                  "path": "docs/intro.md",
+                  "resolvedBy": null,
+                  "startDiffSide": null,
+                  "startLine": 3,
+                  "subjectType": "LINE"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestThreads",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4890",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "comments": {
+                    "nodes": [],
+                    "pageInfo": {
+                      "endCursor": null,
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviewThreads": {
+                    "nodes": [
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a single line.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:40Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJTnQ",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206813"
+                            },
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip reply.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:43Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJVuA",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe284Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599207352"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0M1rPAAAAARIiVbg=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64aky_",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: three lines.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:40Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJT6Q",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206889"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MFrPAAAAARIiU-k=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64akzs",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 5,
+                        "originalLine": 5,
+                        "originalStartLine": 3,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": "RIGHT",
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a removed line.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:41Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJUPg",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206974"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MVrPAAAAARIiVD4=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "LEFT",
+                        "id": "PRRT_kwDOVxPcWM64ak0i",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MVrOuGpNIg==",
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviews": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip review.",
+                        "createdAt": "2026-11-17T11:55:39Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937936877"
+                      },
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "createdAt": "2026-11-17T11:55:43Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYe284Q",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937937633"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMS0xN1QxMTo1NTo0M1q0MjAyNi0xMS0xN1QxMTo1NTo0M1rPAAAAAWHtvOE=",
+                      "hasNextPage": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4968",
+          "x-ratelimit-reset": "1794919254"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 3,
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "62784116ead4e6e6e3b3fad993b3647d50e38868",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the M3 round trip; closed when it ends.",
+                  "changedFiles": 1,
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2",
+                          "statusCheckRollup": null
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T11:55:32Z",
+                  "deletions": 1,
+                  "headRefName": "round-trip/github-1794916529",
+                  "headRefOid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP0NQ8A",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "number": 11,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "title": "Round trip round-trip/github-1794916529",
+                  "updatedAt": "2026-11-17T11:55:32Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/11"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "AddPullRequestReview",
+        "variables": {
+          "commitOID": "74fd4e38ad9c2165e8d6442afbfba169b22826c2",
+          "pullRequestId": "PR_kwDOVxPcWM8AAAABP0NQ8A"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4889",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "addPullRequestReview": {
+                "pullRequestReview": {
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "body": "",
+                  "commit": {
+                    "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                  },
+                  "id": "PRR_kwDOVxPcWM8AAAABYe3AFw",
+                  "state": "PENDING",
+                  "submittedAt": null,
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937938455"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "AddPullRequestReviewThread",
+        "variables": {
+          "body": "Round trip suggestion:\n\n```suggestion\nRound trip line two, suggested.\n```",
+          "line": 4,
+          "path": "docs/intro.md",
+          "pullRequestReviewId": "PRR_kwDOVxPcWM8AAAABYe3AFw",
+          "side": "RIGHT",
+          "subjectType": "LINE"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4888",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "addPullRequestReviewThread": {
+                "thread": {
+                  "comments": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip suggestion:\n\n```suggestion\nRound trip line two, suggested.\n```",
+                        "commit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "createdAt": "2026-11-17T11:55:47Z",
+                        "id": "PRRC_kwDOVxPcWM8AAAABEiJYig",
+                        "lastEditedAt": null,
+                        "originalCommit": {
+                          "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                        },
+                        "pullRequestReview": {
+                          "id": "PRR_kwDOVxPcWM8AAAABYe3AFw",
+                          "state": "PENDING"
+                        },
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599208074"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0N1rPAAAAARIiWIo=",
+                      "hasNextPage": false
+                    }
+                  },
+                  "diffSide": "RIGHT",
+                  "id": "PRRT_kwDOVxPcWM64ak_R",
+                  "isOutdated": false,
+                  "isResolved": false,
+                  "line": 4,
+                  "originalLine": 4,
+                  "originalStartLine": null,
+                  "path": "docs/intro.md",
+                  "resolvedBy": null,
+                  "startDiffSide": null,
+                  "startLine": 4,
+                  "subjectType": "LINE"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "SubmitPullRequestReview",
+        "variables": {
+          "body": "",
+          "event": "COMMENT",
+          "pullRequestReviewId": "PRR_kwDOVxPcWM8AAAABYe3AFw"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4887",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "submitPullRequestReview": {
+                "pullRequestReview": {
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "body": "",
+                  "commit": {
+                    "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                  },
+                  "id": "PRR_kwDOVxPcWM8AAAABYe3AFw",
+                  "state": "COMMENTED",
+                  "submittedAt": "2026-11-17T11:55:48Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937938455"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestThreads",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4886",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "comments": {
+                    "nodes": [],
+                    "pageInfo": {
+                      "endCursor": null,
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviewThreads": {
+                    "nodes": [
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a single line.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:40Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJTnQ",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206813"
+                            },
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip reply.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:43Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJVuA",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe284Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599207352"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0M1rPAAAAARIiVbg=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64aky_",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: three lines.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:40Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJT6Q",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206889"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MFrPAAAAARIiU-k=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64akzs",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 5,
+                        "originalLine": 5,
+                        "originalStartLine": 3,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": "RIGHT",
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a removed line.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:41Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJUPg",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206974"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MVrPAAAAARIiVD4=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "LEFT",
+                        "id": "PRRT_kwDOVxPcWM64ak0i",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip suggestion:\n\n```suggestion\nRound trip line two, suggested.\n```",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:47Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJYig",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe3AFw",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599208074"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0N1rPAAAAARIiWIo=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64ak_R",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 4,
+                        "originalLine": 4,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 4,
+                        "subjectType": "LINE"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0N1rOuGpP0Q==",
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviews": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip review.",
+                        "createdAt": "2026-11-17T11:55:39Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937936877"
+                      },
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "createdAt": "2026-11-17T11:55:43Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYe284Q",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937937633"
+                      },
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "createdAt": "2026-11-17T11:55:47Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYe3AFw",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937938455"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMS0xN1QxMTo1NTo0OFq0MjAyNi0xMS0xN1QxMTo1NTo0N1rPAAAAAWHtwBc=",
+                      "hasNextPage": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "AddComment",
+        "variables": {
+          "body": "Round trip conversation comment.",
+          "subjectId": "PR_kwDOVxPcWM8AAAABP0NQ8A"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4885",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "addComment": {
+                "commentEdge": {
+                  "node": {
+                    "author": {
+                      "__typename": "User",
+                      "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                      "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                      "login": "Lovelace",
+                      "name": "Ada"
+                    },
+                    "body": "Round trip conversation comment.",
+                    "createdAt": "2026-11-17T11:55:50Z",
+                    "id": "IC_kwDOVxPcWM8AAAABnhfR1w",
+                    "lastEditedAt": null,
+                    "url": "https://github.com/Lovelace/review-sandbox/pull/11#issuecomment-6947328471"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestThreads",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4884",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "comments": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip conversation comment.",
+                        "createdAt": "2026-11-17T11:55:50Z",
+                        "id": "IC_kwDOVxPcWM8AAAABnhfR1w",
+                        "lastEditedAt": null,
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#issuecomment-6947328471"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpHPAAAAAZ4X0dc=",
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviewThreads": {
+                    "nodes": [
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a single line.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:40Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJTnQ",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206813"
+                            },
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip reply.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:43Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJVuA",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe284Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599207352"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0M1rPAAAAARIiVbg=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64aky_",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: three lines.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:40Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJT6Q",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206889"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MFrPAAAAARIiU-k=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64akzs",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 5,
+                        "originalLine": 5,
+                        "originalStartLine": 3,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": "RIGHT",
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip: a removed line.",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:41Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJUPg",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599206974"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0MVrPAAAAARIiVD4=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "LEFT",
+                        "id": "PRRT_kwDOVxPcWM64ak0i",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 3,
+                        "originalLine": 3,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 3,
+                        "subjectType": "LINE"
+                      },
+                      {
+                        "comments": {
+                          "nodes": [
+                            {
+                              "author": {
+                                "__typename": "User",
+                                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                                "login": "Lovelace",
+                                "name": "Ada"
+                              },
+                              "body": "Round trip suggestion:\n\n```suggestion\nRound trip line two, suggested.\n```",
+                              "commit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "createdAt": "2026-11-17T11:55:47Z",
+                              "id": "PRRC_kwDOVxPcWM8AAAABEiJYig",
+                              "lastEditedAt": null,
+                              "originalCommit": {
+                                "oid": "74fd4e38ad9c2165e8d6442afbfba169b22826c2"
+                              },
+                              "pullRequestReview": {
+                                "id": "PRR_kwDOVxPcWM8AAAABYe3AFw",
+                                "state": "COMMENTED"
+                              },
+                              "url": "https://github.com/Lovelace/review-sandbox/pull/11#discussion_r4599208074"
+                            }
+                          ],
+                          "pageInfo": {
+                            "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0N1rPAAAAARIiWIo=",
+                            "hasNextPage": false
+                          }
+                        },
+                        "diffSide": "RIGHT",
+                        "id": "PRRT_kwDOVxPcWM64ak_R",
+                        "isOutdated": false,
+                        "isResolved": false,
+                        "line": 4,
+                        "originalLine": 4,
+                        "originalStartLine": null,
+                        "path": "docs/intro.md",
+                        "resolvedBy": null,
+                        "startDiffSide": null,
+                        "startLine": 4,
+                        "subjectType": "LINE"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMS0xN1QxMTo1NTo0N1rOuGpP0Q==",
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviews": {
+                    "nodes": [
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "Round trip review.",
+                        "createdAt": "2026-11-17T11:55:39Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYe257Q",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937936877"
+                      },
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "createdAt": "2026-11-17T11:55:43Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYe284Q",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937937633"
+                      },
+                      {
+                        "author": {
+                          "__typename": "User",
+                          "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                          "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                          "login": "Lovelace",
+                          "name": "Ada"
+                        },
+                        "body": "",
+                        "createdAt": "2026-11-17T11:55:47Z",
+                        "id": "PRR_kwDOVxPcWM8AAAABYe3AFw",
+                        "lastEditedAt": null,
+                        "state": "COMMENTED",
+                        "url": "https://github.com/Lovelace/review-sandbox/pull/11#pullrequestreview-5937938455"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMS0xN1QxMTo1NTo0OFq0MjAyNi0xMS0xN1QxMTo1NTo0N1rPAAAAAWHtwBc=",
+                      "hasNextPage": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "MarkFileAsViewed",
+        "variables": {
+          "path": "docs/intro.md",
+          "pullRequestId": "PR_kwDOVxPcWM8AAAABP0NQ8A"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4883",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "markFileAsViewed": {
+                "pullRequest": {
+                  "id": "PR_kwDOVxPcWM8AAAABP0NQ8A"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestFiles",
+        "variables": {
+          "after": null,
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4882",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "files": {
+                    "nodes": [
+                      {
+                        "path": "docs/intro.md",
+                        "viewerViewedState": "VIEWED"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "MQ",
+                      "hasNextPage": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "UnmarkFileAsViewed",
+        "variables": {
+          "path": "docs/intro.md",
+          "pullRequestId": "PR_kwDOVxPcWM8AAAABP0NQ8A"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4881",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "unmarkFileAsViewed": {
+                "pullRequest": {
+                  "id": "PR_kwDOVxPcWM8AAAABP0NQ8A"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestFiles",
+        "variables": {
+          "after": null,
+          "name": "review-sandbox",
+          "number": 11,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4880",
+          "x-ratelimit-reset": "1794919406"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "files": {
+                    "nodes": [
+                      {
+                        "path": "docs/intro.md",
+                        "viewerViewedState": "UNVIEWED"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "MQ",
+                      "hasNextPage": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

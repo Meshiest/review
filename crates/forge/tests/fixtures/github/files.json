@@ -1,0 +1,151 @@
+{
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestFiles",
+        "variables": {
+          "after": null,
+          "name": "review-sandbox",
+          "number": 5,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4754",
+          "x-ratelimit-reset": "1794893969"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "files": {
+                    "nodes": [
+                      {
+                        "path": ".gitignore",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "Cargo.toml",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "assets/logo.png",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "data/crlf.txt",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "data/no_newline.txt",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "docs/changelog.md",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "docs/faq.md",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "docs/intro.md",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "docs/new_name.md",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "docs/obsolete.md",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "scripts/run.sh",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/deep/nested/dir/leaf.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/modules/m01.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/modules/m02.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/modules/m03.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/modules/m04.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/modules/m05.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/modules/m06.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/modules/m07.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/modules/m08.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/modules/m09.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/modules/m10.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/modules/m11.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/modules/m12.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/util/extra.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/util/fmt.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      },
+                      {
+                        "path": "src/util/mod.rs",
+                        "viewerViewedState": "UNVIEWED"
+                      }
+                    ],
+                    "pageInfo": {
+                      "endCursor": "Mjc",
+                      "hasNextPage": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

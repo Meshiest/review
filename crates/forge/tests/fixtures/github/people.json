@@ -1,0 +1,2548 @@
+{
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "Viewer",
+        "variables": {}
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4875",
+          "x-ratelimit-reset": "1794937578"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "viewer": {
+                "__typename": "User",
+                "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                "login": "Lovelace",
+                "name": "Ada"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4638",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": null
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:24Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "RepoLabels",
+        "variables": {
+          "after": null,
+          "name": "review-sandbox",
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4637",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "labels": {
+                  "nodes": [
+                    {
+                      "color": "f143ab",
+                      "description": "Barrier affecting people with disabilities",
+                      "name": "accessibility"
+                    },
+                    {
+                      "color": "d73a4a",
+                      "description": "Something isn't working",
+                      "name": "bug"
+                    },
+                    {
+                      "color": "0075ca",
+                      "description": "Improvements or additions to documentation",
+                      "name": "documentation"
+                    },
+                    {
+                      "color": "cfd3d7",
+                      "description": "This issue or pull request already exists",
+                      "name": "duplicate"
+                    },
+                    {
+                      "color": "a2eeef",
+                      "description": "New feature or request",
+                      "name": "enhancement"
+                    },
+                    {
+                      "color": "7057ff",
+                      "description": "Good for newcomers",
+                      "name": "good first issue"
+                    },
+                    {
+                      "color": "008672",
+                      "description": "Extra attention is needed",
+                      "name": "help wanted"
+                    },
+                    {
+                      "color": "e4e669",
+                      "description": "This doesn't seem right",
+                      "name": "invalid"
+                    },
+                    {
+                      "color": "d876e3",
+                      "description": "Further information is requested",
+                      "name": "question"
+                    },
+                    {
+                      "color": "1d76db",
+                      "description": "Put on a scratch pull request by the people round trip",
+                      "name": "review-test"
+                    },
+                    {
+                      "color": "ffffff",
+                      "description": "This will not be worked on",
+                      "name": "wontfix"
+                    }
+                  ],
+                  "pageInfo": {
+                    "endCursor": "MTE",
+                    "hasNextPage": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "Collaborators",
+        "variables": {
+          "first": 100,
+          "name": "review-sandbox",
+          "owner": "Lovelace",
+          "query": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4636",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "assignableUsers": {
+                  "nodes": [
+                    {
+                      "__typename": "User",
+                      "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                      "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                      "login": "Lovelace",
+                      "name": "Ada"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "Collaborators",
+        "variables": {
+          "first": 100,
+          "name": "review-sandbox",
+          "owner": "Lovelace",
+          "query": "lov"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4635",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "assignableUsers": {
+                  "nodes": [
+                    {
+                      "__typename": "User",
+                      "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                      "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                      "login": "Lovelace",
+                      "name": "Ada"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "Collaborators",
+        "variables": {
+          "first": 100,
+          "name": "review-sandbox",
+          "owner": "Lovelace",
+          "query": "zzzz-nobody"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4874",
+          "x-ratelimit-reset": "1794937578"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "assignableUsers": {
+                  "nodes": []
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4634",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": null
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:24Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/repos/Lovelace/review-sandbox/issues/28/labels",
+        "body": {
+          "labels": [
+            "review-test"
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"21ac89aa4ae93ea05d2a6fbc6ad1a020f54ebb7bb31c9f8d313607fca31e5f56\"",
+          "x-ratelimit-remaining": "4995",
+          "x-ratelimit-reset": "1794937991"
+        },
+        "body": {
+          "json": [
+            {
+              "archived_at": null,
+              "archived_by": null,
+              "color": "1d76db",
+              "default": false,
+              "description": "Put on a scratch pull request by the people round trip",
+              "id": 13119880331,
+              "name": "review-test",
+              "node_id": "LA_kwDOVxPcWM8AAAADDgF8iw",
+              "url": "https://api.github.com/repos/Lovelace/review-sandbox/labels/review-test"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4633",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": null
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "name": "review-test"
+                      }
+                    ]
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:27Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4632",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": null
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "name": "review-test"
+                      }
+                    ]
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:27Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "RepoLabels",
+        "variables": {
+          "after": null,
+          "name": "review-sandbox",
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4631",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "labels": {
+                  "nodes": [
+                    {
+                      "color": "f143ab",
+                      "description": "Barrier affecting people with disabilities",
+                      "name": "accessibility"
+                    },
+                    {
+                      "color": "d73a4a",
+                      "description": "Something isn't working",
+                      "name": "bug"
+                    },
+                    {
+                      "color": "0075ca",
+                      "description": "Improvements or additions to documentation",
+                      "name": "documentation"
+                    },
+                    {
+                      "color": "cfd3d7",
+                      "description": "This issue or pull request already exists",
+                      "name": "duplicate"
+                    },
+                    {
+                      "color": "a2eeef",
+                      "description": "New feature or request",
+                      "name": "enhancement"
+                    },
+                    {
+                      "color": "7057ff",
+                      "description": "Good for newcomers",
+                      "name": "good first issue"
+                    },
+                    {
+                      "color": "008672",
+                      "description": "Extra attention is needed",
+                      "name": "help wanted"
+                    },
+                    {
+                      "color": "e4e669",
+                      "description": "This doesn't seem right",
+                      "name": "invalid"
+                    },
+                    {
+                      "color": "d876e3",
+                      "description": "Further information is requested",
+                      "name": "question"
+                    },
+                    {
+                      "color": "1d76db",
+                      "description": "Put on a scratch pull request by the people round trip",
+                      "name": "review-test"
+                    },
+                    {
+                      "color": "ffffff",
+                      "description": "This will not be worked on",
+                      "name": "wontfix"
+                    }
+                  ],
+                  "pageInfo": {
+                    "endCursor": "MTE",
+                    "hasNextPage": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4630",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "name": "review-test"
+                      }
+                    ]
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:27Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4629",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "name": "review-test"
+                      }
+                    ]
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:27Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/repos/Lovelace/review-sandbox/issues/28/assignees",
+        "body": {
+          "assignees": [
+            "Lovelace"
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "\"ae219e257ec60b736089543b150713792779054e4bc11d47b0273974dcc23ac5\"",
+          "x-ratelimit-remaining": "4994",
+          "x-ratelimit-reset": "1794937991"
+        },
+        "body": {
+          "json": {
+            "active_lock_reason": null,
+            "assignee": {
+              "avatar_url": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+              "events_url": "https://api.github.com/users/Lovelace/events{/privacy}",
+              "followers_url": "https://api.github.com/users/Lovelace/followers",
+              "following_url": "https://api.github.com/users/Lovelace/following{/other_user}",
+              "gists_url": "https://api.github.com/users/Lovelace/gists{/gist_id}",
+              "gravatar_id": "",
+              "html_url": "https://github.com/Lovelace",
+              "id": 1234567,
+              "login": "Lovelace",
+              "node_id": "MDQ6VXNlcjEyMzQ1Njc=",
+              "organizations_url": "https://api.github.com/users/Lovelace/orgs",
+              "received_events_url": "https://api.github.com/users/Lovelace/received_events",
+              "repos_url": "https://api.github.com/users/Lovelace/repos",
+              "site_admin": false,
+              "starred_url": "https://api.github.com/users/Lovelace/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/Lovelace/subscriptions",
+              "type": "User",
+              "url": "https://api.github.com/users/Lovelace",
+              "user_view_type": "public"
+            },
+            "assignees": [
+              {
+                "avatar_url": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                "events_url": "https://api.github.com/users/Lovelace/events{/privacy}",
+                "followers_url": "https://api.github.com/users/Lovelace/followers",
+                "following_url": "https://api.github.com/users/Lovelace/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Lovelace/gists{/gist_id}",
+                "gravatar_id": "",
+                "html_url": "https://github.com/Lovelace",
+                "id": 1234567,
+                "login": "Lovelace",
+                "node_id": "MDQ6VXNlcjEyMzQ1Njc=",
+                "organizations_url": "https://api.github.com/users/Lovelace/orgs",
+                "received_events_url": "https://api.github.com/users/Lovelace/received_events",
+                "repos_url": "https://api.github.com/users/Lovelace/repos",
+                "site_admin": false,
+                "starred_url": "https://api.github.com/users/Lovelace/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Lovelace/subscriptions",
+                "type": "User",
+                "url": "https://api.github.com/users/Lovelace",
+                "user_view_type": "public"
+              }
+            ],
+            "author_association": "OWNER",
+            "body": "Scratch pull request of the people round trip.",
+            "closed_at": null,
+            "comments": 0,
+            "comments_url": "https://api.github.com/repos/Lovelace/review-sandbox/issues/28/comments",
+            "created_at": "2026-11-17T17:22:24Z",
+            "draft": false,
+            "events_url": "https://api.github.com/repos/Lovelace/review-sandbox/issues/28/events",
+            "html_url": "https://github.com/Lovelace/review-sandbox/pull/28",
+            "id": 6450201974,
+            "labels": [
+              {
+                "archived_at": null,
+                "archived_by": null,
+                "color": "1d76db",
+                "default": false,
+                "description": "Put on a scratch pull request by the people round trip",
+                "id": 13119880331,
+                "name": "review-test",
+                "node_id": "LA_kwDOVxPcWM8AAAADDgF8iw",
+                "url": "https://api.github.com/repos/Lovelace/review-sandbox/labels/review-test"
+              }
+            ],
+            "labels_url": "https://api.github.com/repos/Lovelace/review-sandbox/issues/28/labels{/name}",
+            "locked": false,
+            "milestone": null,
+            "node_id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+            "number": 28,
+            "performed_via_github_app": null,
+            "pull_request": {
+              "diff_url": "https://github.com/Lovelace/review-sandbox/pull/28.diff",
+              "html_url": "https://github.com/Lovelace/review-sandbox/pull/28",
+              "merged_at": null,
+              "patch_url": "https://github.com/Lovelace/review-sandbox/pull/28.patch",
+              "url": "https://api.github.com/repos/Lovelace/review-sandbox/pulls/28"
+            },
+            "reactions": {
+              "+1": 0,
+              "-1": 0,
+              "confused": 0,
+              "eyes": 0,
+              "heart": 0,
+              "hooray": 0,
+              "laugh": 0,
+              "rocket": 0,
+              "total_count": 0,
+              "url": "https://api.github.com/repos/Lovelace/review-sandbox/issues/28/reactions"
+            },
+            "repository_url": "https://api.github.com/repos/Lovelace/review-sandbox",
+            "state": "open",
+            "state_reason": null,
+            "timeline_url": "https://api.github.com/repos/Lovelace/review-sandbox/issues/28/timeline",
+            "title": "People people/github-1794936140",
+            "updated_at": "2026-11-17T17:22:31Z",
+            "url": "https://api.github.com/repos/Lovelace/review-sandbox/issues/28",
+            "user": {
+              "avatar_url": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+              "events_url": "https://api.github.com/users/Lovelace/events{/privacy}",
+              "followers_url": "https://api.github.com/users/Lovelace/followers",
+              "following_url": "https://api.github.com/users/Lovelace/following{/other_user}",
+              "gists_url": "https://api.github.com/users/Lovelace/gists{/gist_id}",
+              "gravatar_id": "",
+              "html_url": "https://github.com/Lovelace",
+              "id": 1234567,
+              "login": "Lovelace",
+              "node_id": "MDQ6VXNlcjEyMzQ1Njc=",
+              "organizations_url": "https://api.github.com/users/Lovelace/orgs",
+              "received_events_url": "https://api.github.com/users/Lovelace/received_events",
+              "repos_url": "https://api.github.com/users/Lovelace/repos",
+              "site_admin": false,
+              "starred_url": "https://api.github.com/users/Lovelace/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/Lovelace/subscriptions",
+              "type": "User",
+              "url": "https://api.github.com/users/Lovelace",
+              "user_view_type": "public"
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4628",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": [
+                      {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      }
+                    ]
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "name": "review-test"
+                      }
+                    ]
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:31Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4627",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": [
+                      {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      }
+                    ]
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "name": "review-test"
+                      }
+                    ]
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:31Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/repos/Lovelace/review-sandbox/pulls/28/requested_reviewers",
+        "body": {
+          "reviewers": [
+            "Lovelace"
+          ],
+          "team_reviewers": []
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4993",
+          "x-ratelimit-reset": "1794937991"
+        },
+        "body": {
+          "json": {
+            "documentation_url": "https://docs.github.com/rest/pulls/review-requests#request-reviewers-for-a-pull-request",
+            "message": "Review cannot be requested from pull request author.",
+            "status": "422"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4626",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": [
+                      {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      }
+                    ]
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "name": "review-test"
+                      }
+                    ]
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:31Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4625",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": [
+                      {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      }
+                    ]
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "name": "review-test"
+                      }
+                    ]
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:31Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequestSnapshot",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4624",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": [
+                      {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      }
+                    ]
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "comments": {
+                    "nodes": [],
+                    "pageInfo": {
+                      "endCursor": null,
+                      "hasNextPage": false
+                    }
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": {
+                            "contexts": {
+                              "nodes": [
+                                {
+                                  "__typename": "CheckRun",
+                                  "checkSuite": {
+                                    "workflowRun": {
+                                      "databaseId": 44136269958,
+                                      "url": "https://github.com/Lovelace/review-sandbox/actions/runs/44136269958",
+                                      "workflow": {
+                                        "name": "ci"
+                                      }
+                                    }
+                                  },
+                                  "completedAt": null,
+                                  "conclusion": null,
+                                  "databaseId": 134226536144,
+                                  "detailsUrl": "https://github.com/Lovelace/review-sandbox/actions/runs/44136269958/job/134226536144",
+                                  "id": "CR_kwDOVxPcWM8AAAAfQIZm0A",
+                                  "name": "build",
+                                  "startedAt": "2026-11-17T17:22:29Z",
+                                  "status": "QUEUED",
+                                  "steps": {
+                                    "nodes": [],
+                                    "pageInfo": {
+                                      "endCursor": null,
+                                      "hasNextPage": false
+                                    }
+                                  }
+                                },
+                                {
+                                  "__typename": "CheckRun",
+                                  "checkSuite": {
+                                    "workflowRun": {
+                                      "databaseId": 44136269958,
+                                      "url": "https://github.com/Lovelace/review-sandbox/actions/runs/44136269958",
+                                      "workflow": {
+                                        "name": "ci"
+                                      }
+                                    }
+                                  },
+                                  "completedAt": null,
+                                  "conclusion": null,
+                                  "databaseId": 134226537006,
+                                  "detailsUrl": "https://github.com/Lovelace/review-sandbox/actions/runs/44136269958/job/134226537006",
+                                  "id": "CR_kwDOVxPcWM8AAAAfQIZqLg",
+                                  "name": "test",
+                                  "startedAt": "2026-11-17T17:22:31Z",
+                                  "status": "IN_PROGRESS",
+                                  "steps": {
+                                    "nodes": [
+                                      {
+                                        "completedAt": "2026-11-17T17:22:32Z",
+                                        "conclusion": "SUCCESS",
+                                        "name": "Set up job",
+                                        "number": 1,
+                                        "startedAt": "2026-11-17T17:22:32Z",
+                                        "status": "COMPLETED"
+                                      },
+                                      {
+                                        "completedAt": null,
+                                        "conclusion": null,
+                                        "name": "Check out",
+                                        "number": 2,
+                                        "startedAt": "2026-11-17T17:22:32Z",
+                                        "status": "IN_PROGRESS"
+                                      },
+                                      {
+                                        "completedAt": null,
+                                        "conclusion": null,
+                                        "name": "Run tests",
+                                        "number": 3,
+                                        "startedAt": null,
+                                        "status": "PENDING"
+                                      },
+                                      {
+                                        "completedAt": null,
+                                        "conclusion": null,
+                                        "name": "Post Check out",
+                                        "number": 6,
+                                        "startedAt": null,
+                                        "status": "PENDING"
+                                      }
+                                    ],
+                                    "pageInfo": {
+                                      "endCursor": "NA",
+                                      "hasNextPage": false
+                                    }
+                                  }
+                                },
+                                {
+                                  "__typename": "CheckRun",
+                                  "checkSuite": {
+                                    "workflowRun": {
+                                      "databaseId": 44136269958,
+                                      "url": "https://github.com/Lovelace/review-sandbox/actions/runs/44136269958",
+                                      "workflow": {
+                                        "name": "ci"
+                                      }
+                                    }
+                                  },
+                                  "completedAt": null,
+                                  "conclusion": null,
+                                  "databaseId": 134226536752,
+                                  "detailsUrl": "https://github.com/Lovelace/review-sandbox/actions/runs/44136269958/job/134226536752",
+                                  "id": "CR_kwDOVxPcWM8AAAAfQIZpMA",
+                                  "name": "slow",
+                                  "startedAt": "2026-11-17T17:22:31Z",
+                                  "status": "IN_PROGRESS",
+                                  "steps": {
+                                    "nodes": [
+                                      {
+                                        "completedAt": "2026-11-17T17:22:32Z",
+                                        "conclusion": "SUCCESS",
+                                        "name": "Set up job",
+                                        "number": 1,
+                                        "startedAt": "2026-11-17T17:22:32Z",
+                                        "status": "COMPLETED"
+                                      },
+                                      {
+                                        "completedAt": null,
+                                        "conclusion": null,
+                                        "name": "Print 2000 lines",
+                                        "number": 2,
+                                        "startedAt": "2026-11-17T17:22:32Z",
+                                        "status": "IN_PROGRESS"
+                                      }
+                                    ],
+                                    "pageInfo": {
+                                      "endCursor": "Mg",
+                                      "hasNextPage": false
+                                    }
+                                  }
+                                }
+                              ],
+                              "pageInfo": {
+                                "endCursor": "Mw",
+                                "hasNextPage": false
+                              }
+                            },
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "name": "review-test"
+                      }
+                    ]
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "reviewThreads": {
+                    "nodes": [],
+                    "pageInfo": {
+                      "endCursor": null,
+                      "hasNextPage": false
+                    }
+                  },
+                  "reviews": {
+                    "nodes": [],
+                    "pageInfo": {
+                      "endCursor": null,
+                      "hasNextPage": false
+                    }
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:31Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4623",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": [
+                      {
+                        "__typename": "User",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                        "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                        "login": "Lovelace",
+                        "name": "Ada"
+                      }
+                    ]
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "name": "review-test"
+                      }
+                    ]
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:31Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "DELETE",
+        "path": "/repos/Lovelace/review-sandbox/issues/28/assignees",
+        "body": {
+          "assignees": [
+            "Lovelace"
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"4bb25af9610c7ac391a6296664ec9e0e94b28b46d6eb5cd0b41609b94312bd40\"",
+          "x-ratelimit-remaining": "4992",
+          "x-ratelimit-reset": "1794937991"
+        },
+        "body": {
+          "json": {
+            "active_lock_reason": null,
+            "assignee": null,
+            "assignees": [],
+            "author_association": "OWNER",
+            "body": "Scratch pull request of the people round trip.",
+            "closed_at": null,
+            "comments": 0,
+            "comments_url": "https://api.github.com/repos/Lovelace/review-sandbox/issues/28/comments",
+            "created_at": "2026-11-17T17:22:24Z",
+            "draft": false,
+            "events_url": "https://api.github.com/repos/Lovelace/review-sandbox/issues/28/events",
+            "html_url": "https://github.com/Lovelace/review-sandbox/pull/28",
+            "id": 6450201974,
+            "labels": [
+              {
+                "archived_at": null,
+                "archived_by": null,
+                "color": "1d76db",
+                "default": false,
+                "description": "Put on a scratch pull request by the people round trip",
+                "id": 13119880331,
+                "name": "review-test",
+                "node_id": "LA_kwDOVxPcWM8AAAADDgF8iw",
+                "url": "https://api.github.com/repos/Lovelace/review-sandbox/labels/review-test"
+              }
+            ],
+            "labels_url": "https://api.github.com/repos/Lovelace/review-sandbox/issues/28/labels{/name}",
+            "locked": false,
+            "milestone": null,
+            "node_id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+            "number": 28,
+            "performed_via_github_app": null,
+            "pull_request": {
+              "diff_url": "https://github.com/Lovelace/review-sandbox/pull/28.diff",
+              "html_url": "https://github.com/Lovelace/review-sandbox/pull/28",
+              "merged_at": null,
+              "patch_url": "https://github.com/Lovelace/review-sandbox/pull/28.patch",
+              "url": "https://api.github.com/repos/Lovelace/review-sandbox/pulls/28"
+            },
+            "reactions": {
+              "+1": 0,
+              "-1": 0,
+              "confused": 0,
+              "eyes": 0,
+              "heart": 0,
+              "hooray": 0,
+              "laugh": 0,
+              "rocket": 0,
+              "total_count": 0,
+              "url": "https://api.github.com/repos/Lovelace/review-sandbox/issues/28/reactions"
+            },
+            "repository_url": "https://api.github.com/repos/Lovelace/review-sandbox",
+            "state": "open",
+            "state_reason": null,
+            "timeline_url": "https://api.github.com/repos/Lovelace/review-sandbox/issues/28/timeline",
+            "title": "People people/github-1794936140",
+            "updated_at": "2026-11-17T17:22:34Z",
+            "url": "https://api.github.com/repos/Lovelace/review-sandbox/issues/28",
+            "user": {
+              "avatar_url": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+              "events_url": "https://api.github.com/users/Lovelace/events{/privacy}",
+              "followers_url": "https://api.github.com/users/Lovelace/followers",
+              "following_url": "https://api.github.com/users/Lovelace/following{/other_user}",
+              "gists_url": "https://api.github.com/users/Lovelace/gists{/gist_id}",
+              "gravatar_id": "",
+              "html_url": "https://github.com/Lovelace",
+              "id": 1234567,
+              "login": "Lovelace",
+              "node_id": "MDQ6VXNlcjEyMzQ1Njc=",
+              "organizations_url": "https://api.github.com/users/Lovelace/orgs",
+              "received_events_url": "https://api.github.com/users/Lovelace/received_events",
+              "repos_url": "https://api.github.com/users/Lovelace/repos",
+              "site_admin": false,
+              "starred_url": "https://api.github.com/users/Lovelace/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/Lovelace/subscriptions",
+              "type": "User",
+              "url": "https://api.github.com/users/Lovelace",
+              "user_view_type": "public"
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4622",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "name": "review-test"
+                      }
+                    ]
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:34Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4621",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "name": "review-test"
+                      }
+                    ]
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:34Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4620",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": [
+                      {
+                        "color": "1d76db",
+                        "description": "Put on a scratch pull request by the people round trip",
+                        "name": "review-test"
+                      }
+                    ]
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:34Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "DELETE",
+        "path": "/repos/Lovelace/review-sandbox/issues/28/labels/review-test"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "etag": "\"5834061f3aa82a4f9830008f727b6532de3aef1981bfd1aace42ecd0d7f29483\"",
+          "x-ratelimit-remaining": "4991",
+          "x-ratelimit-reset": "1794937991"
+        },
+        "body": {
+          "json": []
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4619",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:36Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "operation": "PullRequest",
+        "variables": {
+          "name": "review-sandbox",
+          "number": 28,
+          "owner": "Lovelace"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-ratelimit-remaining": "4618",
+          "x-ratelimit-reset": "1794937495"
+        },
+        "body": {
+          "json": {
+            "data": {
+              "repository": {
+                "pullRequest": {
+                  "additions": 1,
+                  "assignees": {
+                    "nodes": []
+                  },
+                  "author": {
+                    "__typename": "User",
+                    "avatarUrl": "https://avatars.githubusercontent.com/u/1234567?u=0000000000000000000000000000000000000000&v=4",
+                    "id": "MDQ6VXNlcjEyMzQ1Njc=",
+                    "login": "Lovelace",
+                    "name": "Ada"
+                  },
+                  "baseRefName": "main",
+                  "baseRefOid": "6006ef95c49571bbcbf0c5d60d4e24dae4eec3bd",
+                  "baseRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "body": "Scratch pull request of the people round trip.",
+                  "changedFiles": 1,
+                  "commentCount": {
+                    "totalCount": 0
+                  },
+                  "commits": {
+                    "nodes": [
+                      {
+                        "commit": {
+                          "oid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                          "statusCheckRollup": {
+                            "state": "PENDING"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "createdAt": "2026-11-17T17:22:24Z",
+                  "deletions": 0,
+                  "headRefName": "people/github-1794936140",
+                  "headRefOid": "1d8558e6f8560421b7e27144570026ce1dcc6a40",
+                  "headRepository": {
+                    "nameWithOwner": "Lovelace/review-sandbox"
+                  },
+                  "id": "PR_kwDOVxPcWM8AAAABP5RgZQ",
+                  "isDraft": false,
+                  "labels": {
+                    "nodes": []
+                  },
+                  "latestReviews": {
+                    "nodes": []
+                  },
+                  "milestone": null,
+                  "number": 28,
+                  "reviewDecision": null,
+                  "reviewRequests": {
+                    "nodes": []
+                  },
+                  "state": "OPEN",
+                  "threadCount": {
+                    "totalCount": 0
+                  },
+                  "threadCounts": {
+                    "nodes": []
+                  },
+                  "title": "People people/github-1794936140",
+                  "updatedAt": "2026-11-17T17:22:36Z",
+                  "url": "https://github.com/Lovelace/review-sandbox/pull/28",
+                  "viewerCanApplySuggestion": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

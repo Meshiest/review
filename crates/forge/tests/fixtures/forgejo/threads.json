@@ -1,0 +1,1071 @@
+{
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/version"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json;charset=utf-8"
+        },
+        "body": {
+          "json": {
+            "version": "17.0.1+gitea-1.22.0"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/repos/cora/review-sandbox/issues/4/comments",
+        "query": [
+          [
+            "limit",
+            "50"
+          ],
+          [
+            "page",
+            "1"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json;charset=utf-8",
+          "x-total-count": "0"
+        },
+        "body": {
+          "json": []
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/repos/cora/review-sandbox/pulls/4/reviews",
+        "query": [
+          [
+            "limit",
+            "50"
+          ],
+          [
+            "page",
+            "1"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json;charset=utf-8",
+          "x-total-count": "2"
+        },
+        "body": {
+          "json": [
+            {
+              "body": "",
+              "comments_count": 4,
+              "commit_id": "5bbf11d305088e26e8381f041b04bfa976a11f55",
+              "dismissed": false,
+              "html_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4#issuecomment-341",
+              "id": 25,
+              "official": false,
+              "pull_request_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4",
+              "stale": true,
+              "state": "COMMENT",
+              "submitted_at": "2026-11-17T04:46:57Z",
+              "team": null,
+              "updated_at": "2026-11-17T04:46:57Z",
+              "user": {
+                "active": true,
+                "avatar_url": "https://forgejo.example.com/avatars/scrubbed",
+                "created": "2026-09-29T18:35:42Z",
+                "description": "",
+                "email": "user@example.invalid",
+                "followers_count": 0,
+                "following_count": 0,
+                "full_name": "",
+                "html_url": "https://forgejo.example.com/cora",
+                "id": 1,
+                "is_admin": true,
+                "language": "en-US",
+                "last_login": "2026-11-15T03:11:33Z",
+                "location": "",
+                "login": "cora",
+                "login_name": "",
+                "prohibit_login": false,
+                "pronouns": "",
+                "restricted": false,
+                "source_id": 0,
+                "starred_repos_count": 0,
+                "username": "cora",
+                "visibility": "public",
+                "website": ""
+              }
+            },
+            {
+              "body": "",
+              "comments_count": 1,
+              "commit_id": "5bbf11d305088e26e8381f041b04bfa976a11f55",
+              "dismissed": false,
+              "html_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4#issuecomment-343",
+              "id": 26,
+              "official": false,
+              "pull_request_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4",
+              "stale": true,
+              "state": "COMMENT",
+              "submitted_at": "2026-11-17T04:46:57Z",
+              "team": null,
+              "updated_at": "2026-11-17T04:46:57Z",
+              "user": {
+                "active": true,
+                "avatar_url": "https://forgejo.example.com/avatars/scrubbed",
+                "created": "2026-09-29T18:35:42Z",
+                "description": "",
+                "email": "user@example.invalid",
+                "followers_count": 0,
+                "following_count": 0,
+                "full_name": "",
+                "html_url": "https://forgejo.example.com/cora",
+                "id": 1,
+                "is_admin": true,
+                "language": "en-US",
+                "last_login": "2026-11-15T03:11:33Z",
+                "location": "",
+                "login": "cora",
+                "login_name": "",
+                "prohibit_login": false,
+                "pronouns": "",
+                "restricted": false,
+                "source_id": 0,
+                "starred_repos_count": 0,
+                "username": "cora",
+                "visibility": "public",
+                "website": ""
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/repos/cora/review-sandbox/pulls/4"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json;charset=utf-8"
+        },
+        "body": {
+          "json": {
+            "additions": 10,
+            "allow_maintainer_edit": false,
+            "assignee": null,
+            "assignees": null,
+            "base": {
+              "label": "main",
+              "ref": "main",
+              "repo": {
+                "allow_fast_forward_only_merge": true,
+                "allow_merge_commits": true,
+                "allow_rebase": true,
+                "allow_rebase_explicit": true,
+                "allow_rebase_update": true,
+                "allow_squash_merge": true,
+                "archived": false,
+                "archived_at": "1970-01-01T00:00:00Z",
+                "avatar_url": "",
+                "clone_url": "https://forgejo.example.com/cora/review-sandbox.git",
+                "created_at": "2026-11-17T04:41:04Z",
+                "default_allow_maintainer_edit": false,
+                "default_branch": "main",
+                "default_delete_branch_after_merge": false,
+                "default_merge_style": "merge",
+                "default_update_style": "merge",
+                "description": "Sandbox for the review app's live tests",
+                "empty": false,
+                "fork": false,
+                "forks_count": 0,
+                "full_name": "cora/review-sandbox",
+                "globally_editable_wiki": false,
+                "has_actions": true,
+                "has_issues": true,
+                "has_packages": true,
+                "has_projects": true,
+                "has_pull_requests": true,
+                "has_releases": true,
+                "has_wiki": true,
+                "has_wiki_contents": false,
+                "html_url": "https://forgejo.example.com/cora/review-sandbox",
+                "id": 169,
+                "ignore_whitespace_conflicts": false,
+                "internal": false,
+                "internal_tracker": {
+                  "allow_only_contributors_to_track_time": true,
+                  "enable_issue_dependencies": true,
+                  "enable_time_tracker": true
+                },
+                "language": "Rust",
+                "languages_url": "https://forgejo.example.com/api/v1/repos/cora/review-sandbox/languages",
+                "link": "",
+                "mirror": false,
+                "mirror_interval": "",
+                "mirror_updated": "0001-01-01T00:00:00Z",
+                "name": "review-sandbox",
+                "object_format_name": "sha1",
+                "open_issues_count": 0,
+                "open_pr_counter": 6,
+                "original_url": "",
+                "owner": {
+                  "active": false,
+                  "avatar_url": "https://forgejo.example.com/avatars/scrubbed",
+                  "created": "2026-09-29T18:35:42Z",
+                  "description": "",
+                  "email": "user@example.invalid",
+                  "followers_count": 0,
+                  "following_count": 0,
+                  "full_name": "",
+                  "html_url": "https://forgejo.example.com/cora",
+                  "id": 1,
+                  "is_admin": false,
+                  "language": "",
+                  "last_login": "0001-01-01T00:00:00Z",
+                  "location": "",
+                  "login": "cora",
+                  "login_name": "",
+                  "prohibit_login": false,
+                  "pronouns": "",
+                  "restricted": false,
+                  "source_id": 0,
+                  "starred_repos_count": 0,
+                  "username": "cora",
+                  "visibility": "public",
+                  "website": ""
+                },
+                "parent": null,
+                "permissions": {
+                  "admin": true,
+                  "pull": true,
+                  "push": true
+                },
+                "private": true,
+                "release_counter": 0,
+                "repo_transfer": null,
+                "size": 46,
+                "ssh_url": "ssh://git@forgejo.example.com:2222/cora/review-sandbox.git",
+                "stars_count": 0,
+                "template": false,
+                "topics": [],
+                "updated_at": "2026-11-17T04:47:03Z",
+                "url": "https://forgejo.example.com/api/v1/repos/cora/review-sandbox",
+                "watchers_count": 1,
+                "website": "",
+                "wiki_branch": "main",
+                "wiki_clone_url": "https://forgejo.example.com/cora/review-sandbox.wiki.git",
+                "wiki_ssh_url": "ssh://git@forgejo.example.com:2222/cora/review-sandbox.wiki.git"
+              },
+              "repo_id": 169,
+              "sha": "3366269c689855a41f36e6dca7faf43ae080828a"
+            },
+            "body": "Carries review threads: resolved, unresolved with a reply, multi-line, removed-line and outdated.",
+            "changed_files": 1,
+            "closed_at": null,
+            "comments": 2,
+            "created_at": "2026-11-17T04:46:56Z",
+            "deletions": 6,
+            "diff_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4.diff",
+            "draft": false,
+            "due_date": null,
+            "flow": 0,
+            "head": {
+              "label": "threads",
+              "ref": "threads",
+              "repo": {
+                "allow_fast_forward_only_merge": true,
+                "allow_merge_commits": true,
+                "allow_rebase": true,
+                "allow_rebase_explicit": true,
+                "allow_rebase_update": true,
+                "allow_squash_merge": true,
+                "archived": false,
+                "archived_at": "1970-01-01T00:00:00Z",
+                "avatar_url": "",
+                "clone_url": "https://forgejo.example.com/cora/review-sandbox.git",
+                "created_at": "2026-11-17T04:41:04Z",
+                "default_allow_maintainer_edit": false,
+                "default_branch": "main",
+                "default_delete_branch_after_merge": false,
+                "default_merge_style": "merge",
+                "default_update_style": "merge",
+                "description": "Sandbox for the review app's live tests",
+                "empty": false,
+                "fork": false,
+                "forks_count": 0,
+                "full_name": "cora/review-sandbox",
+                "globally_editable_wiki": false,
+                "has_actions": true,
+                "has_issues": true,
+                "has_packages": true,
+                "has_projects": true,
+                "has_pull_requests": true,
+                "has_releases": true,
+                "has_wiki": true,
+                "has_wiki_contents": false,
+                "html_url": "https://forgejo.example.com/cora/review-sandbox",
+                "id": 169,
+                "ignore_whitespace_conflicts": false,
+                "internal": false,
+                "internal_tracker": {
+                  "allow_only_contributors_to_track_time": true,
+                  "enable_issue_dependencies": true,
+                  "enable_time_tracker": true
+                },
+                "language": "Rust",
+                "languages_url": "https://forgejo.example.com/api/v1/repos/cora/review-sandbox/languages",
+                "link": "",
+                "mirror": false,
+                "mirror_interval": "",
+                "mirror_updated": "0001-01-01T00:00:00Z",
+                "name": "review-sandbox",
+                "object_format_name": "sha1",
+                "open_issues_count": 0,
+                "open_pr_counter": 6,
+                "original_url": "",
+                "owner": {
+                  "active": false,
+                  "avatar_url": "https://forgejo.example.com/avatars/scrubbed",
+                  "created": "2026-09-29T18:35:42Z",
+                  "description": "",
+                  "email": "user@example.invalid",
+                  "followers_count": 0,
+                  "following_count": 0,
+                  "full_name": "",
+                  "html_url": "https://forgejo.example.com/cora",
+                  "id": 1,
+                  "is_admin": false,
+                  "language": "",
+                  "last_login": "0001-01-01T00:00:00Z",
+                  "location": "",
+                  "login": "cora",
+                  "login_name": "",
+                  "prohibit_login": false,
+                  "pronouns": "",
+                  "restricted": false,
+                  "source_id": 0,
+                  "starred_repos_count": 0,
+                  "username": "cora",
+                  "visibility": "public",
+                  "website": ""
+                },
+                "parent": null,
+                "permissions": {
+                  "admin": true,
+                  "pull": true,
+                  "push": true
+                },
+                "private": true,
+                "release_counter": 0,
+                "repo_transfer": null,
+                "size": 46,
+                "ssh_url": "ssh://git@forgejo.example.com:2222/cora/review-sandbox.git",
+                "stars_count": 0,
+                "template": false,
+                "topics": [],
+                "updated_at": "2026-11-17T04:47:03Z",
+                "url": "https://forgejo.example.com/api/v1/repos/cora/review-sandbox",
+                "watchers_count": 1,
+                "website": "",
+                "wiki_branch": "main",
+                "wiki_clone_url": "https://forgejo.example.com/cora/review-sandbox.wiki.git",
+                "wiki_ssh_url": "ssh://git@forgejo.example.com:2222/cora/review-sandbox.wiki.git"
+              },
+              "repo_id": 169,
+              "sha": "b4c0f065a76a078b65e2203939f82c430b7f4888"
+            },
+            "html_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4",
+            "id": 317,
+            "is_locked": false,
+            "labels": [],
+            "merge_base": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+            "merge_commit_sha": null,
+            "mergeable": true,
+            "merged": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "number": 4,
+            "patch_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4.patch",
+            "pin_order": 0,
+            "requested_reviewers": [],
+            "requested_reviewers_teams": [],
+            "review_comments": 2,
+            "state": "open",
+            "title": "Threads: review comments on several lines",
+            "updated_at": "2026-11-17T04:46:58Z",
+            "url": "https://forgejo.example.com/api/v1/repos/cora/review-sandbox/pulls/4",
+            "user": {
+              "active": true,
+              "avatar_url": "https://forgejo.example.com/avatars/scrubbed",
+              "created": "2026-09-29T18:35:42Z",
+              "description": "",
+              "email": "user@example.invalid",
+              "followers_count": 0,
+              "following_count": 0,
+              "full_name": "",
+              "html_url": "https://forgejo.example.com/cora",
+              "id": 1,
+              "is_admin": true,
+              "language": "en-US",
+              "last_login": "2026-11-15T03:11:33Z",
+              "location": "",
+              "login": "cora",
+              "login_name": "",
+              "prohibit_login": false,
+              "pronouns": "",
+              "restricted": false,
+              "source_id": 0,
+              "starred_repos_count": 0,
+              "username": "cora",
+              "visibility": "public",
+              "website": ""
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/repos/cora/review-sandbox/pulls/4/reviews/26/comments",
+        "query": [
+          [
+            "limit",
+            "50"
+          ],
+          [
+            "page",
+            "1"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json;charset=utf-8"
+        },
+        "body": {
+          "json": [
+            {
+              "body": "Will do, tracking it in a follow-up.",
+              "commit_id": "5bbf11d305088e26e8381f041b04bfa976a11f55",
+              "created_at": "2026-11-17T04:46:57Z",
+              "diff_hunk": "@@ -18,3 +16,1 @@\n-    } else {\n-        Some(a / b)\n-    }\n+    a.checked_div(b)",
+              "extra_lines_count": 0,
+              "html_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4#issuecomment-342",
+              "id": 342,
+              "original_commit_id": "",
+              "original_position": 0,
+              "path": "src/threads_target.rs",
+              "position": 16,
+              "pull_request_review_id": 26,
+              "pull_request_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4",
+              "resolver": null,
+              "updated_at": "2026-11-17T04:46:57Z",
+              "user": {
+                "active": true,
+                "avatar_url": "https://forgejo.example.com/avatars/scrubbed",
+                "created": "2026-09-29T18:35:42Z",
+                "description": "",
+                "email": "user@example.invalid",
+                "followers_count": 0,
+                "following_count": 0,
+                "full_name": "",
+                "html_url": "https://forgejo.example.com/cora",
+                "id": 1,
+                "is_admin": true,
+                "language": "en-US",
+                "last_login": "2026-11-15T03:11:33Z",
+                "location": "",
+                "login": "cora",
+                "login_name": "",
+                "prohibit_login": false,
+                "pronouns": "",
+                "restricted": false,
+                "source_id": 0,
+                "starred_repos_count": 0,
+                "username": "cora",
+                "visibility": "public",
+                "website": ""
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/repos/cora/review-sandbox/pulls/4/reviews/25/comments",
+        "query": [
+          [
+            "limit",
+            "50"
+          ],
+          [
+            "page",
+            "1"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json;charset=utf-8"
+        },
+        "body": {
+          "json": [
+            {
+              "body": "Nice simplification. Can you add a test for `b == 0`?",
+              "commit_id": "5bbf11d305088e26e8381f041b04bfa976a11f55",
+              "created_at": "2026-11-17T04:46:57Z",
+              "diff_hunk": "@@ -18,3 +16,1 @@\n-    } else {\n-        Some(a / b)\n-    }\n+    a.checked_div(b)",
+              "extra_lines_count": 0,
+              "html_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4#issuecomment-338",
+              "id": 338,
+              "original_commit_id": "",
+              "original_position": 0,
+              "path": "src/threads_target.rs",
+              "position": 16,
+              "pull_request_review_id": 25,
+              "pull_request_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4",
+              "resolver": null,
+              "updated_at": "2026-11-17T04:46:57Z",
+              "user": {
+                "active": true,
+                "avatar_url": "https://forgejo.example.com/avatars/scrubbed",
+                "created": "2026-09-29T18:35:42Z",
+                "description": "",
+                "email": "user@example.invalid",
+                "followers_count": 0,
+                "following_count": 0,
+                "full_name": "",
+                "html_url": "https://forgejo.example.com/cora",
+                "id": 1,
+                "is_admin": true,
+                "language": "en-US",
+                "last_login": "2026-11-15T03:11:33Z",
+                "location": "",
+                "login": "cora",
+                "login_name": "",
+                "prohibit_login": false,
+                "pronouns": "",
+                "restricted": false,
+                "source_id": 0,
+                "starred_repos_count": 0,
+                "username": "cora",
+                "visibility": "public",
+                "website": ""
+              }
+            },
+            {
+              "body": "Why drop the plain subtraction?",
+              "commit_id": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+              "created_at": "2026-11-17T04:46:57Z",
+              "diff_hunk": "@@ -5,7 +5,7 @@ pub fn add(a: i32, b: i32) -> i32 {\n }\n \n pub fn sub(a: i32, b: i32) -> i32 {\n-    a - b",
+              "extra_lines_count": 0,
+              "html_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4#issuecomment-339",
+              "id": 339,
+              "original_commit_id": "",
+              "original_position": 8,
+              "path": "src/threads_target.rs",
+              "position": 0,
+              "pull_request_review_id": 25,
+              "pull_request_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4",
+              "resolver": null,
+              "updated_at": "2026-11-17T04:46:57Z",
+              "user": {
+                "active": true,
+                "avatar_url": "https://forgejo.example.com/avatars/scrubbed",
+                "created": "2026-09-29T18:35:42Z",
+                "description": "",
+                "email": "user@example.invalid",
+                "followers_count": 0,
+                "following_count": 0,
+                "full_name": "",
+                "html_url": "https://forgejo.example.com/cora",
+                "id": 1,
+                "is_admin": true,
+                "language": "en-US",
+                "last_login": "2026-11-15T03:11:33Z",
+                "location": "",
+                "login": "cora",
+                "login_name": "",
+                "prohibit_login": false,
+                "pronouns": "",
+                "restricted": false,
+                "source_id": 0,
+                "starred_repos_count": 0,
+                "username": "cora",
+                "visibility": "public",
+                "website": ""
+              }
+            },
+            {
+              "body": "Prefer `% 2` here, it reads better.",
+              "commit_id": "5bbf11d305088e26e8381f041b04bfa976a11f55",
+              "created_at": "2026-11-17T04:46:57Z",
+              "diff_hunk": "@@ -26,3 +22,3 @@\n \n pub fn is_even(n: i32) -> bool {\n-    n % 2 == 0\n+    n & 1 == 0",
+              "extra_lines_count": 0,
+              "html_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4#issuecomment-340",
+              "id": 340,
+              "original_commit_id": "",
+              "original_position": 0,
+              "path": "src/threads_target.rs",
+              "position": 24,
+              "pull_request_review_id": 25,
+              "pull_request_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4",
+              "resolver": null,
+              "updated_at": "2026-11-17T04:46:58Z",
+              "user": {
+                "active": true,
+                "avatar_url": "https://forgejo.example.com/avatars/scrubbed",
+                "created": "2026-09-29T18:35:42Z",
+                "description": "",
+                "email": "user@example.invalid",
+                "followers_count": 0,
+                "following_count": 0,
+                "full_name": "",
+                "html_url": "https://forgejo.example.com/cora",
+                "id": 1,
+                "is_admin": true,
+                "language": "en-US",
+                "last_login": "2026-11-15T03:11:33Z",
+                "location": "",
+                "login": "cora",
+                "login_name": "",
+                "prohibit_login": false,
+                "pronouns": "",
+                "restricted": false,
+                "source_id": 0,
+                "starred_repos_count": 0,
+                "username": "cora",
+                "visibility": "public",
+                "website": ""
+              }
+            },
+            {
+              "body": "Should this saturate or wrap on overflow? Saturating is fine by me.",
+              "commit_id": "5bbf11d305088e26e8381f041b04bfa976a11f55",
+              "created_at": "2026-11-17T04:46:57Z",
+              "diff_hunk": "@@ -6,3 +6,3 @@\n \n pub fn sub(a: i32, b: i32) -> i32 {\n-    a - b\n+    a.saturating_sub(b)",
+              "extra_lines_count": 0,
+              "html_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4#issuecomment-337",
+              "id": 337,
+              "original_commit_id": "",
+              "original_position": 0,
+              "path": "src/threads_target.rs",
+              "position": 8,
+              "pull_request_review_id": 25,
+              "pull_request_url": "https://forgejo.example.com/cora/review-sandbox/pulls/4",
+              "resolver": null,
+              "updated_at": "2026-11-17T04:46:57Z",
+              "user": {
+                "active": true,
+                "avatar_url": "https://forgejo.example.com/avatars/scrubbed",
+                "created": "2026-09-29T18:35:42Z",
+                "description": "",
+                "email": "user@example.invalid",
+                "followers_count": 0,
+                "following_count": 0,
+                "full_name": "",
+                "html_url": "https://forgejo.example.com/cora",
+                "id": 1,
+                "is_admin": true,
+                "language": "en-US",
+                "last_login": "2026-11-15T03:11:33Z",
+                "location": "",
+                "login": "cora",
+                "login_name": "",
+                "prohibit_login": false,
+                "pronouns": "",
+                "restricted": false,
+                "source_id": 0,
+                "starred_repos_count": 0,
+                "username": "cora",
+                "visibility": "public",
+                "website": ""
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/repos/cora/review-sandbox/raw/src/threads_target.rs",
+        "query": [
+          [
+            "ref",
+            "b4c0f065a76a078b65e2203939f82c430b7f4888"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/plain; charset=utf-8",
+          "etag": "\"1f0662a0e89e691e51103e61f5a9e8d5ba911bb3\""
+        },
+        "body": {
+          "text": "//! Sample module used by review threads.\n\npub fn add(a: i32, b: i32) -> i32 {\n    a + b\n}\n\npub fn sub(a: i32, b: i32) -> i32 {\n    a.saturating_sub(b)\n}\n\npub fn mul(a: i32, b: i32) -> i32 {\n    a * b\n}\n\npub fn div(a: i32, b: i32) -> Option<i32> {\n    a.checked_div(b)\n}\n\npub fn clamp(x: i32, lo: i32, hi: i32) -> i32 {\n    if x < lo { lo } else if x > hi { hi } else { x }\n}\n\npub fn is_even(n: i32) -> bool {\n    n % 2 == 0\n}\n\npub fn pow(base: i32, exp: u32) -> i32 {\n    let mut acc = 1;\n    for _ in 0..exp {\n        acc *= base;\n    }\n    acc\n}\n"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/repos/cora/review-sandbox/pulls/1/reviews",
+        "query": [
+          [
+            "limit",
+            "50"
+          ],
+          [
+            "page",
+            "1"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json;charset=utf-8",
+          "x-total-count": "0"
+        },
+        "body": {
+          "json": []
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/repos/cora/review-sandbox/issues/1/comments",
+        "query": [
+          [
+            "limit",
+            "50"
+          ],
+          [
+            "page",
+            "1"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json;charset=utf-8",
+          "x-total-count": "0"
+        },
+        "body": {
+          "json": []
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/repos/cora/review-sandbox/pulls/1"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json;charset=utf-8"
+        },
+        "body": {
+          "json": {
+            "additions": 5,
+            "allow_maintainer_edit": false,
+            "assignee": null,
+            "assignees": null,
+            "base": {
+              "label": "main",
+              "ref": "main",
+              "repo": {
+                "allow_fast_forward_only_merge": true,
+                "allow_merge_commits": true,
+                "allow_rebase": true,
+                "allow_rebase_explicit": true,
+                "allow_rebase_update": true,
+                "allow_squash_merge": true,
+                "archived": false,
+                "archived_at": "1970-01-01T00:00:00Z",
+                "avatar_url": "",
+                "clone_url": "https://forgejo.example.com/cora/review-sandbox.git",
+                "created_at": "2026-11-17T04:41:04Z",
+                "default_allow_maintainer_edit": false,
+                "default_branch": "main",
+                "default_delete_branch_after_merge": false,
+                "default_merge_style": "merge",
+                "default_update_style": "merge",
+                "description": "Sandbox for the review app's live tests",
+                "empty": false,
+                "fork": false,
+                "forks_count": 0,
+                "full_name": "cora/review-sandbox",
+                "globally_editable_wiki": false,
+                "has_actions": true,
+                "has_issues": true,
+                "has_packages": true,
+                "has_projects": true,
+                "has_pull_requests": true,
+                "has_releases": true,
+                "has_wiki": true,
+                "has_wiki_contents": false,
+                "html_url": "https://forgejo.example.com/cora/review-sandbox",
+                "id": 169,
+                "ignore_whitespace_conflicts": false,
+                "internal": false,
+                "internal_tracker": {
+                  "allow_only_contributors_to_track_time": true,
+                  "enable_issue_dependencies": true,
+                  "enable_time_tracker": true
+                },
+                "language": "Rust",
+                "languages_url": "https://forgejo.example.com/api/v1/repos/cora/review-sandbox/languages",
+                "link": "",
+                "mirror": false,
+                "mirror_interval": "",
+                "mirror_updated": "0001-01-01T00:00:00Z",
+                "name": "review-sandbox",
+                "object_format_name": "sha1",
+                "open_issues_count": 0,
+                "open_pr_counter": 6,
+                "original_url": "",
+                "owner": {
+                  "active": false,
+                  "avatar_url": "https://forgejo.example.com/avatars/scrubbed",
+                  "created": "2026-09-29T18:35:42Z",
+                  "description": "",
+                  "email": "user@example.invalid",
+                  "followers_count": 0,
+                  "following_count": 0,
+                  "full_name": "",
+                  "html_url": "https://forgejo.example.com/cora",
+                  "id": 1,
+                  "is_admin": false,
+                  "language": "",
+                  "last_login": "0001-01-01T00:00:00Z",
+                  "location": "",
+                  "login": "cora",
+                  "login_name": "",
+                  "prohibit_login": false,
+                  "pronouns": "",
+                  "restricted": false,
+                  "source_id": 0,
+                  "starred_repos_count": 0,
+                  "username": "cora",
+                  "visibility": "public",
+                  "website": ""
+                },
+                "parent": null,
+                "permissions": {
+                  "admin": true,
+                  "pull": true,
+                  "push": true
+                },
+                "private": true,
+                "release_counter": 0,
+                "repo_transfer": null,
+                "size": 46,
+                "ssh_url": "ssh://git@forgejo.example.com:2222/cora/review-sandbox.git",
+                "stars_count": 0,
+                "template": false,
+                "topics": [],
+                "updated_at": "2026-11-17T04:47:03Z",
+                "url": "https://forgejo.example.com/api/v1/repos/cora/review-sandbox",
+                "watchers_count": 1,
+                "website": "",
+                "wiki_branch": "main",
+                "wiki_clone_url": "https://forgejo.example.com/cora/review-sandbox.wiki.git",
+                "wiki_ssh_url": "ssh://git@forgejo.example.com:2222/cora/review-sandbox.wiki.git"
+              },
+              "repo_id": 169,
+              "sha": "3366269c689855a41f36e6dca7faf43ae080828a"
+            },
+            "body": "First pull request of a 3-PR stack. Based on `main`.",
+            "changed_files": 2,
+            "closed_at": null,
+            "comments": 0,
+            "created_at": "2026-11-17T04:46:53Z",
+            "deletions": 1,
+            "diff_url": "https://forgejo.example.com/cora/review-sandbox/pulls/1.diff",
+            "draft": false,
+            "due_date": null,
+            "flow": 0,
+            "head": {
+              "label": "stack-1",
+              "ref": "stack-1",
+              "repo": {
+                "allow_fast_forward_only_merge": true,
+                "allow_merge_commits": true,
+                "allow_rebase": true,
+                "allow_rebase_explicit": true,
+                "allow_rebase_update": true,
+                "allow_squash_merge": true,
+                "archived": false,
+                "archived_at": "1970-01-01T00:00:00Z",
+                "avatar_url": "",
+                "clone_url": "https://forgejo.example.com/cora/review-sandbox.git",
+                "created_at": "2026-11-17T04:41:04Z",
+                "default_allow_maintainer_edit": false,
+                "default_branch": "main",
+                "default_delete_branch_after_merge": false,
+                "default_merge_style": "merge",
+                "default_update_style": "merge",
+                "description": "Sandbox for the review app's live tests",
+                "empty": false,
+                "fork": false,
+                "forks_count": 0,
+                "full_name": "cora/review-sandbox",
+                "globally_editable_wiki": false,
+                "has_actions": true,
+                "has_issues": true,
+                "has_packages": true,
+                "has_projects": true,
+                "has_pull_requests": true,
+                "has_releases": true,
+                "has_wiki": true,
+                "has_wiki_contents": false,
+                "html_url": "https://forgejo.example.com/cora/review-sandbox",
+                "id": 169,
+                "ignore_whitespace_conflicts": false,
+                "internal": false,
+                "internal_tracker": {
+                  "allow_only_contributors_to_track_time": true,
+                  "enable_issue_dependencies": true,
+                  "enable_time_tracker": true
+                },
+                "language": "Rust",
+                "languages_url": "https://forgejo.example.com/api/v1/repos/cora/review-sandbox/languages",
+                "link": "",
+                "mirror": false,
+                "mirror_interval": "",
+                "mirror_updated": "0001-01-01T00:00:00Z",
+                "name": "review-sandbox",
+                "object_format_name": "sha1",
+                "open_issues_count": 0,
+                "open_pr_counter": 6,
+                "original_url": "",
+                "owner": {
+                  "active": false,
+                  "avatar_url": "https://forgejo.example.com/avatars/scrubbed",
+                  "created": "2026-09-29T18:35:42Z",
+                  "description": "",
+                  "email": "user@example.invalid",
+                  "followers_count": 0,
+                  "following_count": 0,
+                  "full_name": "",
+                  "html_url": "https://forgejo.example.com/cora",
+                  "id": 1,
+                  "is_admin": false,
+                  "language": "",
+                  "last_login": "0001-01-01T00:00:00Z",
+                  "location": "",
+                  "login": "cora",
+                  "login_name": "",
+                  "prohibit_login": false,
+                  "pronouns": "",
+                  "restricted": false,
+                  "source_id": 0,
+                  "starred_repos_count": 0,
+                  "username": "cora",
+                  "visibility": "public",
+                  "website": ""
+                },
+                "parent": null,
+                "permissions": {
+                  "admin": true,
+                  "pull": true,
+                  "push": true
+                },
+                "private": true,
+                "release_counter": 0,
+                "repo_transfer": null,
+                "size": 46,
+                "ssh_url": "ssh://git@forgejo.example.com:2222/cora/review-sandbox.git",
+                "stars_count": 0,
+                "template": false,
+                "topics": [],
+                "updated_at": "2026-11-17T04:47:03Z",
+                "url": "https://forgejo.example.com/api/v1/repos/cora/review-sandbox",
+                "watchers_count": 1,
+                "website": "",
+                "wiki_branch": "main",
+                "wiki_clone_url": "https://forgejo.example.com/cora/review-sandbox.wiki.git",
+                "wiki_ssh_url": "ssh://git@forgejo.example.com:2222/cora/review-sandbox.wiki.git"
+              },
+              "repo_id": 169,
+              "sha": "3801d3ed0f2245e438b894b470fef14b0c854a45"
+            },
+            "html_url": "https://forgejo.example.com/cora/review-sandbox/pulls/1",
+            "id": 314,
+            "is_locked": false,
+            "labels": [],
+            "merge_base": "f0fdad5126d815c8cea0bfe8a78f4fc2870484b4",
+            "merge_commit_sha": null,
+            "mergeable": true,
+            "merged": false,
+            "merged_at": null,
+            "merged_by": null,
+            "milestone": null,
+            "number": 1,
+            "patch_url": "https://forgejo.example.com/cora/review-sandbox/pulls/1.patch",
+            "pin_order": 0,
+            "requested_reviewers": [],
+            "requested_reviewers_teams": [],
+            "review_comments": 0,
+            "state": "open",
+            "title": "Stack 1/3: bump version, add triple",
+            "updated_at": "2026-11-17T04:46:53Z",
+            "url": "https://forgejo.example.com/api/v1/repos/cora/review-sandbox/pulls/1",
+            "user": {
+              "active": true,
+              "avatar_url": "https://forgejo.example.com/avatars/scrubbed",
+              "created": "2026-09-29T18:35:42Z",
+              "description": "",
+              "email": "user@example.invalid",
+              "followers_count": 0,
+              "following_count": 0,
+              "full_name": "",
+              "html_url": "https://forgejo.example.com/cora",
+              "id": 1,
+              "is_admin": true,
+              "language": "en-US",
+              "last_login": "2026-11-15T03:11:33Z",
+              "location": "",
+              "login": "cora",
+              "login_name": "",
+              "prohibit_login": false,
+              "pronouns": "",
+              "restricted": false,
+              "source_id": 0,
+              "starred_repos_count": 0,
+              "username": "cora",
+              "visibility": "public",
+              "website": ""
+            }
+          }
+        }
+      }
+    }
+  ]
+}
