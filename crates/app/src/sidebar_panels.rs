@@ -350,9 +350,9 @@ pub fn fold_button(group: &TabGroupContext, cx: &App) -> Option<AnyElement> {
     }
     let name = this.section.name();
     let (icon, tip) = if this.is_collapsed() {
-        (IconName::ChevronsUpDown, "Unfold")
+        (IconName::ChevronRight, "Unfold")
     } else {
-        (IconName::ChevronsDownUp, "Fold")
+        (IconName::ChevronDown, "Fold")
     };
     let fold = Button::new("section-fold")
         .icon(icon)

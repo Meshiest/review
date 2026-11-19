@@ -138,7 +138,9 @@ impl CredentialSource for CliCredentials {
             ForgeKind::GitHub => github_token(&self.host).await,
             ForgeKind::GitLab => {
                 // glab refreshes an expired OAuth token on any API call.
-                run("glab", &["api", "--hostname", &self.host, "user"]).await?;
+                run("glab", &["api", "--hostname", &self.host, "user"])
+                    .await
+                    .map_err(|error| refresh_failed(&self.host, "glab auth login", error))?;
                 gitlab_token(&self.host).await
             }
             ForgeKind::Forgejo => forgejo_token(&self.host, Refresh::Always).await,
@@ -172,14 +174,26 @@ async fn run(program: &str, args: &[&str]) -> Result<String> {
         .map_err(|err| fail(err.to_string()))?;
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        let first = stderr.lines().next().unwrap_or("").trim();
-        return Err(fail(format!(
-            "{}: {}",
-            output.status,
-            first.chars().take(200).collect::<String>()
-        )));
+        return Err(fail(format!("{}: {}", output.status, cli_message(&stderr))));
     }
     Ok(String::from_utf8_lossy(&output.stdout).trim().to_owned())
+}
+
+/// What a CLI printed on failure, on one line: glab pads its message with
+/// blank lines and an `ERROR` banner, and wraps it.
+fn cli_message(stderr: &str) -> String {
+    let words: Vec<&str> = stderr
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty() && *line != "ERROR")
+        .collect();
+    words.join(" ").chars().take(300).collect()
+}
+
+/// A token refresh through the CLI failed: the CLI's own login is gone,
+/// and only signing in again brings it back.
+fn refresh_failed(host: &str, login: &str, error: Error) -> Error {
+    no_token(host, format!("{error}; run `{login}`"))
 }
 
 fn no_token(host: &str, reason: impl Into<String>) -> Error {
@@ -285,7 +299,9 @@ enum Refresh {
 
 async fn forgejo_token(host: &str, refresh: Refresh) -> Result<Credential> {
     if refresh == Refresh::Always {
-        run("fj", &["-H", host, "whoami"]).await?;
+        run("fj", &["-H", host, "whoami"])
+            .await
+            .map_err(|error| refresh_failed(host, "fj auth login", error))?;
     }
     let login = read_fj_login(host).await?;
     if refresh == Refresh::IfOAuth && matches!(login, FjLogin::OAuth { .. }) {
@@ -419,6 +435,28 @@ aliases:
         assert!(glab_config_token(GLAB, "missing.example").is_none());
         assert!(
             glab_config_token("hosts:\n    gitlab.com:\n        token:\n", "gitlab.com").is_none()
+        );
+    }
+
+    #[test]
+    fn a_cli_failure_reads_on_one_line() {
+        let glab = "          \n   ERROR  \n          \n  Oauth2: \"invalid_grant\" \"The grant is invalid, does not match the          \n  redirection URI.\".   \n\n";
+        assert_eq!(
+            cli_message(glab),
+            "Oauth2: \"invalid_grant\" \"The grant is invalid, does not match the redirection URI.\"."
+        );
+        assert_eq!(cli_message(""), "");
+        let error = refresh_failed(
+            "gitlab.com",
+            "glab auth login",
+            Error::Cli {
+                program: "glab".into(),
+                reason: "exit code: 1: Oauth2: \"invalid_grant\"".into(),
+            },
+        );
+        assert_eq!(
+            error.to_string(),
+            "not signed in to gitlab.com: `glab` failed: exit code: 1: Oauth2: \"invalid_grant\"; run `glab auth login`"
         );
     }
 

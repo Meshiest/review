@@ -1,6 +1,6 @@
 //! The app's asset source: gpui-kit's default icons plus the few extra Lucide
-//! icons the CI states, watching, the stack, review threads, the key list and
-//! folding a sidebar section need.
+//! icons the CI states, watching, the stack, review threads and the key list
+//! need.
 
 use std::borrow::Cow;
 
@@ -23,8 +23,7 @@ icon_assets!(
         MessageSquareDot,
         SquareTerminal,
         Monitor,
-        Server,
-        ChevronsDownUp
+        Server
     ]
 );
 
