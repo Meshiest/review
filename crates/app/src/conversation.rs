@@ -493,10 +493,11 @@ impl ConversationPanel {
             .relative()
             .w_full()
             .h(px(30.0))
-            .px(px(8.0))
+            // As the unfolded thread's card, so the chevron stays put.
+            .px(px(10.0))
             .gap(px(8.0))
             .items_center()
-            .rounded(t.radius.md)
+            .rounded(t.radius.lg)
             .border_1()
             .border_color(if highlighted { c.focus } else { c.border })
             .cursor_pointer()
