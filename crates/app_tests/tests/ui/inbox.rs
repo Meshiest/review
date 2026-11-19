@@ -1,7 +1,8 @@
 //! The inbox panel: sections the user resizes and folds, each scrolling on
 //! its own, saved with the layout; grouping by repository with a menu per
-//! repository; the Repos panel that hides repositories from view only, with
-//! a search box of its own; and the counts on each row.
+//! repository and stacks nested under it; the Repos panel that hides
+//! repositories from view only, with a search box of its own; and the
+//! counts on each row.
 
 use std::time::Duration;
 
@@ -266,19 +267,108 @@ fn the_repos_panel_search_filters_its_list_as_typed(cx: &mut TestAppContext) {
 }
 
 #[gpui::test]
-fn inbox_rows_show_their_counts_beside_the_title(cx: &mut TestAppContext) {
+fn inbox_rows_end_their_lines_with_the_counts(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
     let row = shell.bounds_of("inbox-row-42");
-    let counts = shell.bounds_of("inbox-counts-42");
-    assert!(counts.size.width > px(0.0), "comments and lines are drawn");
+    let author = shell.bounds_of("inbox-author-42");
+    let age = shell.bounds_of("inbox-age-42");
+    let talk = shell.bounds_of("inbox-talk-42");
+    let review = shell.bounds_of("inbox-review-42");
+    let lines = shell.bounds_of("inbox-lines-42");
+    let same_line = |a: gpui::Bounds<gpui::Pixels>, b: gpui::Bounds<gpui::Pixels>| {
+        (a.center().y - b.center().y).abs() < px(2.0)
+    };
     assert!(
-        counts.right() <= row.right() && counts.top() >= row.center().y - px(4.0),
-        "on the author line, inside the row: {counts:?} in {row:?}"
+        same_line(age, author) && age.left() - author.right() < px(24.0),
+        "the age follows the author: {age:?} after {author:?}"
     );
     assert!(
-        counts.size.width < row.size.width / 2.0,
-        "they leave the title its room"
+        same_line(talk, author),
+        "comments end the author line: {talk:?}"
     );
+    assert!(
+        same_line(lines, review),
+        "lines changed end the status line: {lines:?}"
+    );
+    assert!(
+        talk.right() <= row.right() && (talk.right() - lines.right()).abs() < px(2.0),
+        "both flush right, inside the row: {talk:?} {lines:?} in {row:?}"
+    );
+    assert!(
+        talk.size.width < row.size.width / 2.0,
+        "they leave the author its room"
+    );
+}
+
+#[gpui::test]
+fn a_click_on_the_author_opens_the_pull_request(cx: &mut TestAppContext) {
+    let mut shell = open_shell(cx, Options::default());
+    shell.click("inbox-author-42");
+    assert_eq!(shell.focused(), Some(42), "like a click on the row");
+}
+
+#[gpui::test]
+fn a_stack_nests_under_its_repository_and_folds(cx: &mut TestAppContext) {
+    let mut shell = open_shell(cx, Options::default());
+    let flat = shell.bounds_of("inbox-ci-41");
+    shell.click("group-by-repo");
+    assert!(shell.drawn("stack-group-1-38"), "the stack has a header");
+    let group = shell.bounds_of("repo-group-1-review");
+    let header = shell.bounds_of("stack-group-1-38");
+    assert!(group.bottom() <= header.top(), "under its repository");
+    let tops: Vec<_> = [41, 40, 39, 38]
+        .map(|n| {
+            shell
+                .bounds_of(String::leak(format!("inbox-row-{n}")))
+                .top()
+        })
+        .into();
+    assert!(
+        header.bottom() <= tops[0] && tops.is_sorted(),
+        "its pull requests under it, top of the stack first: {tops:?}"
+    );
+    let nested = shell.bounds_of("inbox-ci-41");
+    assert_eq!(
+        nested.left() - flat.left(),
+        px(28.0),
+        "two indents: the repository's and the stack's"
+    );
+
+    shell.click("stack-group-1-38");
+    assert!(
+        !shell.drawn("inbox-row-40"),
+        "a folded stack hides its rows"
+    );
+    assert!(shell.drawn("stack-group-1-38") && shell.drawn("repo-group-1-review"));
+    shell.click("stack-group-1-38");
+    assert!(shell.drawn("inbox-row-40"));
+
+    shell.click("repo-group-1-review");
+    assert!(
+        !shell.drawn("stack-group-1-38"),
+        "folding the repository folds the stack away too"
+    );
+}
+
+#[gpui::test]
+fn a_right_click_on_a_repository_header_opens_its_menu(cx: &mut TestAppContext) {
+    let mut shell = open_shell(cx, Options::default());
+    shell.click("group-by-repo");
+    let at = shell.bounds_of("repo-group-1-review").center();
+    let none = gpui::Modifiers::none();
+    shell.cx.simulate_mouse_move(at, None, none);
+    shell
+        .cx
+        .simulate_mouse_down(at, gpui::MouseButton::Right, none);
+    shell
+        .cx
+        .simulate_mouse_up(at, gpui::MouseButton::Right, none);
+    shell.settle();
+    assert!(
+        shell.drawn("repo-menu-hide") && shell.drawn("repo-menu-open"),
+        "the ... menu is open"
+    );
+    assert!(shell.drawn("inbox-row-38"), "and the group did not fold");
 }
 
 fn filter(shell: &mut ShellWindow) -> String {
@@ -666,7 +756,7 @@ fn a_pull_request_row_has_three_lines_in_the_height_the_list_counts(cx: &mut Tes
     let title = shell.bounds_of("inbox-title-42");
     let more = shell.bounds_of("inbox-more-42");
     let review = shell.bounds_of("inbox-review-42");
-    let counts = shell.bounds_of("inbox-counts-42");
+    let lines = shell.bounds_of("inbox-lines-42");
     assert_eq!(
         row.size.height,
         px(app::inbox::PR_ROW),
@@ -681,11 +771,11 @@ fn a_pull_request_row_has_three_lines_in_the_height_the_list_counts(cx: &mut Tes
         "the status line is under the reference line, which is under the title"
     );
     assert!(
-        (counts.center().y - review.center().y).abs() < px(2.0),
-        "chips and review state share the status line"
+        (lines.center().y - review.center().y).abs() < px(2.0),
+        "lines changed and review state share the status line"
     );
     assert!(
-        review.bottom() <= row.bottom() && counts.right() <= row.right(),
+        review.bottom() <= row.bottom() && lines.right() <= row.right(),
         "nothing spills out of the row"
     );
 }

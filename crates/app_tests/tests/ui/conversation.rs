@@ -615,10 +615,10 @@ fn an_issue_reference_opens_here_when_the_forge_says_it_is_a_pull_request(cx: &m
 #[gpui::test]
 fn inbox_links_open_on_the_web_without_opening_the_row(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
-    let url = "https://forgejo.example.com/mira";
+    let url = "https://forgejo.example.com/cora/review";
     assert!(
         shell.drawn(&format!("web-link:{url}")),
-        "the author is a link"
+        "the repository is a link"
     );
     shell.click_named(&format!("web-link:{url}"));
     assert_eq!(shell.cx.opened_url().as_deref(), Some(url));

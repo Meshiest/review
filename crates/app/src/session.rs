@@ -340,6 +340,8 @@ pub struct PanelEntry {
 
 pub struct Session {
     pub inbox: Arc<Inbox>,
+    /// The stacks among the inbox's pull requests, kept with the inbox.
+    stacks: Arc<[Vec<usize>]>,
     source: Source,
     /// Every open pull request, in the order they were opened.
     prs: Vec<OpenPr>,
@@ -430,6 +432,55 @@ struct SessionHandle(Entity<Session>);
 
 impl Global for SessionHandle {}
 
+/// The stacks among the inbox's pull requests by the base-branch rule the
+/// Stack section uses, over the forge's records (or the fixtures'): each two
+/// or more rows, bottom first, as indices into `inbox.prs`. A row sits in
+/// one stack at most; the first one found keeps it.
+fn inbox_stacks(inbox: &Inbox, source: &Source) -> Arc<[Vec<usize>]> {
+    let records: Vec<forge::model::PullRequest> = inbox
+        .prs
+        .iter()
+        .filter_map(|pr| match source {
+            Source::Fixtures { fixtures, .. } => fixtures.forge_pr(&pr.key),
+            Source::Live(_) => pr.source.as_deref().cloned(),
+        })
+        .collect();
+    let rows: HashMap<&PrKey, usize> = inbox
+        .prs
+        .iter()
+        .enumerate()
+        .map(|(ix, pr)| (&pr.key, ix))
+        .collect();
+    let mut claimed: HashSet<usize> = HashSet::new();
+    let mut stacks: Vec<Vec<usize>> = Vec::new();
+    for target in records.iter().filter(|pr| pr.state.is_open()) {
+        if rows
+            .get(&PrKey::of(target))
+            .is_some_and(|ix| claimed.contains(ix))
+        {
+            continue;
+        }
+        let links = forge::stack_by_base_branch(target, &records).links;
+        // A member another stack holds splits this one where it sits.
+        let ixs: Vec<Option<usize>> = links
+            .iter()
+            .map(|link| {
+                let key = PrKey {
+                    repo: target.repo.clone(),
+                    number: link.number,
+                };
+                rows.get(&key).copied().filter(|ix| !claimed.contains(ix))
+            })
+            .collect();
+        for run in ixs.split(Option::is_none).filter(|run| run.len() >= 2) {
+            let run: Vec<usize> = run.iter().flatten().copied().collect();
+            claimed.extend(&run);
+            stacks.push(run);
+        }
+    }
+    stacks.into()
+}
+
 impl Session {
     fn install(
         inbox: Inbox,
@@ -437,8 +488,10 @@ impl Session {
         store: Option<store::Store>,
         cx: &mut App,
     ) -> Entity<Self> {
+        let stacks = inbox_stacks(&inbox, &source);
         let session = cx.new(|_| Self {
             inbox: Arc::new(inbox),
+            stacks,
             source,
             prs: Vec::new(),
             focused: None,
@@ -589,8 +642,15 @@ impl Session {
                 open.pr = row.clone();
             }
         }
+        self.stacks = inbox_stacks(&inbox, &self.source);
         self.inbox = Arc::new(inbox);
         cx.notify();
+    }
+
+    /// The inbox's stacks of two or more pull requests, each bottom first,
+    /// as indices into its rows.
+    pub fn inbox_stacks(&self) -> Arc<[Vec<usize>]> {
+        self.stacks.clone()
     }
 
     // ---- open pull requests
@@ -1447,7 +1507,12 @@ impl Session {
         let Some(ix) = self.inbox.index_of(&row.key) else {
             return;
         };
+        let old = &self.inbox.prs[ix];
+        let moved = old.head != row.head || old.base != row.base || old.state != row.state;
         Arc::make_mut(&mut self.inbox).prs[ix] = row;
+        if moved {
+            self.stacks = inbox_stacks(&self.inbox, &self.source);
+        }
     }
 
     /// Records how long the first diff paint took, once per open; returns

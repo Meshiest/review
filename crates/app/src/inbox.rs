@@ -62,8 +62,9 @@ use marks::{Progress, ReviewedMark};
 pub static BODY_RENDERS: AtomicUsize = AtomicUsize::new(0);
 pub static ROWS_BUILT: AtomicUsize = AtomicUsize::new(0);
 
-/// A pull request row has three lines: the title, the reference with the
-/// author and age, and the status chips.
+/// A pull request row has three lines: the title; the reference, author and
+/// age with the discussion counts; and the review state with the viewed
+/// progress and lines changed.
 const TITLE_LINE: f32 = 20.0;
 const META_LINE: f32 = 16.0;
 const LINE_GAP: f32 = 1.0;
@@ -74,7 +75,7 @@ const GROUP_ROW: f32 = 26.0;
 pub const SECTION_MIN: f32 = ROW + PR_ROW;
 /// How small dragging a handle makes a section: its header and two rows.
 pub const DRAG_MIN: f32 = ROW + 2.0 * PR_ROW;
-/// The indent of a pull request row under a repository group.
+/// The indent of a row under a repository group or a stack.
 const GROUP_INDENT: f32 = 14.0;
 
 /// One row of a section's list.
@@ -88,17 +89,26 @@ pub(crate) enum InboxRow {
         count: usize,
         folded: bool,
     },
+    /// A stack within a repository's group: its bottom pull request (in
+    /// the whole stack, which names it) and how many of it the group holds.
+    Stack {
+        section: usize,
+        bottom: usize,
+        count: usize,
+        folded: bool,
+    },
     Pr {
         section: usize,
         pr: usize,
-        grouped: bool,
+        /// 0 in a flat list, 1 under a repository, 2 under a stack too.
+        depth: u8,
     },
 }
 
 impl InboxRow {
     fn height(self) -> f32 {
         match self {
-            Self::Group { .. } => GROUP_ROW,
+            Self::Group { .. } | Self::Stack { .. } => GROUP_ROW,
             Self::Pr { .. } => PR_ROW,
         }
     }
@@ -460,8 +470,9 @@ pub fn repo_id(repo: &RepoRef) -> String {
     format!("{}/{}", repo.host, repo.path())
 }
 
-/// The counts an inbox row shows after its author: comments, unresolved
-/// threads and lines changed, each only when the forge said.
+/// The counts an inbox row shows, each only when the forge said: comments
+/// and unresolved threads at the end of the author line, lines changed at
+/// the end of the status line.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RowCount {
     Comments(u32),
@@ -520,8 +531,15 @@ struct Hiding<'a> {
     drafts: bool,
 }
 
+/// What a stack is folded by: its repository and its bottom pull request.
+fn stack_id(bottom: &PullRequest) -> String {
+    format!("{}#{}", repo_id(&bottom.key.repo), bottom.key.number)
+}
+
 /// The rows of one section: its pull requests that `hiding` leaves in, under
-/// a header per repository when grouped.
+/// a header per repository when grouped. There, two or more of a stack
+/// (from `stacks`, each bottom first) go under a header of their own, top
+/// first as the Stack section draws them.
 fn section_rows(
     inbox: &Inbox,
     section: usize,
@@ -529,6 +547,7 @@ fn section_rows(
     hiding: Hiding,
     folded: &HashSet<(SharedString, String)>,
     unread: Option<&HashSet<usize>>,
+    stacks: &[Vec<usize>],
 ) -> Vec<InboxRow> {
     let Some(spec) = inbox.sections.get(section) else {
         return Vec::new();
@@ -556,7 +575,7 @@ fn section_rows(
             .map(|pr| InboxRow::Pr {
                 section,
                 pr,
-                grouped: false,
+                depth: 0,
             })
             .collect();
     }
@@ -571,19 +590,58 @@ fn section_rows(
     }
     let mut rows = Vec::new();
     for (id, items) in order {
-        let folded = folded.contains(&(spec.title.clone(), id));
+        let is_folded = |id: String| folded.contains(&(spec.title.clone(), id));
+        let repo_folded = is_folded(id);
         rows.push(InboxRow::Group {
             section,
             first: items[0],
             count: items.len(),
-            folded,
+            folded: repo_folded,
         });
-        if !folded {
-            rows.extend(items.into_iter().map(|pr| InboxRow::Pr {
+        if repo_folded {
+            continue;
+        }
+        let mut placed = HashSet::new();
+        for &ix in &items {
+            if placed.contains(&ix) {
+                continue;
+            }
+            let stack = stacks
+                .iter()
+                .find(|stack| stack.contains(&ix))
+                .map(|stack| {
+                    let members: Vec<usize> = stack
+                        .iter()
+                        .rev()
+                        .copied()
+                        .filter(|m| items.contains(m))
+                        .collect();
+                    (stack[0], members)
+                })
+                .filter(|(_, members)| members.len() >= 2);
+            let Some((bottom, members)) = stack else {
+                rows.push(InboxRow::Pr {
+                    section,
+                    pr: ix,
+                    depth: 1,
+                });
+                continue;
+            };
+            let folded = is_folded(stack_id(&inbox.prs[bottom]));
+            rows.push(InboxRow::Stack {
                 section,
-                pr,
-                grouped: true,
-            }));
+                bottom,
+                count: members.len(),
+                folded,
+            });
+            placed.extend(members.iter().copied());
+            if !folded {
+                rows.extend(members.into_iter().map(|pr| InboxRow::Pr {
+                    section,
+                    pr,
+                    depth: 2,
+                }));
+            }
         }
     }
     rows
@@ -879,11 +937,13 @@ impl Sidebar {
         self.layout_changed(cx);
     }
 
-    fn toggle_group(&mut self, section: usize, repo: &RepoRef, cx: &mut Context<Self>) {
+    /// Folds or unfolds a repository group (by [`repo_id`]) or a stack (by
+    /// [`stack_id`]) in a section.
+    fn toggle_fold(&mut self, section: usize, id: String, cx: &mut Context<Self>) {
         let Some(layout) = self.inbox.sections.get(section) else {
             return;
         };
-        let key = (layout.title.clone(), repo_id(repo));
+        let key = (layout.title.clone(), id);
         if !self.inbox.folded.remove(&key) {
             self.inbox.folded.insert(key);
         }
@@ -1007,7 +1067,8 @@ impl Sidebar {
     /// Every pull request row the keys walk, in order, with its section
     /// and its row in that section's list.
     fn key_rows(&self, cx: &App) -> Vec<(usize, usize, usize)> {
-        let inbox = &self.session.read(cx).inbox;
+        let session = self.session.read(cx);
+        let (inbox, stacks) = (&session.inbox, session.inbox_stacks());
         let hidden = Self::hidden(cx);
         let unread = unread_rows(inbox, &hidden, cx);
         let mut out = Vec::new();
@@ -1026,6 +1087,7 @@ impl Sidebar {
                 },
                 &self.inbox.folded,
                 unread.as_ref(),
+                &stacks,
             );
             for (row_ix, row) in rows.into_iter().enumerate() {
                 if let InboxRow::Pr { pr, .. } = row {
@@ -1088,11 +1150,13 @@ impl Sidebar {
                 count,
                 folded,
             } => self.group_row(section, first, count, folded, &t, cx),
-            InboxRow::Pr {
+            InboxRow::Stack {
                 section,
-                pr,
-                grouped,
-            } => self.pr_row(section, pr, grouped, &t, cx),
+                bottom,
+                count,
+                folded,
+            } => self.stack_row(section, bottom, count, folded, &t, cx),
+            InboxRow::Pr { section, pr, depth } => self.pr_row(section, pr, depth, &t, cx),
         }
     }
 
@@ -1120,7 +1184,7 @@ impl Sidebar {
             .menu
             .as_ref()
             .is_some_and(|(s, r)| *s == section && *r == repo);
-        let (fold, open_menu) = (repo.clone(), repo.clone());
+        let (fold, open_menu, right_menu) = (repo.clone(), repo.clone(), repo.clone());
         let menu_selector = format!("repo-menu-{name}");
         let row_selector = format!("repo-group-{section}-{name}");
         let menu = menu_open.then(|| self.repo_menu(&repo, t, cx));
@@ -1138,13 +1202,21 @@ impl Sidebar {
             .hover(move |s| s.bg(hover))
             .on_click(cx.listener({
                 let fold = fold.clone();
-                move |this, _, _, cx| this.toggle_group(section, &fold, cx)
+                move |this, _, _, cx| this.toggle_fold(section, repo_id(&fold), cx)
             }))
+            // A right-click opens the "..." menu.
+            .on_mouse_down(
+                MouseButton::Right,
+                cx.listener(move |this, _, _, cx| {
+                    this.inbox.menu = Some((section, right_menu.clone()));
+                    cx.notify();
+                }),
+            )
             .focusable()
             .focus_visible(move |s| s.bg(hover))
             .key_context(FOLD_CONTEXT)
             .on_action(cx.listener(move |this, _: &ToggleFold, _, cx| {
-                this.toggle_group(section, &fold, cx);
+                this.toggle_fold(section, repo_id(&fold), cx);
             }))
             .child(
                 Icon::new(if folded {
@@ -1202,6 +1274,88 @@ impl Sidebar {
                             .text_color(c.text_muted),
                     )
                     .children(menu),
+            )
+            .into_any_element()
+    }
+
+    /// A stack's header in a repository group: fold chevron, the branch the
+    /// stack merges into, and how many of it the group holds.
+    fn stack_row(
+        &self,
+        section: usize,
+        bottom: usize,
+        count: usize,
+        folded: bool,
+        t: &Theme,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let c = &t.colors;
+        let inbox = self.session.read(cx).inbox.clone();
+        let Some(pr) = inbox.prs.get(bottom) else {
+            return Empty.into_any_element();
+        };
+        let id = stack_id(pr);
+        let fold = id.clone();
+        let hover = c.hover;
+        let selector = format!("stack-group-{section}-{}", pr.key.number);
+        h_flex()
+            .id(SharedString::from(format!("stack-group-{section}-{id}")))
+            .debug_selector(move || selector)
+            .size_full()
+            .pl(px(10.0 + GROUP_INDENT))
+            .pr(px(10.0))
+            .gap(px(6.0))
+            .items_center()
+            .cursor_pointer()
+            .hover(move |s| s.bg(hover))
+            .on_click(cx.listener({
+                let fold = fold.clone();
+                move |this, _, _, cx| this.toggle_fold(section, fold.clone(), cx)
+            }))
+            .focusable()
+            .focus_visible(move |s| s.bg(hover))
+            .key_context(FOLD_CONTEXT)
+            .on_action(cx.listener(move |this, _: &ToggleFold, _, cx| {
+                this.toggle_fold(section, fold.clone(), cx);
+            }))
+            .child(
+                Icon::new(if folded {
+                    IconName::ChevronRight
+                } else {
+                    IconName::ChevronDown
+                })
+                .size(px(12.0))
+                .text_color(c.text_muted),
+            )
+            .child(
+                div()
+                    .flex_none()
+                    .tiny(t)
+                    .text_color(c.text_secondary)
+                    .child("Stack on"),
+            )
+            .child(
+                Icon::new(IconName::GitBranch)
+                    .size(px(12.0))
+                    .text_color(c.text_faint),
+            )
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .truncate()
+                    .mono(t)
+                    .tiny(t)
+                    .text_color(c.text_secondary)
+                    .child(pr.base.clone()),
+            )
+            .child(
+                div()
+                    .flex_none()
+                    .mono(t)
+                    .tiny(t)
+                    .text_color(c.text_muted)
+                    .child(count.to_string()),
             )
             .into_any_element()
     }
@@ -1269,11 +1423,12 @@ impl Sidebar {
         &self,
         section: usize,
         ix: usize,
-        grouped: bool,
+        depth: u8,
         t: &Theme,
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let c = &t.colors;
+        let grouped = depth > 0;
         let session = self.session.read(cx);
         let inbox = session.inbox.clone();
         let open = session.open_key().cloned();
@@ -1313,6 +1468,9 @@ impl Sidebar {
             ui::avatar::ROW,
         );
         let number = pr.number();
+        let (lines, talk): (Vec<RowCount>, Vec<RowCount>) = row_counts(pr)
+            .into_iter()
+            .partition(|count| matches!(count, RowCount::Lines { .. }));
         let reference_line = h_flex()
             .gap(px(6.0))
             .h(px(META_LINE))
@@ -1345,23 +1503,27 @@ impl Sidebar {
                     .min_w_0()
                     .overflow_hidden()
                     .child(div().flex_none().child(author))
+                    // Plain text: a click on the name opens the pull request
+                    // like the rest of the row.
                     .child(
-                        ui::web_link(
-                            SharedString::from(format!("inbox-author-{section}-{ix}")),
-                            pr.author.clone(),
-                            references::user_url(&pr.key.repo.host, &pr.author),
-                            cx,
-                        )
-                        .truncate(),
+                        div()
+                            .debug_selector(move || format!("inbox-author-{number}"))
+                            .min_w_0()
+                            .truncate()
+                            .child(pr.author.clone()),
+                    )
+                    .child(div().flex_none().text_color(c.text_faint).child("\u{b7}"))
+                    .child(
+                        div()
+                            .debug_selector(move || format!("inbox-age-{number}"))
+                            .flex_none()
+                            .tiny(t)
+                            .child(relative_time(pr.minutes_ago())),
                     ),
             )
-            .child(
-                div()
-                    .flex_none()
-                    .ml_auto()
-                    .tiny(t)
-                    .text_color(c.text_muted)
-                    .child(relative_time(pr.minutes_ago())),
+            .children(
+                counts(t, format!("inbox-talk-{number}"), talk)
+                    .map(|talk| div().flex_none().ml_auto().child(talk)),
             );
         let status_line = h_flex()
             .gap(px(6.0))
@@ -1389,7 +1551,7 @@ impl Sidebar {
                     .progress
                     .map(|progress| progress_bar(t, number, progress)),
             )
-            .child(counts(t, pr));
+            .children(counts(t, format!("inbox-lines-{number}"), lines));
         let row_id = SharedString::from(format!("pr-{section}-{}", pr.ref_label()));
         let (open_key, hover_key, checks_key, menu_key) =
             (key.clone(), key.clone(), key.clone(), key);
@@ -1402,7 +1564,7 @@ impl Sidebar {
         h_flex()
             .id(row_id)
             .size_full()
-            .pl(px(if grouped { 10.0 + GROUP_INDENT } else { 10.0 }))
+            .pl(px(10.0 + f32::from(depth) * GROUP_INDENT))
             .pr(px(10.0))
             .gap(px(8.0))
             .items_start()
@@ -1659,7 +1821,8 @@ impl Sidebar {
     pub(crate) fn inbox_body(&mut self, _: &mut Window, cx: &mut Context<Self>) -> AnyElement {
         BODY_RENDERS.fetch_add(1, Ordering::Relaxed);
         let t = ui::theme(cx);
-        let inbox = self.session.read(cx).inbox.clone();
+        let session = self.session.read(cx);
+        let (inbox, stacks) = (session.inbox.clone(), session.inbox_stacks());
         let hidden = Self::hidden(cx);
         let unread = unread_rows(&inbox, &hidden, cx);
         let slots = self.spinners.clone();
@@ -1675,6 +1838,7 @@ impl Sidebar {
                 },
                 &self.inbox.folded,
                 unread.as_ref(),
+                &stacks,
             );
             let slots = slots.clone();
             list.update(cx, |list, _| {
@@ -1974,12 +2138,14 @@ impl Sidebar {
     }
 }
 
-/// The comment, unresolved-thread and line counts of an inbox row, muted
-/// and fixed in width so the title keeps the room.
-fn counts(t: &Theme, pr: &PullRequest) -> AnyElement {
+/// Some of an inbox row's counts, muted and fixed in width so the title
+/// keeps the room; `None` when there are none.
+fn counts(t: &Theme, selector: String, counts: Vec<RowCount>) -> Option<AnyElement> {
+    if counts.is_empty() {
+        return None;
+    }
     let c = &t.colors;
-    let number = pr.number();
-    let items = row_counts(pr).into_iter().map(|count| match count {
+    let items = counts.into_iter().map(|count| match count {
         RowCount::Comments(n) => h_flex()
             .gap(px(2.0))
             .items_center()
@@ -2011,8 +2177,8 @@ fn counts(t: &Theme, pr: &PullRequest) -> AnyElement {
             )
             .into_any_element(),
     });
-    h_flex()
-        .debug_selector(move || format!("inbox-counts-{number}"))
+    let counts = h_flex()
+        .debug_selector(move || selector)
         .flex_none()
         .gap(px(8.0))
         .items_center()
@@ -2020,7 +2186,8 @@ fn counts(t: &Theme, pr: &PullRequest) -> AnyElement {
         .tiny(t)
         .text_color(c.text_muted)
         .children(items)
-        .into_any_element()
+        .into_any_element();
+    Some(counts)
 }
 
 /// How faded a reviewed row with nothing new is drawn.
@@ -2285,8 +2452,8 @@ mod tests {
             drafts: false,
         };
         let folded = HashSet::new();
-        let flat = section_rows(inbox, section, false, hiding(&none), &folded, None);
-        let grouped = section_rows(inbox, section, true, hiding(&none), &folded, None);
+        let flat = section_rows(inbox, section, false, hiding(&none), &folded, None, &[]);
+        let grouped = section_rows(inbox, section, true, hiding(&none), &folded, None, &[]);
         let groups = grouped
             .iter()
             .filter(|row| matches!(row, InboxRow::Group { .. }))
@@ -2300,17 +2467,89 @@ mod tests {
         let repo = repo_id(&inbox.prs[first].key.repo);
         let mut hidden = InboxSettings::default();
         hidden.set_hidden(&repo, true);
-        let without = section_rows(inbox, section, false, hiding(&hidden), &folded, None);
+        let without = section_rows(inbox, section, false, hiding(&hidden), &folded, None, &[]);
         assert_eq!(without.len(), flat.len() - count, "its rows are hidden");
 
         let title = inbox.sections[section].title.clone();
         let folded = HashSet::from([(title, repo)]);
-        let folded_rows = section_rows(inbox, section, true, hiding(&none), &folded, None);
+        let folded_rows = section_rows(inbox, section, true, hiding(&none), &folded, None, &[]);
         assert!(matches!(
             folded_rows[0],
             InboxRow::Group { folded: true, .. }
         ));
         assert_eq!(folded_rows.len(), grouped.len() - count);
+    }
+
+    #[test]
+    fn a_stack_nests_under_its_repository_top_first() {
+        let fixtures = Fixtures::load();
+        let inbox = &fixtures.inbox;
+        let stack: Vec<usize> = [38, 39, 40, 41]
+            .into_iter()
+            .map(|n| {
+                inbox
+                    .prs
+                    .iter()
+                    .position(|pr| pr.key.number.0 == n)
+                    .expect("the fixture stack")
+            })
+            .collect();
+        let section = inbox
+            .sections
+            .iter()
+            .position(|s| stack.iter().all(|ix| s.items.contains(ix)))
+            .expect("a section with the whole stack");
+        let none = InboxSettings::default();
+        let hiding = Hiding {
+            repos: &none,
+            filter: "",
+            drafts: false,
+        };
+        let stacks = [stack.clone()];
+        let rows = |folded: &HashSet<(SharedString, String)>| {
+            section_rows(inbox, section, true, hiding, folded, None, &stacks)
+        };
+        let open = rows(&HashSet::new());
+        let at = open
+            .iter()
+            .position(|row| matches!(row, InboxRow::Stack { .. }))
+            .expect("a stack header");
+        assert!(matches!(
+            open[at],
+            InboxRow::Stack { bottom, count: 4, folded: false, .. } if bottom == stack[0]
+        ));
+        let under: Vec<(usize, u8)> = open[at + 1..at + 5]
+            .iter()
+            .map(|row| match *row {
+                InboxRow::Pr { pr, depth, .. } => (pr, depth),
+                _ => panic!("a pull request row"),
+            })
+            .collect();
+        let top_first: Vec<(usize, u8)> = stack.iter().rev().map(|&ix| (ix, 2)).collect();
+        assert_eq!(under, top_first);
+        assert_eq!(
+            open.len(),
+            section_rows(inbox, section, true, hiding, &HashSet::new(), None, &[]).len() + 1,
+            "one header more, every row kept"
+        );
+
+        let title = inbox.sections[section].title.clone();
+        let folded = HashSet::from([(title, stack_id(&inbox.prs[stack[0]]))]);
+        let folded_rows = rows(&folded);
+        assert!(matches!(
+            folded_rows[at],
+            InboxRow::Stack { folded: true, .. }
+        ));
+        assert_eq!(folded_rows.len(), open.len() - 4, "its rows fold away");
+
+        let mut drafts = hiding;
+        drafts.drafts = true;
+        let without_draft =
+            section_rows(inbox, section, true, drafts, &HashSet::new(), None, &stacks);
+        assert!(
+            matches!(without_draft[at], InboxRow::Stack { count: 3, .. }),
+            "a hidden member leaves the stack, the rest stay under it"
+        );
     }
 
     #[test]
@@ -2330,7 +2569,7 @@ mod tests {
                 filter: "",
                 drafts,
             };
-            section_rows(&inbox, 0, false, hiding, &folded, None)
+            section_rows(&inbox, 0, false, hiding, &folded, None, &[])
         };
         let listed = |rows: &[InboxRow]| {
             rows.iter()
