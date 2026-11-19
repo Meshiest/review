@@ -50,6 +50,10 @@ use store::DraftAnchor;
 /// The share of an inline thread's row its path may take; the message has
 /// the rest.
 const INLINE_PATH_SHARE: f32 = 0.4;
+/// An inline thread's header line, folded or not, and the room above and
+/// under it in the folded row: the chevron is in the same place either way.
+const INLINE_HEAD: f32 = 20.0;
+const INLINE_HEAD_PAD: f32 = 5.0;
 /// From this panel width the side column sits beside the conversation;
 /// narrower, it is stacked under the header.
 pub const WIDE: f32 = 760.0;
@@ -492,8 +496,9 @@ impl ConversationPanel {
             .debug_selector(move || selector)
             .relative()
             .w_full()
-            .h(px(30.0))
-            // As the unfolded thread's card, so the chevron stays put.
+            // As the unfolded thread's card and header, so the chevron stays
+            // put; the border adds a pixel above and under.
+            .h(px(INLINE_HEAD + 2.0 * INLINE_HEAD_PAD + 2.0))
             .px(px(10.0))
             .gap(px(8.0))
             .items_center()
@@ -603,6 +608,8 @@ impl ConversationPanel {
                 let tag = tag.clone();
                 move || format!("inline-head-{tag}")
             })
+            .h(px(INLINE_HEAD))
+            .flex_none()
             .gap(px(8.0))
             .items_center()
             .child(self.fold_toggle(thread, pr, false, t))
@@ -735,7 +742,9 @@ impl ConversationPanel {
             .flex()
             .flex_col()
             .gap(px(8.0))
-            .p(px(10.0))
+            .px(px(10.0))
+            .pt(px(INLINE_HEAD_PAD))
+            .pb(px(10.0))
             .when(highlighted, |el| el.border_color(c.focus))
             .children(marker)
             .child(head)

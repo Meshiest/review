@@ -605,12 +605,20 @@ fn a_resolved_thread_starts_folded_and_its_chevron_toggles_it(cx: &mut TestAppCo
         shell.scroll_at(body, 150.0);
     }
     assert!(in_view(&mut shell, &toggle), "scrolled to the folded row");
+    let at = |shell: &mut ShellWindow, toggle: &str, frame: String| {
+        let chevron = shell.bounds_of(String::leak(toggle.to_owned()));
+        let frame = shell.bounds_of(String::leak(frame));
+        chevron.origin - frame.origin
+    };
+    let row = at(&mut shell, &toggle, format!("inline-row-{resolved}"));
     shell.click_named(&toggle);
     assert!(
         !folded(&mut shell, &key, &resolved),
         "the chevron unfolds it"
     );
     assert!(shell.drawn(&format!("inline-head-{resolved}")));
+    let card = at(&mut shell, &toggle, format!("inline-thread-{resolved}"));
+    assert_eq!(row, card, "the chevron stays where it was");
     shell.click_named(&toggle);
     assert!(folded(&mut shell, &key, &resolved), "and folds it again");
     assert!(shell.drawn(&format!("inline-row-{resolved}")));
