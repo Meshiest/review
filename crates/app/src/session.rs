@@ -412,6 +412,8 @@ pub enum SessionEvent {
     FileSelected {
         pr: PrKey,
         path: SharedString,
+        /// The file selected before, for Back.
+        previous: Option<SharedString>,
     },
     /// Show this thread in the pull request's diff.
     JumpToThread {
@@ -1580,10 +1582,26 @@ impl Session {
         let Some(open) = self.focused_mut() else {
             return;
         };
-        open.selected_file = Some(path.clone());
+        let previous = open.selected_file.replace(path.clone());
         let pr = open.key.clone();
-        cx.emit(SessionEvent::FileSelected { pr, path });
+        cx.emit(SessionEvent::FileSelected { pr, path, previous });
         cx.notify();
+    }
+
+    /// Shows `path` alone in `key`'s diff, or every file for `None`,
+    /// without scrolling to it.
+    pub fn set_selected_file(
+        &mut self,
+        key: &PrKey,
+        path: Option<SharedString>,
+        cx: &mut Context<Self>,
+    ) {
+        if let Some(open) = self.pr_mut(key)
+            && open.selected_file != path
+        {
+            open.selected_file = path;
+            cx.notify();
+        }
     }
 
     pub fn diff_layout(&self) -> Layout {

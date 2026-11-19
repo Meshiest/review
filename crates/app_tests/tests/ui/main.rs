@@ -7,6 +7,7 @@ mod harness;
 
 mod agent_review;
 mod apply;
+mod back_forward;
 mod checks;
 mod composer;
 mod conversation;

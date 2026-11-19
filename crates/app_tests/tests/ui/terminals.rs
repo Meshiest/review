@@ -123,6 +123,14 @@ fn ctrl_backtick_picks_a_machine_and_opens_a_split(cx: &mut TestAppContext) {
         shell.drawn("section-Inbox"),
         "Ctrl+B did not hide the sidebar"
     );
+    let goes_back = shell.update(|window, _| {
+        let alt_left = gpui::Keystroke::parse("alt-left").expect("a keystroke");
+        window
+            .possible_bindings_for_input(&[alt_left])
+            .iter()
+            .any(|binding| binding.action().partial_eq(&app::shell::GoBack))
+    });
+    assert!(!goes_back, "Alt+Left stays with the program, not Back");
 
     // Closing the tab ends the program.
     let view = shell.update(|_, cx| panel.read(cx).view().cloned().expect("running"));

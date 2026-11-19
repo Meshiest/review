@@ -251,6 +251,10 @@ fn bind_keys(cx: &mut App) {
         ),
         // A terminal program keeps Ctrl+P (previous history line).
         KeyBinding::new("ctrl-p", shell::QuickOpen, Some(SHELL_KEYS)),
+        // A terminal program keeps Alt+arrows; a text box on macOS moves by
+        // word with them, its own binding being deeper.
+        KeyBinding::new("alt-left", shell::GoBack, Some(SHELL_KEYS)),
+        KeyBinding::new("alt-right", shell::GoForward, Some(SHELL_KEYS)),
         KeyBinding::new("up", terminals::PickerUp, Some(terminals::PICKER_CONTEXT)),
         KeyBinding::new(
             "down",

@@ -12,8 +12,8 @@ use crate::diff_panel::{
     ToggleThread,
 };
 use crate::shell::{
-    CloseTab, NextTab, OpenCommandPalette, OpenSettings, PrevTab, QuickOpen, ToggleDiffLayout,
-    ToggleKeyHelp, ToggleSidebar,
+    CloseTab, GoBack, GoForward, NextTab, OpenCommandPalette, OpenSettings, PrevTab, QuickOpen,
+    ToggleDiffLayout, ToggleKeyHelp, ToggleSidebar,
 };
 use crate::sidebar::{OpenBeside, OpenSelected, SelectNext, SelectPrev, ToggleViewed};
 use crate::terminals::NewTerminal;
@@ -281,6 +281,20 @@ pub const COMMANDS: &[Command] = &[
         "go to a pull request or a file by name",
         "Go to a pull request or a file",
         boxed::<QuickOpen>,
+    ),
+    command(
+        Window,
+        "Alt+Left  mouse back",
+        "back to where the last jump left from",
+        "Go back",
+        boxed::<GoBack>,
+    ),
+    command(
+        Window,
+        "Alt+Right  mouse forward",
+        "forward again, after going back",
+        "Go forward",
+        boxed::<GoForward>,
     ),
     command(
         Window,

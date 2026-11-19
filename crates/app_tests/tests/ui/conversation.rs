@@ -25,23 +25,23 @@ use crate::harness::{
     FakeForge, Options, Scratch, ShellWindow, fake_services, flat, go_live, open_shell,
 };
 
-fn conversation(shell: &mut ShellWindow) -> Entity<ConversationPanel> {
+pub(crate) fn conversation(shell: &mut ShellWindow) -> Entity<ConversationPanel> {
     shell.panel(app::panels::CONVERSATION)
 }
 
-fn open(number: u64, cx: &mut TestAppContext) -> ShellWindow {
+pub(crate) fn open(number: u64, cx: &mut TestAppContext) -> ShellWindow {
     let mut shell = open_shell(cx, Options::default());
     shell.show(number, PanelKind::Conversation, OpenMode::Permanent);
     shell
 }
 
-fn threads(shell: &mut ShellWindow) -> Arc<[Thread]> {
+pub(crate) fn threads(shell: &mut ShellWindow) -> Arc<[Thread]> {
     let session = shell.session();
     shell.update(|_, cx| session.read(cx).open_pr().expect("open").threads.clone())
 }
 
 /// Scrolls the conversation until the element with `selector` is inside it.
-fn reveal(shell: &mut ShellWindow, selector: &str) {
+pub(crate) fn reveal(shell: &mut ShellWindow, selector: &str) {
     let selector = String::leak(selector.to_owned());
     for _ in 0..60 {
         let body = shell.bounds_of("conversation-body");
@@ -60,7 +60,7 @@ fn reveal(shell: &mut ShellWindow, selector: &str) {
 }
 
 /// Settles until the Conversation has read the code of its threads.
-fn code_ready(shell: &mut ShellWindow) {
+pub(crate) fn code_ready(shell: &mut ShellWindow) {
     let panel = conversation(shell);
     shell.settle_until("the threads' code", |cx| {
         panel

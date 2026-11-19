@@ -164,6 +164,8 @@ pub struct DiffPanel {
     pending_jump: Option<SharedString>,
     /// A thread asked for from the sidebar or the conversation, likewise.
     pending_thread: Option<ThreadId>,
+    /// Where Back or Forward returns the diff to, likewise.
+    pending_scroll: Option<f64>,
     /// What the user writes on the pull request shown; an empty one until
     /// a pull request is open.
     writing: Entity<Writing>,
@@ -219,7 +221,9 @@ impl DiffPanel {
                 |this: &mut Self, _, event: &SessionEvent, window, cx| {
                     let shown = this.binding.key(cx);
                     match event {
-                        SessionEvent::FileSelected { pr, path } if Some(pr) == shown.as_ref() => {
+                        SessionEvent::FileSelected { pr, path, .. }
+                            if Some(pr) == shown.as_ref() =>
+                        {
                             this.pending_jump = Some(path.clone());
                             cx.notify();
                         }
@@ -276,6 +280,7 @@ impl DiffPanel {
                 cards,
                 pending_jump: None,
                 pending_thread: None,
+                pending_scroll: None,
                 writing,
                 writing_subscriptions: Vec::new(),
                 actions,
@@ -348,6 +353,19 @@ impl DiffPanel {
     /// Scrolls to `path` once the diff is up.
     pub fn reveal_file(&mut self, path: SharedString, cx: &mut Context<Self>) {
         self.pending_jump = Some(path);
+        cx.notify();
+    }
+
+    /// Shows `file` alone (every file for `None`) scrolled `scrolled` down,
+    /// as it was when Back or Forward left it.
+    pub fn return_to(&mut self, file: Option<SharedString>, scrolled: f64, cx: &mut Context<Self>) {
+        if let Some(key) = self.binding.key(cx) {
+            self.session
+                .update(cx, |session, cx| session.set_selected_file(&key, file, cx));
+        }
+        self.pending_jump = None;
+        self.pending_thread = None;
+        self.pending_scroll = Some(scrolled);
         cx.notify();
     }
 
@@ -1117,6 +1135,13 @@ impl Render for DiffPanel {
                 let jump = self.pending_jump.take().is_some();
                 self.sync_shown_file(selected.as_ref(), jump, cx);
                 self.take_pending_thread(cx);
+                if let Some(scrolled) = self.pending_scroll.take() {
+                    view.update(cx, |view, cx| {
+                        if view.set_scroll_y(scrolled) {
+                            cx.notify();
+                        }
+                    });
+                }
                 let overlays = self.gutter_overlays(&view, &t, cx);
                 let bounds = self.bounds.clone();
                 div()

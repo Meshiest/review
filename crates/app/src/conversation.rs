@@ -231,6 +231,13 @@ impl ConversationPanel {
         -f32::from(self.scroll.offset().y)
     }
 
+    /// Scrolls the conversation `scrolled` pixels down, as far as it goes.
+    pub fn scroll_to(&mut self, scrolled: f32, cx: &mut Context<Self>) {
+        let offset = self.scroll.offset();
+        self.scroll.set_offset(point(offset.x, px(-scrolled)));
+        cx.notify();
+    }
+
     /// Whether the side column sat beside the conversation at the last
     /// render.
     pub fn is_wide(&self) -> bool {

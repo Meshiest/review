@@ -9,9 +9,9 @@ use std::time::Duration;
 use gpui::prelude::FluentBuilder as _;
 use gpui::{
     AnyElement, App, AppContext as _, Context, Entity, FocusHandle, Focusable as _, FontWeight,
-    Global, InteractiveElement as _, IntoElement, KeyContext, MouseButton, ParentElement, Render,
-    SharedString, StatefulInteractiveElement as _, Styled, Subscription, Task, WeakEntity, Window,
-    actions, div, px,
+    Global, InteractiveElement as _, IntoElement, KeyContext, MouseButton, NavigationDirection,
+    ParentElement, Render, SharedString, StatefulInteractiveElement as _, Styled, Subscription,
+    Task, WeakEntity, Window, actions, div, px,
 };
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{
@@ -46,6 +46,10 @@ use crate::ui::spinner::{DockSpinners, SpinnerSlots};
 use crate::ui::{self, TextExt as _};
 use crate::watching::NoticeKind;
 
+mod history;
+
+use history::{Direction, History, Place, Spot};
+
 actions!(
     shell,
     [
@@ -65,7 +69,11 @@ actions!(
         /// `Ctrl+Shift+P`: every command, by fuzzy name.
         OpenCommandPalette,
         /// `Ctrl+P`: go to a pull request or a file by fuzzy name.
-        QuickOpen
+        QuickOpen,
+        /// `Alt+Left`: back to where the last jump left from.
+        GoBack,
+        /// `Alt+Right`: the jump Back undid, again.
+        GoForward
     ]
 );
 
@@ -120,6 +128,10 @@ pub struct Shell {
     /// The open command palette or quick open.
     palette: Option<Entity<Palette>>,
     _palette: Option<Subscription>,
+    /// Where Back and Forward go.
+    history: History<Place>,
+    /// Where to put a closed tab that Back or Forward is opening again.
+    reopening: Option<Spot>,
 }
 
 /// The open `?` overlay: its focus, and where focus goes back on close.
@@ -140,10 +152,12 @@ impl Shell {
         cx.observe(&session, |_, _, cx| cx.notify()).detach();
         // Opens bring their panel forward, building it when missing; a
         // thread or a file picked in the sidebar shows in the Diff panel.
+        // Where each left from is kept for Back.
         cx.subscribe_in(
             &session,
             window,
             |this: &mut Self, _, event: &SessionEvent, window, cx| {
+                let before = this.here(window, cx);
                 let show = match event {
                     SessionEvent::ClosePanel(id) => {
                         this.close_panel(PanelId::from(*id), window, cx);
@@ -160,6 +174,14 @@ impl Shell {
                 };
                 this.show_panel(&show, window, cx);
                 this.pass_on(event, window, cx);
+                match this.reopening.take() {
+                    Some(spot) => {
+                        if let Some(id) = this.last_shown {
+                            this.put_back(id, spot, cx);
+                        }
+                    }
+                    None => this.record_move(before, event, window, cx),
+                }
             },
         )
         .detach();
@@ -232,6 +254,8 @@ impl Shell {
             last_pr_panel: None,
             palette: None,
             _palette: None,
+            history: History::default(),
+            reopening: None,
         }
     }
 
@@ -1615,6 +1639,20 @@ impl Render for Shell {
             .on_action(cx.listener(|this, _: &QuickOpen, window, cx| {
                 this.toggle_palette(Mode::QuickOpen, window, cx);
             }))
+            .on_action(cx.listener(|this, _: &GoBack, window, cx| {
+                this.go(Direction::Back, window, cx);
+            }))
+            .on_action(cx.listener(|this, _: &GoForward, window, cx| {
+                this.go(Direction::Forward, window, cx);
+            }))
+            .on_mouse_down(
+                MouseButton::Navigate(NavigationDirection::Back),
+                cx.listener(|this, _, window, cx| this.go(Direction::Back, window, cx)),
+            )
+            .on_mouse_down(
+                MouseButton::Navigate(NavigationDirection::Forward),
+                cx.listener(|this, _, window, cx| this.go(Direction::Forward, window, cx)),
+            )
             .size_full()
             .bg(t.colors.background)
             .text_color(t.colors.text)
