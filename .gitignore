@@ -1,5 +1,5 @@
 /target
-/.scratch
+.scratch/
 /.claude/worktrees
 __pycache__/
 /.claude/AGENT-RULES.md
