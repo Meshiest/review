@@ -4,7 +4,7 @@ A native desktop app for reviewing pull requests on GitHub, GitLab (merge
 requests) and Forgejo, written in Rust on [gpui](https://github.com/zed-industries/zed)
 and [gpui-component](https://github.com/longbridge/gpui-kit).
 
-![A pull request open in review: the inbox, stack, checks, threads and files in the sidebar, and the diff with its review actions](docs/images/pr-diff.png)
+![A pull request open in review: the inbox, stack, threads and files in the sidebar, and the diff with its review actions](docs/images/pr-diff.webp)
 
 ## What it does
 
