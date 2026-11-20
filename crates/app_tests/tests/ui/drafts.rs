@@ -119,8 +119,8 @@ fn enter_or_space_on_the_focused_chip_opens_the_menu(cx: &mut TestAppContext) {
     focus_chip(&mut shell);
     shell.keys("space");
     assert!(menu_open(&mut shell), "Space opens the menu");
-    // Past "Show all drafts" and its separator to the draft.
-    shell.keys("down down enter");
+    // Past "Show all drafts", "Add all" and the separator to the draft.
+    shell.keys("down down down enter");
     assert!(
         shell.update(|_, cx| is_open(&writing, &draft, cx)),
         "the keys pick the draft"
@@ -154,6 +154,41 @@ fn show_all_drafts_reopens_every_draft(cx: &mut TestAppContext) {
     shell.click("drafts-show-all");
     assert!(!menu_open(&mut shell), "picking it closes the menu");
     assert_eq!(open(&mut shell), [true, true], "every draft is open again");
+}
+
+#[gpui::test]
+fn add_all_queues_every_line_draft(cx: &mut TestAppContext) {
+    let mut shell = open_shell(
+        cx,
+        Options {
+            open_pr: Some(41),
+            ..Options::default()
+        },
+    );
+    let writing = shell.writing();
+    line_draft(&mut shell, 2, "Off by one?");
+    line_draft(&mut shell, 5, "Rename this");
+    let queued = |shell: &mut ShellWindow| shell.update(|_, cx| writing.read(cx).queued().len());
+    let before = queued(&mut shell);
+
+    shell.click("drafts-chip");
+    let add = shell.bounds_of("drafts-add-all");
+    assert!(
+        shell.bounds_of("drafts-show-all").bottom() <= add.top()
+            && add.bottom() < shell.bounds_of("draft-entry-0").top(),
+        "after Show all, before the drafts"
+    );
+    shell.click("drafts-add-all");
+    assert!(!menu_open(&mut shell), "picking it closes the menu");
+    assert_eq!(
+        queued(&mut shell),
+        before + 2,
+        "both drafts are in the review"
+    );
+    assert!(
+        shell.update(|_, cx| writing.read(cx).queueable().is_empty()),
+        "nothing left to add"
+    );
 }
 
 #[gpui::test]

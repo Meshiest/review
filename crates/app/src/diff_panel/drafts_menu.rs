@@ -1,6 +1,6 @@
-//! The header's "N drafts" chip and its menu: "Show all drafts", then one
-//! entry per draft comment not yet in the review, each jumping to where it
-//! is written.
+//! The header's "N drafts" chip and its menu: "Show all drafts", "Add all to
+//! the review", then one entry per draft comment not yet in the review,
+//! each jumping to where it is written.
 
 use forge::model::Thread;
 use gpui::{
@@ -92,7 +92,8 @@ fn excerpt(body: &str) -> SharedString {
 
 /// The "N drafts" chip. A click, or Enter or Space while it has the focus,
 /// opens the menu of drafts; picking one jumps to it and Back returns, and
-/// "Show all drafts" opens every kept one where it is written.
+/// "Show all drafts" opens every kept one where it is written; "Add all to
+/// the review" queues every line and file draft.
 pub(super) fn chip(
     count: usize,
     focus: &FocusHandle,
@@ -125,7 +126,9 @@ pub(super) fn chip(
                 .map(|open| open.threads.clone())
                 .unwrap_or_default();
             let entries = entries(writing.read(cx), &threads);
+            let queueable = writing.read(cx).queueable().len();
             let all = writing.clone();
+            let add = writing.clone();
             let menu = menu
                 .min_w(px(240.0))
                 .max_w(px(420.0))
@@ -137,6 +140,20 @@ pub(super) fn chip(
                     })
                     .on_click(move |_, _, cx| {
                         all.update(cx, Writing::reopen_all);
+                    }),
+                )
+                .item(
+                    PopupMenuItem::element(move |_, _| {
+                        div()
+                            .debug_selector(|| "drafts-add-all".into())
+                            .child(match queueable {
+                                1 => "Add 1 draft to the review".to_owned(),
+                                n => format!("Add all {n} drafts to the review"),
+                            })
+                    })
+                    .disabled(queueable == 0)
+                    .on_click(move |_, _, cx| {
+                        add.update(cx, Writing::queue_all);
                     }),
                 )
                 .separator();

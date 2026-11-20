@@ -628,6 +628,30 @@ impl Writing {
         self.submit(anchor, SubmitAction::Queue, cx);
     }
 
+    /// The drafts "Add to review" takes: comments on a line or a file with
+    /// text, not already being sent. Replies, edits and the conversation's
+    /// comment are sent on their own, never queued.
+    pub fn queueable(&self) -> Vec<DraftAnchor> {
+        self.slots
+            .iter()
+            .filter(|slot| {
+                matches!(
+                    slot.anchor,
+                    DraftAnchor::Line { .. } | DraftAnchor::File { .. }
+                ) && !slot.busy
+                    && !slot.body.trim().is_empty()
+            })
+            .map(|slot| slot.anchor.clone())
+            .collect()
+    }
+
+    /// Adds every [`queueable`](Self::queueable) draft to the pending review.
+    pub fn queue_all(&mut self, cx: &mut Context<Self>) {
+        for anchor in self.queueable() {
+            self.submit(&anchor, SubmitAction::Queue, cx);
+        }
+    }
+
     /// Whether Claude wrote the draft at `anchor`.
     pub fn is_from_claude(&self, anchor: &DraftAnchor) -> bool {
         self.from_claude.contains(anchor)
