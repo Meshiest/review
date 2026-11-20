@@ -2219,6 +2219,25 @@ pub fn demo_sections(cx: &mut App) {
     .detach();
 }
 
+/// A repository group's menu, for a right-click on its header or its "..."
+/// button: hide it, or open it on its forge.
+pub(crate) fn repo_menu(menu: PopupMenu, repo: &RepoRef) -> PopupMenu {
+    let id = repo_id(repo);
+    let url = format!("https://{}/{}", repo.host, repo.path());
+    menu.item(
+        PopupMenuItem::new("Hide this repository").on_click(move |_, _, cx| {
+            Sidebar::global(cx).update(cx, |this, cx| this.set_repo_hidden(&id, true, cx));
+        }),
+    )
+    .item(
+        PopupMenuItem::new("Open on the forge").on_click(move |_, _, cx| {
+            if crate::untrusted::is_web_url(&url) {
+                cx.open_url(&url);
+            }
+        }),
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2495,23 +2514,4 @@ mod tests {
         assert!(!listed(&rows(true)));
         assert_eq!(rows(true).len() + 1, rows(false).len());
     }
-}
-
-/// A repository group's menu, for a right-click on its header or its "..."
-/// button: hide it, or open it on its forge.
-pub(crate) fn repo_menu(menu: PopupMenu, repo: &RepoRef) -> PopupMenu {
-    let id = repo_id(repo);
-    let url = format!("https://{}/{}", repo.host, repo.path());
-    menu.item(
-        PopupMenuItem::new("Hide this repository").on_click(move |_, _, cx| {
-            Sidebar::global(cx).update(cx, |this, cx| this.set_repo_hidden(&id, true, cx));
-        }),
-    )
-    .item(
-        PopupMenuItem::new("Open on the forge").on_click(move |_, _, cx| {
-            if crate::untrusted::is_web_url(&url) {
-                cx.open_url(&url);
-            }
-        }),
-    )
 }
