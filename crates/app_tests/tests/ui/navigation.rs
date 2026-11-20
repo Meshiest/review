@@ -145,6 +145,10 @@ fn the_log_follows_the_focused_pull_request(cx: &mut TestAppContext) {
 #[gpui::test]
 fn a_preview_tab_is_reused_until_it_is_kept(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
+    // Folded, so "Review requested" keeps room for its rows once a pull
+    // request is open.
+    shell.click("inbox-section-1");
+    shell.click("inbox-section-2");
 
     shell.click_named(&row(42));
     assert_eq!(shell.focused(), Some(42));
@@ -174,15 +178,14 @@ fn a_preview_tab_is_reused_until_it_is_kept(cx: &mut TestAppContext) {
         "a double click on the tab keeps it"
     );
 
+    shell.click("inbox-section-2");
     shell.click_named(&row(38));
     assert!(is_preview(&mut shell, 38));
     shell.click("keep-tab");
     assert!(!is_preview(&mut shell, 38), "the pin keeps it");
 
-    // #39 sits under the fold of its section once the pull request's own
-    // sections share the sidebar.
-    let above = shell.bounds_of("inbox-row-38");
-    shell.scroll_at(above.center(), 46.0);
+    shell.click("inbox-section-2");
+    shell.click("inbox-section-1");
     shell.click_named(&row(39));
     assert!(is_preview(&mut shell, 39));
     let writing = shell.writing();
@@ -199,6 +202,9 @@ fn a_preview_tab_is_reused_until_it_is_kept(cx: &mut TestAppContext) {
 #[gpui::test]
 fn opening_brings_the_tab_forward_over_settings(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
+    // Folded, so "Review requested" keeps room for its rows once a pull
+    // request is open.
+    shell.click("inbox-section-1");
     shell.keys("ctrl-,");
     let settings = settings_id(&mut shell).expect("Settings opened");
     assert!(shell.is_shown(settings));

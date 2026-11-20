@@ -1279,6 +1279,7 @@ pub fn go_live(
             expanded_by_default: true,
             state: SectionState::Fresh,
             repo: None,
+            kind: None,
         }],
         prs,
     };

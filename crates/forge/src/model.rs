@@ -560,9 +560,11 @@ pub struct PullRequest {
     /// when the source did not report it.
     #[serde(default)]
     pub comment_count: Option<u32>,
-    /// Review threads not yet resolved. `None` when the forge's list
-    /// payload does not carry it (GitLab and Forgejo inbox rows), or the
-    /// pull request has more threads than one page counts.
+    /// Review threads not yet resolved (GitHub `reviewThreads.isResolved`,
+    /// GitLab resolvable minus resolved discussions). `None` when the
+    /// forge's list payload does not carry it (Forgejo inbox rows: only each
+    /// review's comments say whether they are resolved), or the pull request
+    /// has more threads than one page counts.
     #[serde(default)]
     pub unresolved_threads: Option<u32>,
     pub web_url: String,

@@ -7,6 +7,7 @@
 //! it overlaps the window system's start and the first frame can already
 //! show the cached inbox.
 
+use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
@@ -23,7 +24,7 @@ use gpui::{App, AppContext as _, AsyncApp, Context, Entity, Global, SharedString
 use crate::appearance;
 use crate::avatars::{self, Avatars, Preloaded};
 use crate::config::{Config, SectionKind};
-use crate::model::{Inbox, PrKey, PullRequest, Section, SectionState};
+use crate::model::{Inbox, PrKey, PullRequest, RemovableSection, Section, SectionState};
 use crate::services::{Services, Spawn};
 use crate::session::{ForgeState, ForgeStatus, Session};
 use crate::settings::Startup;
@@ -39,6 +40,8 @@ struct SectionSpec {
     expanded_by_default: bool,
     /// The repository of a `[[repos]]` section.
     repo: Option<RepoRef>,
+    /// The built-in section it is.
+    kind: Option<SectionKind>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -233,6 +236,7 @@ fn section_specs(config: &Config) -> Vec<SectionSpec> {
                 .collect(),
             expanded_by_default: true,
             repo: None,
+            kind: Some(kind),
         })
         .filter(|spec| !spec.sources.is_empty())
         .collect();
@@ -243,6 +247,7 @@ fn section_specs(config: &Config) -> Vec<SectionSpec> {
             sources: vec![(repo.host.clone(), InboxSection::OpenInRepo(repo.clone()))],
             expanded_by_default: false,
             repo: Some(repo),
+            kind: None,
         })
     }));
     specs
@@ -405,19 +410,22 @@ impl Live {
                 weak.update(cx, |live, cx| live.refresh(cx))
                     .unwrap_or_else(|_| Task::ready(()))
             }));
-            session.set_repo_remover(std::rc::Rc::new(move |repo: &RepoRef, cx: &mut App| {
-                let _ = weak_remover.update(cx, |live, cx| live.remove_repo(repo, cx));
-            }));
+            session.set_section_remover(std::rc::Rc::new(
+                move |section: &RemovableSection, cx: &mut App| {
+                    let _ = weak_remover.update(cx, |live, cx| live.remove_section(section, cx));
+                },
+            ));
         });
         live
     }
 
-    /// Stops listing `repo`: its sections leave the specs, so no refresh
-    /// brings them back, and its `[[repos]]` table leaves the config file.
-    fn remove_repo(&mut self, repo: &RepoRef, cx: &mut Context<Self>) {
+    /// Stops listing `section`: it leaves the specs, so no refresh brings it
+    /// back, and the config file: a repository's `[[repos]]` table, or the
+    /// built-in section from each forge's `sections`.
+    fn remove_section(&mut self, section: &RemovableSection, cx: &mut Context<Self>) {
         let (gone, kept): (Vec<_>, Vec<_>) = std::mem::take(&mut self.specs)
             .into_iter()
-            .partition(|spec| spec.repo.as_ref() == Some(repo));
+            .partition(|spec| section.covers(spec.repo.as_ref(), spec.kind));
         self.specs = kept;
         let still_used = sources(&self.specs);
         for source in gone.iter().flat_map(|spec| &spec.sources) {
@@ -430,16 +438,19 @@ impl Live {
         let Some(path) = Config::default_path() else {
             return;
         };
-        let repo = repo.clone();
-        let write = cx
-            .background_executor()
-            .spawn(async move { crate::config::remove_repo(&path, &repo) });
+        let section = section.clone();
+        let write = cx.background_executor().spawn(async move {
+            match &section {
+                RemovableSection::Repo(repo) => crate::config::remove_repo(&path, repo),
+                RemovableSection::Builtin(kind) => crate::config::remove_section(&path, *kind),
+            }
+        });
         let session = self.session.clone();
         cx.spawn(async move |_, cx| {
             if let Err(error) = write.await {
                 add_notice(
                     &session,
-                    format!("Could not remove the repository from config.toml: {error}"),
+                    format!("Could not remove the section from config.toml: {error}"),
                     cx,
                 );
             }
@@ -614,6 +625,9 @@ fn build_inbox(
 ) -> Inbox {
     let mut inbox = Inbox::default();
     let mut index: HashMap<PrKey, usize> = HashMap::new();
+    // What "Changes requested" lists; "Created by me", after it, leaves
+    // those out.
+    let mut needs_work: HashSet<PrKey> = HashSet::new();
     for spec in specs {
         let mut rows: Vec<&Arc<ForgePr>> = Vec::new();
         let mut state = SectionState::Fresh;
@@ -641,14 +655,36 @@ fn build_inbox(
         let mut items = Vec::with_capacity(rows.len());
         for pr in rows {
             let key = PrKey::of(pr);
-            let ix = *index.entry(key).or_insert_with(|| {
-                let kind = kinds
-                    .get(&pr.repo.host)
-                    .copied()
-                    .unwrap_or(ForgeKind::GitHub);
-                inbox.prs.push(PullRequest::from_forge(pr.clone(), kind));
-                inbox.prs.len() - 1
-            });
+            let known = index.get(&key).copied();
+            let row = match known {
+                Some(ix) => Cow::Borrowed(&inbox.prs[ix]),
+                None => {
+                    let kind = kinds
+                        .get(&pr.repo.host)
+                        .copied()
+                        .unwrap_or(ForgeKind::GitHub);
+                    Cow::Owned(PullRequest::from_forge(pr.clone(), kind))
+                }
+            };
+            let listed = match spec.kind {
+                Some(SectionKind::ChangesRequested) => row.needs_work().is_some(),
+                Some(SectionKind::AuthoredByMe) => !needs_work.contains(&key),
+                Some(SectionKind::ReviewRequested) | None => true,
+            };
+            if !listed {
+                continue;
+            }
+            if spec.kind == Some(SectionKind::ChangesRequested) {
+                needs_work.insert(key.clone());
+            }
+            let ix = match known {
+                Some(ix) => ix,
+                None => {
+                    inbox.prs.push(row.into_owned());
+                    index.insert(key, inbox.prs.len() - 1);
+                    inbox.prs.len() - 1
+                }
+            };
             if !items.contains(&ix) {
                 items.push(ix);
             }
@@ -659,7 +695,96 @@ fn build_inbox(
             expanded_by_default: spec.expanded_by_default,
             state,
             repo: spec.repo.clone(),
+            kind: spec.kind,
         });
     }
     inbox
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use forge::model::{PrNumber, ReviewDecision};
+
+    fn authored(number: u64, decision: ReviewDecision, unresolved: Option<u32>) -> Arc<ForgePr> {
+        let fixtures = crate::fixtures::Fixtures::load();
+        let mut record = fixtures
+            .forge_pr(&fixtures.inbox.prs[0].key)
+            .expect("a record");
+        record.number = PrNumber(number);
+        record.review_decision = decision;
+        record.unresolved_threads = unresolved;
+        // Newest first: in number order.
+        record.updated_at = chrono::DateTime::UNIX_EPOCH
+            + chrono::Duration::minutes(100 - i64::try_from(number).expect("small"));
+        Arc::new(record)
+    }
+
+    fn titles_and_numbers(inbox: &Inbox) -> Vec<(String, Vec<u64>)> {
+        inbox
+            .sections
+            .iter()
+            .map(|section| {
+                let numbers = section
+                    .items
+                    .iter()
+                    .map(|&ix| inbox.prs[ix].number())
+                    .collect();
+                (section.title.to_string(), numbers)
+            })
+            .collect()
+    }
+
+    #[test]
+    fn changes_requested_is_picked_out_of_created_by_me() {
+        let mut config = Config::parse(
+            "[[forges]]\nkind = \"github\"\nhost = \"github.com\"\nsections = [\"authored_by_me\"]\n",
+        )
+        .expect("parses");
+        let source: Source = ("github.com".to_owned(), InboxSection::AuthoredByMe);
+        let mut results = Results::default();
+        let prs = vec![
+            authored(1, ReviewDecision::ChangesRequested, Some(0)),
+            authored(2, ReviewDecision::Approved, Some(2)),
+            authored(3, ReviewDecision::Approved, Some(0)),
+            authored(4, ReviewDecision::Commented, None),
+        ];
+        results
+            .lists
+            .insert(source.clone(), (prs, Freshness::Fresh));
+        let kinds = HashMap::from([("github.com".to_owned(), ForgeKind::GitHub)]);
+
+        let specs = section_specs(&config);
+        assert_eq!(
+            sources(&specs),
+            std::slice::from_ref(&source),
+            "one query feeds both"
+        );
+        let inbox = build_inbox(&specs, &results, &kinds);
+        assert_eq!(
+            titles_and_numbers(&inbox),
+            [
+                ("Changes requested".to_owned(), vec![1, 2]),
+                ("Created by me".to_owned(), vec![3, 4]),
+            ]
+        );
+        assert_eq!(inbox.prs.len(), 4, "each pull request once");
+
+        // Without the section, "Created by me" lists them all.
+        config.forges[0].sections = vec![SectionKind::AuthoredByMe];
+        let inbox = build_inbox(&section_specs(&config), &results, &kinds);
+        assert_eq!(
+            titles_and_numbers(&inbox),
+            [("Created by me".to_owned(), vec![1, 2, 3, 4])]
+        );
+
+        // Alone, it lists only what waits on the author.
+        config.forges[0].sections = vec![SectionKind::ChangesRequested];
+        let inbox = build_inbox(&section_specs(&config), &results, &kinds);
+        assert_eq!(
+            titles_and_numbers(&inbox),
+            [("Changes requested".to_owned(), vec![1, 2])]
+        );
+        assert_eq!(inbox.prs.len(), 2, "no row nothing lists");
+    }
 }

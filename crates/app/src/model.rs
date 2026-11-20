@@ -7,6 +7,8 @@ use std::sync::Arc;
 use chrono::Utc;
 use gpui::SharedString;
 
+use crate::config::SectionKind;
+
 pub use forge::model::{CiState, ForgeKind, PrNumber, RepoRef, ReviewStatus, Timestamp};
 pub use store::PrKey;
 
@@ -274,6 +276,56 @@ impl PullRequest {
     }
 }
 
+/// Why one of the user's own pull requests waits on them, which puts it in
+/// the "Changes requested" section.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct NeedsWork {
+    /// The forge's review decision is a change request: the latest verdict
+    /// of some reviewer, as the forge counts it.
+    pub changes_requested: bool,
+    /// Review threads not resolved yet; 0 when the forge did not say.
+    pub unresolved: u32,
+}
+
+impl NeedsWork {
+    /// What the row says: "changes requested", "3 unresolved", or both.
+    #[must_use]
+    pub fn label(self) -> String {
+        match (self.changes_requested, self.unresolved) {
+            (true, 0) => "changes requested".to_owned(),
+            (true, n) => format!("changes requested, {n} unresolved"),
+            (false, n) => format!("{n} unresolved"),
+        }
+    }
+}
+
+impl PullRequest {
+    /// Whether the forge's review decision is a change request. A draft
+    /// keeps it, though its row reads "draft".
+    #[must_use]
+    pub fn changes_requested(&self) -> bool {
+        match &self.source {
+            Some(pr) => pr.review_decision == forge::model::ReviewDecision::ChangesRequested,
+            None => self.review == ReviewState::ChangesRequested,
+        }
+    }
+
+    /// Why it waits on its author, if it does: a change request or
+    /// unresolved review threads on an open or draft pull request.
+    #[must_use]
+    pub fn needs_work(&self) -> Option<NeedsWork> {
+        use forge::model::PrState;
+        if !matches!(self.state, PrState::Open | PrState::Draft) {
+            return None;
+        }
+        let work = NeedsWork {
+            changes_requested: self.changes_requested(),
+            unresolved: self.unresolved.unwrap_or(0),
+        };
+        (work.changes_requested || work.unresolved > 0).then_some(work)
+    }
+}
+
 /// What an inbox row says about reviews.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RowReview {
@@ -381,6 +433,45 @@ pub struct Section {
     /// The repository a `[[repos]]` section lists; `None` for the built-in
     /// ones.
     pub repo: Option<RepoRef>,
+    /// Which built-in section it is; `None` for a repository's.
+    pub kind: Option<SectionKind>,
+}
+
+/// A section "Remove from inbox" takes out for good.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum RemovableSection {
+    /// A `[[repos]]` repository's sections.
+    Repo(RepoRef),
+    /// A built-in section that may be removed ([`SectionKind::removable`]).
+    Builtin(SectionKind),
+}
+
+impl RemovableSection {
+    /// What removing `section` takes out, when it can be removed.
+    #[must_use]
+    pub fn of(section: &Section) -> Option<Self> {
+        match (&section.repo, section.kind) {
+            (Some(repo), _) => Some(Self::Repo(repo.clone())),
+            (None, Some(kind)) if kind.removable() => Some(Self::Builtin(kind)),
+            (None, _) => None,
+        }
+    }
+
+    /// Whether removing this takes `section` out.
+    #[must_use]
+    pub fn matches(&self, section: &Section) -> bool {
+        self.covers(section.repo.as_ref(), section.kind)
+    }
+
+    /// Whether removing this takes out the section of `repo`, or the
+    /// built-in section `kind`.
+    #[must_use]
+    pub fn covers(&self, repo: Option<&RepoRef>, kind: Option<SectionKind>) -> bool {
+        match self {
+            Self::Repo(removed) => repo == Some(removed),
+            Self::Builtin(removed) => repo.is_none() && kind == Some(*removed),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default)]
@@ -562,6 +653,117 @@ mod tests {
             row.row_review(Some(&viewer)),
             RowReview::Mine(ReviewStatus::ReviewRequested)
         );
+    }
+
+    /// One of the viewer's own pull requests as a forge reports it.
+    fn authored(
+        state: forge::model::PrState,
+        reviewers: Vec<forge::model::Reviewer>,
+        unresolved: Option<u32>,
+    ) -> PullRequest {
+        let fixtures = crate::fixtures::Fixtures::load();
+        let key = fixtures.inbox.prs[0].key.clone();
+        let mut record = fixtures.forge_pr(&key).expect("a record");
+        record.state = state;
+        record.review_decision = forge::model::ReviewDecision::from_reviewers(&reviewers);
+        record.reviewers = reviewers;
+        record.unresolved_threads = unresolved;
+        PullRequest::from_forge(Arc::new(record), ForgeKind::GitHub)
+    }
+
+    #[test]
+    fn needs_work_is_a_change_request_or_unresolved_threads() {
+        use forge::model::{PrState, ReviewState as Forge};
+
+        let changes = || vec![reviewer("mira", Forge::ChangesRequested)];
+        let approved = || vec![reviewer("mira", Forge::Approved)];
+        let cases = [
+            (
+                "changes requested",
+                PrState::Open,
+                changes(),
+                Some(0),
+                Some((true, 0)),
+            ),
+            (
+                "unresolved only",
+                PrState::Open,
+                approved(),
+                Some(3),
+                Some((false, 3)),
+            ),
+            ("both", PrState::Open, changes(), Some(2), Some((true, 2))),
+            ("neither", PrState::Open, approved(), Some(0), None),
+            (
+                "the forge did not count threads",
+                PrState::Open,
+                approved(),
+                None,
+                None,
+            ),
+            (
+                "a draft with a change request",
+                PrState::Draft,
+                changes(),
+                None,
+                Some((true, 0)),
+            ),
+            (
+                "a draft with threads",
+                PrState::Draft,
+                Vec::new(),
+                Some(1),
+                Some((false, 1)),
+            ),
+            ("merged", PrState::Merged, changes(), Some(1), None),
+        ];
+        for (name, state, reviewers, unresolved, want) in cases {
+            let work = authored(state, reviewers, unresolved).needs_work();
+            let want = want.map(|(changes_requested, unresolved)| NeedsWork {
+                changes_requested,
+                unresolved,
+            });
+            assert_eq!(work, want, "{name}");
+        }
+    }
+
+    #[test]
+    fn an_approval_after_a_change_request_clears_it() {
+        use forge::model::{PrState, ReviewState as Forge};
+
+        // The forges fold each reviewer to their latest verdict: mira asked
+        // for changes, then approved; ansel only commented.
+        let reviewers = vec![
+            reviewer("mira", Forge::Approved),
+            reviewer("ansel", Forge::Commented),
+        ];
+        let row = authored(PrState::Open, reviewers, Some(0));
+        assert!(!row.changes_requested());
+        assert_eq!(row.needs_work(), None);
+
+        // GitHub's own decision wins over the reviewers' rows.
+        let fixtures = crate::fixtures::Fixtures::load();
+        let mut record = fixtures
+            .forge_pr(&fixtures.inbox.prs[0].key)
+            .expect("a record");
+        record.review_decision = forge::model::ReviewDecision::ChangesRequested;
+        record.unresolved_threads = None;
+        let row = PullRequest::from_forge(Arc::new(record), ForgeKind::GitHub);
+        assert!(row.needs_work().is_some_and(|work| work.changes_requested));
+    }
+
+    #[test]
+    fn needs_work_says_why() {
+        let work = |changes_requested, unresolved| {
+            NeedsWork {
+                changes_requested,
+                unresolved,
+            }
+            .label()
+        };
+        assert_eq!(work(true, 0), "changes requested");
+        assert_eq!(work(false, 3), "3 unresolved");
+        assert_eq!(work(true, 2), "changes requested, 2 unresolved");
     }
 
     #[test]

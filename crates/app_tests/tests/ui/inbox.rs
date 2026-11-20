@@ -85,7 +85,7 @@ fn inbox_sections_resize_fold_and_keep_it(first: &mut TestAppContext, next: &mut
     shell.click("inbox-section-1");
     let folded = block(&mut shell, 1);
     assert_eq!(folded.size.height, px(28.0), "folded to its header");
-    assert!(!shell.drawn("inbox-row-38"), "its rows are gone");
+    assert!(!shell.drawn("inbox-row-39"), "its rows are gone");
 
     shell.advance(Duration::from_secs(1));
     let saved = layout::load_from(&file).expect("the shell saved the layout");
@@ -324,13 +324,17 @@ fn a_click_on_the_author_opens_the_pull_request(cx: &mut TestAppContext) {
 #[gpui::test]
 fn a_stack_nests_under_its_repository_and_folds(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
+    // Folded, so "Created by me" has room for its stack.
+    shell.click("inbox-section-1");
     let flat = shell.bounds_of("inbox-ci-41");
     shell.click("group-by-repo");
-    assert!(shell.drawn("stack-group-1-38"), "the stack has a header");
-    let group = shell.bounds_of("repo-group-1-review");
-    let header = shell.bounds_of("stack-group-1-38");
+    // #39 waits on its author, so "Changes requested" has it; the rest of
+    // the stack is in "Created by me".
+    assert!(shell.drawn("stack-group-2-38"), "the stack has a header");
+    let group = shell.bounds_of("repo-group-2-review");
+    let header = shell.bounds_of("stack-group-2-38");
     assert!(group.bottom() <= header.top(), "under its repository");
-    let tops: Vec<_> = [41, 40, 39, 38]
+    let tops: Vec<_> = [41, 40, 38]
         .map(|n| {
             shell
                 .bounds_of(String::leak(format!("inbox-row-{n}")))
@@ -348,18 +352,18 @@ fn a_stack_nests_under_its_repository_and_folds(cx: &mut TestAppContext) {
         "two indents: the repository's and the stack's"
     );
 
-    shell.click("stack-group-1-38");
+    shell.click("stack-group-2-38");
     assert!(
         !shell.drawn("inbox-row-40"),
         "a folded stack hides its rows"
     );
-    assert!(shell.drawn("stack-group-1-38") && shell.drawn("repo-group-1-review"));
-    shell.click("stack-group-1-38");
+    assert!(shell.drawn("stack-group-2-38") && shell.drawn("repo-group-2-review"));
+    shell.click("stack-group-2-38");
     assert!(shell.drawn("inbox-row-40"));
 
-    shell.click("repo-group-1-review");
+    shell.click("repo-group-2-review");
     assert!(
-        !shell.drawn("stack-group-1-38"),
+        !shell.drawn("stack-group-2-38"),
         "folding the repository folds the stack away too"
     );
 }
@@ -367,8 +371,10 @@ fn a_stack_nests_under_its_repository_and_folds(cx: &mut TestAppContext) {
 #[gpui::test]
 fn a_right_click_on_a_repository_header_opens_its_menu(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
+    // Folded, so "Created by me" has room for its stack.
+    shell.click("inbox-section-1");
     shell.click("group-by-repo");
-    let at = shell.bounds_of("repo-group-1-review").center();
+    let at = shell.bounds_of("repo-group-2-review").center();
     let none = gpui::Modifiers::none();
     shell.cx.simulate_mouse_move(at, None, none);
     shell
@@ -764,12 +770,12 @@ fn review_requested_can_leave_its_drafts_out_and_remembers_it(
         shell.update(|_, cx| session.read(cx).inbox.get(&key).is_some()),
         "display only: it is still in the inbox"
     );
-    let other = section_note(&mut shell, 1);
+    let other = section_note(&mut shell, 2);
     assert!(!other.contains("draft"), "other sections keep their drafts");
-    shell.update(|_, cx| sidebar.update(cx, |s, cx| s.set_section_hides_drafts(1, true, cx)));
+    shell.update(|_, cx| sidebar.update(cx, |s, cx| s.set_section_hides_drafts(2, true, cx)));
     assert!(
-        !shell.update(|_, cx| sidebar.read(cx).section_hides_drafts(1)),
-        "only review requested offers it"
+        !shell.update(|_, cx| sidebar.read(cx).section_hides_drafts(2)),
+        "only review requested and changes requested offer it"
     );
 
     // It is in the saved layout and comes back with it.

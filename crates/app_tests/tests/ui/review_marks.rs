@@ -48,7 +48,7 @@ fn reveal(shell: &mut ShellWindow, number: u64) {
         if shell.drawn(&row) {
             return;
         }
-        shell.update(|_, cx| sidebar.update(cx, |sidebar, cx| sidebar.scroll_section(1, 46.0, cx)));
+        shell.update(|_, cx| sidebar.update(cx, |sidebar, cx| sidebar.scroll_section(2, 46.0, cx)));
         shell.settle();
     }
     panic!("#{number} never came into view");
@@ -91,6 +91,9 @@ fn viewing_every_file_records_progress_and_the_reviewed_mark(cx: &mut TestAppCon
 #[gpui::test]
 fn a_new_comment_after_opening_shows_the_unread_dot(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
+    // Folded, so "Review requested" keeps room for its rows once a pull
+    // request is open.
+    shell.click("inbox-section-1");
     let key = shell.key(42);
     shell.click("inbox-title-42");
     assert!(!marks_of(&mut shell, &key).unread, "seen when opened");

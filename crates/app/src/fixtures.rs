@@ -15,6 +15,7 @@ use gpui::SharedString;
 
 use crate::avatars;
 use crate::commits::PrCommit;
+use crate::config::SectionKind;
 use crate::model::{
     ChangedFile, Check, CiState, FileStatus, ForgeKind, Inbox, PrKey, PrNumber, PullRequest,
     RepoRef, ReviewState, Section, SectionState, Stack, StackMember, Viewed,
@@ -446,7 +447,7 @@ fn specs() -> Vec<Spec> {
             head: "cora/tree-diff",
             base: "cora/pack-reader",
             ci: Pass,
-            review: Commented,
+            review: ChangesRequested,
             minutes_ago: 3 * HOUR + 12,
             description: "Walks two trees and yields changed paths with add and remove counts, so the sidebar can show files before any hunk is computed.\n\nStacked on #38.",
             files: vec![
@@ -700,6 +701,7 @@ pub struct Fixtures {
 
 enum Query {
     ReviewRequested,
+    ChangesRequested,
     CreatedByMe,
     Repo(usize),
 }
@@ -717,7 +719,9 @@ impl Fixtures {
                     Query::ReviewRequested => {
                         pr.reviewers.iter().any(|r| r == ME) && pr.author != ME
                     }
-                    Query::CreatedByMe => pr.author == ME,
+                    // "Created by me" leaves out what "Changes requested" lists.
+                    Query::ChangesRequested => pr.author == ME && pr.needs_work().is_some(),
+                    Query::CreatedByMe => pr.author == ME && pr.needs_work().is_none(),
                     Query::Repo(repo) => pr.key.repo == repo_of(repo).1,
                 })
                 .map(|(ix, _)| ix)
@@ -729,13 +733,28 @@ impl Fixtures {
                 state: SectionState::Fresh,
                 repo: match query {
                     Query::Repo(repo) => Some(repo_of(repo).1),
-                    Query::ReviewRequested | Query::CreatedByMe => None,
+                    Query::ReviewRequested | Query::ChangesRequested | Query::CreatedByMe => None,
+                },
+                kind: match query {
+                    Query::ReviewRequested => Some(SectionKind::ReviewRequested),
+                    Query::ChangesRequested => Some(SectionKind::ChangesRequested),
+                    Query::CreatedByMe => Some(SectionKind::AuthoredByMe),
+                    Query::Repo(_) => None,
                 },
             }
         };
         let sections = vec![
-            section("Review requested", Query::ReviewRequested, true),
-            section("Created by me", Query::CreatedByMe, true),
+            section(
+                SectionKind::ReviewRequested.title(),
+                Query::ReviewRequested,
+                true,
+            ),
+            section(
+                SectionKind::ChangesRequested.title(),
+                Query::ChangesRequested,
+                true,
+            ),
+            section(SectionKind::AuthoredByMe.title(), Query::CreatedByMe, true),
             section("cora/review: open", Query::Repo(REVIEW), false),
             section("acme/api: open", Query::Repo(API), false),
             section("acme/web: open", Query::Repo(WEB), false),
@@ -1233,8 +1252,28 @@ mod tests {
             .iter()
             .map(|s| s.items.len())
             .collect();
-        assert_eq!(counts, [3, 5, 7, 5, 3]);
+        assert_eq!(counts, [3, 2, 3, 7, 5, 3]);
         assert_eq!(fixtures.inbox.prs.len(), 15);
+        // One of each reason: a change request (#39) and a thread (#1297).
+        let changes = &fixtures.inbox.sections[1];
+        let why: Vec<_> = changes
+            .items
+            .iter()
+            .map(|&ix| {
+                let pr = &fixtures.inbox.prs[ix];
+                (
+                    pr.number(),
+                    pr.needs_work().map(crate::model::NeedsWork::label),
+                )
+            })
+            .collect();
+        assert_eq!(
+            why,
+            [
+                (39, Some("changes requested".to_owned())),
+                (1297, Some("1 unresolved".to_owned())),
+            ]
+        );
     }
 
     #[test]

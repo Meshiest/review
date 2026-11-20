@@ -8,6 +8,7 @@ mod harness;
 mod agent_review;
 mod apply;
 mod back_forward;
+mod changes_requested;
 mod ci_settle;
 mod commits;
 mod composer;

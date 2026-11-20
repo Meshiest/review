@@ -1,7 +1,7 @@
-//! The inbox panel's content: its sections (Review requested, Created by me,
-//! one per repository) as a vertical group the user resizes, each a
-//! virtualized list that scrolls on its own; optionally grouped by
-//! repository. Also the Repos panel's list, which hides repositories from
+//! The inbox panel's content: its sections (Review requested, Changes
+//! requested, Created by me, one per repository) as a vertical group the
+//! user resizes, each a virtualized list that scrolls on its own;
+//! optionally grouped by repository. Also the Repos panel's list, which hides repositories from
 //! the inbox's view.
 //!
 //! Hiding is display only: hidden repositories are still read, counted,
@@ -44,7 +44,8 @@ use theme::Theme;
 use crate::appearance::{self, Appearance};
 use crate::config::SectionKind;
 use crate::model::{
-    Inbox, PullRequest, RepoRef, ReviewStatus, RowReview, SectionState, relative_time,
+    Inbox, PullRequest, RemovableSection, RepoRef, ReviewStatus, RowReview, SectionState,
+    relative_time,
 };
 use crate::references;
 use crate::settings::InboxSettings;
@@ -150,10 +151,10 @@ impl SectionList {
     }
 }
 
-/// Whether a section titled `title` is the built-in review requested one,
-/// the only one that can leave drafts out.
+/// Whether a section titled `title` is a built-in one that can leave drafts
+/// out.
 fn can_hide_drafts(title: &str) -> bool {
-    title == SectionKind::ReviewRequested.title()
+    SectionKind::of_title(title).is_some_and(SectionKind::can_hide_drafts)
 }
 
 /// An entry of a section header's right-click menu.
@@ -161,9 +162,9 @@ fn can_hide_drafts(title: &str) -> bool {
 pub enum SectionMenuItem {
     Fold,
     Unfold,
-    /// Only on the review requested section.
+    /// Only on the review requested and changes requested sections.
     HideDrafts,
-    /// Only on a repository's section.
+    /// Only on a repository's section and the changes requested one.
     RemoveFromInbox,
 }
 
@@ -179,18 +180,19 @@ impl SectionMenuItem {
     }
 }
 
-/// What "Remove from inbox" does: the repository's sections leave the sidebar
-/// and the session's inbox with their saved fold and hide state, and a live
-/// session stops fetching them and takes the `[[repos]]` table out of the
-/// config file. A fixtures session has no file and no sources, so only the
-/// first part applies.
-pub fn remove_repo_from_inbox(repo: &RepoRef, cx: &mut App) {
-    Sidebar::global(cx).update(cx, |sidebar, cx| sidebar.forget_repo_sections(repo, cx));
+/// What "Remove from inbox" does: the sections leave the sidebar and the
+/// session's inbox with their saved fold and hide state, and a live session
+/// stops listing them and takes them out of the config file (a repository's
+/// `[[repos]]` table, a built-in section from each forge's `sections`). A
+/// fixtures session has no file and no sources, so only the first part
+/// applies.
+pub fn remove_from_inbox(section: &RemovableSection, cx: &mut App) {
+    Sidebar::global(cx).update(cx, |sidebar, cx| sidebar.forget_sections(section, cx));
     let session = crate::session::Session::global(cx);
-    session.update(cx, |session, cx| session.drop_repo_sections(repo, cx));
+    session.update(cx, |session, cx| session.drop_sections(section, cx));
     // After the update: the live remover publishes the inbox again.
-    if let Some(remover) = session.read(cx).repo_remover() {
-        remover(repo, cx);
+    if let Some(remover) = session.read(cx).section_remover() {
+        remover(section, cx);
     }
 }
 
@@ -206,7 +208,7 @@ struct SectionLayout {
     /// unfolding takes its share back.
     share: Option<f32>,
     /// Whether draft pull requests are left out of it (only the review
-    /// requested section offers this).
+    /// requested and changes requested sections offer this).
     hide_drafts: bool,
 }
 
@@ -785,7 +787,7 @@ impl Sidebar {
 
     /// Leaves draft pull requests out of section `ix`, or lists them again.
     /// Display only, like hiding a repository; only the review requested
-    /// section can.
+    /// and changes requested sections can.
     pub fn set_section_hides_drafts(&mut self, ix: usize, hide: bool, cx: &mut Context<Self>) {
         let Some(layout) = self.inbox.sections.get_mut(ix) else {
             return;
@@ -812,21 +814,21 @@ impl Sidebar {
         if can_hide_drafts(&spec.title) {
             items.push(SectionMenuItem::HideDrafts);
         }
-        if spec.repo.is_some() {
+        if RemovableSection::of(spec).is_some() {
             items.push(SectionMenuItem::RemoveFromInbox);
         }
         items
     }
 
-    /// Forgets the saved fold, share and hide state of the sections for
-    /// `repo`, so the layout saved next no longer lists them. Called before
-    /// the session drops the sections.
-    fn forget_repo_sections(&mut self, repo: &RepoRef, cx: &mut Context<Self>) {
+    /// Forgets the saved fold, share and hide state of the sections
+    /// `removed` names, so the layout saved next no longer lists them.
+    /// Called before the session drops the sections.
+    fn forget_sections(&mut self, removed: &RemovableSection, cx: &mut Context<Self>) {
         let inbox = self.session.read(cx).inbox.clone();
         let titles: Vec<&SharedString> = inbox
             .sections
             .iter()
-            .filter(|section| section.repo.as_ref() == Some(repo))
+            .filter(|section| removed.matches(section))
             .map(|section| &section.title)
             .collect();
         if titles.is_empty() {
@@ -1349,7 +1351,7 @@ impl Sidebar {
         let Some(pr) = inbox.prs.get(ix) else {
             return Empty.into_any_element();
         };
-        let review = pr.row_review(session.account(&pr.key.repo.host));
+        let (review_label, review_tint) = row_status(&inbox, section, pr, session, t);
         let key = pr.key.clone();
         let is_open = open.as_ref() == Some(&key);
         let state = match pr.state {
@@ -1452,8 +1454,8 @@ impl Sidebar {
                     .flex_1()
                     .min_w_0()
                     .truncate()
-                    .text_color(row_review_color(t, review))
-                    .child(review.label()),
+                    .text_color(review_tint)
+                    .child(review_label),
             )
             .children(
                 marks
@@ -1659,7 +1661,7 @@ impl Sidebar {
         };
         let hide_drafts = self.section_hides_drafts(ix);
         let items = self.section_menu(ix, cx);
-        let repo = spec.repo.clone();
+        let removable = RemovableSection::of(spec);
         let selector = format!("inbox-section-{ix}");
         h_flex()
             .id(("section", ix))
@@ -1684,7 +1686,7 @@ impl Sidebar {
                         menu = menu.separator();
                     }
                     let entry = PopupMenuItem::new(item.label());
-                    let repo = repo.clone();
+                    let removable = removable.clone();
                     menu = menu.item(match item {
                         SectionMenuItem::Fold | SectionMenuItem::Unfold => {
                             entry.on_click(move |_, _, cx| {
@@ -1700,8 +1702,8 @@ impl Sidebar {
                             })
                         }
                         SectionMenuItem::RemoveFromInbox => entry.on_click(move |_, _, cx| {
-                            if let Some(repo) = &repo {
-                                remove_repo_from_inbox(repo, cx);
+                            if let Some(section) = &removable {
+                                remove_from_inbox(section, cx);
                             }
                         }),
                     });
@@ -2113,6 +2115,56 @@ const DIM_OPACITY: f32 = 0.55;
 
 /// The width of a row's viewed-progress bar.
 const PROGRESS_WIDTH: f32 = 24.0;
+
+/// What a row's status line says and in which color: in "Changes
+/// requested" why the pull request is there, elsewhere its review.
+fn row_status(
+    inbox: &Inbox,
+    section: usize,
+    pr: &PullRequest,
+    session: &crate::session::Session,
+    t: &Theme,
+) -> (SharedString, gpui::Hsla) {
+    let c = &t.colors;
+    let work = inbox
+        .sections
+        .get(section)
+        .is_some_and(|spec| spec.kind == Some(SectionKind::ChangesRequested))
+        .then(|| pr.needs_work())
+        .flatten();
+    if let Some(work) = work {
+        let color = if work.changes_requested {
+            c.danger
+        } else {
+            c.warn
+        };
+        return (work.label().into(), color);
+    }
+    let review = pr.row_review(session.account(&pr.key.repo.host));
+    (review.label().into(), row_review_color(t, review))
+}
+
+impl Sidebar {
+    /// The status line of the row for pull request `pr` (an index into the
+    /// inbox's) in section `section`: its text and color.
+    #[must_use]
+    pub fn row_status(
+        &self,
+        section: usize,
+        pr: usize,
+        cx: &App,
+    ) -> Option<(SharedString, gpui::Hsla)> {
+        let session = self.session.read(cx);
+        let row = session.inbox.prs.get(pr)?;
+        Some(row_status(
+            &session.inbox,
+            section,
+            row,
+            session,
+            &ui::theme(cx),
+        ))
+    }
+}
 
 fn row_review_color(t: &Theme, review: RowReview) -> gpui::Hsla {
     let c = &t.colors;

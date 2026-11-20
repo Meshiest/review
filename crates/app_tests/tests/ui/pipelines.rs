@@ -152,6 +152,10 @@ fn press(shell: &mut ShellWindow, id: &'static str) {
 #[gpui::test]
 fn the_top_box_the_checks_tab_and_section_are_gone(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
+    // Folded, so "Review requested" keeps room for its rows once a pull
+    // request is open.
+    shell.click("inbox-section-1");
+    shell.click("inbox-section-2");
     shell.open_pr(1288);
     shell.show(1288, PanelKind::Conversation, OpenMode::Permanent);
     assert!(shell.drawn("pr-actions"), "the header is drawn");

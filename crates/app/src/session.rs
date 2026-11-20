@@ -29,11 +29,15 @@ use forge::model::Timestamp;
 use crate::ci::{self, CiLoad, Retry, RetryConfirm};
 use crate::ci_settle::{self, SETTLE_POLL, SettleRead};
 use crate::commits::{self, CommitView, PrCommit, PrCommits};
+use crate::config::SectionKind;
 use crate::drafts::DraftSaver;
 use crate::fixtures::{self, Fixtures};
 use crate::forge_sink::ForgeSink;
 use crate::lifecycle::Lifecycle;
-use crate::model::{ChangedFile, Check, Inbox, PrKey, PullRequest, ReviewState, Stack, Viewed};
+use crate::model::{
+    ChangedFile, Check, Inbox, PrKey, PullRequest, RemovableSection, ReviewState, Section, Stack,
+    Viewed,
+};
 use crate::opener::{self, DiffUpdate, OpenRequest, OpenStatus, OpenUpdate};
 use crate::panels::PanelKind;
 use crate::services::{ActivityCounts, Services};
@@ -398,9 +402,9 @@ pub struct Session {
     background: HashSet<PrKey>,
     /// Refetches every inbox section; set by whoever fills the inbox.
     refresher: Option<InboxRefresher>,
-    /// Stops the live refresher listing a repository and takes it out of
-    /// the config file; set by whoever fills the inbox from the forges.
-    repo_remover: Option<RepoRemover>,
+    /// Stops the live refresher listing a section and takes it out of the
+    /// config file; set by whoever fills the inbox from the forges.
+    section_remover: Option<SectionRemover>,
     pub inbox_refresh: InboxRefresh,
     /// Whether rows with active CI are being read again (see
     /// [`crate::ci_settle`]).
@@ -410,8 +414,8 @@ pub struct Session {
 /// Starts a refetch of every inbox section, resolving when all answered.
 pub type InboxRefresher = Rc<dyn Fn(&mut App) -> Task<()>>;
 
-/// Drops a repository's inbox section from the live sources and the config.
-pub type RepoRemover = Rc<dyn Fn(&RepoRef, &mut App)>;
+/// Drops an inbox section from the live sources and the config.
+pub type SectionRemover = Rc<dyn Fn(&RemovableSection, &mut App)>;
 
 /// Where refetching the inbox by hand stands, for the inbox's button.
 #[derive(Clone, Debug, Default)]
@@ -569,7 +573,7 @@ impl Session {
             panels: Vec::new(),
             background: HashSet::new(),
             refresher: None,
-            repo_remover: None,
+            section_remover: None,
             inbox_refresh: InboxRefresh::default(),
             settling: false,
         });
@@ -2426,24 +2430,45 @@ impl Session {
         self.refresher = Some(refresher);
     }
 
-    /// Takes the function that stops listing a repository for good.
-    pub fn set_repo_remover(&mut self, remover: RepoRemover) {
-        self.repo_remover = Some(remover);
+    /// Takes the function that stops listing a section for good.
+    pub fn set_section_remover(&mut self, remover: SectionRemover) {
+        self.section_remover = Some(remover);
     }
 
-    /// The function that stops listing a repository for good, once a live
+    /// The function that stops listing a section for good, once a live
     /// start has set it.
     #[must_use]
-    pub fn repo_remover(&self) -> Option<RepoRemover> {
-        self.repo_remover.clone()
+    pub fn section_remover(&self) -> Option<SectionRemover> {
+        self.section_remover.clone()
     }
 
-    /// Takes `repo`'s sections out of the inbox now.
-    pub fn drop_repo_sections(&mut self, repo: &RepoRef, cx: &mut Context<Self>) {
+    /// Takes the sections `removed` names out of the inbox now.
+    pub fn drop_sections(&mut self, removed: &RemovableSection, cx: &mut Context<Self>) {
         let mut inbox = Inbox::clone(&self.inbox);
-        inbox
-            .sections
-            .retain(|section| section.repo.as_ref() != Some(repo));
+        let (gone, mut kept): (Vec<Section>, Vec<Section>) = std::mem::take(&mut inbox.sections)
+            .into_iter()
+            .partition(|section| removed.matches(section));
+        // "Created by me" left out what "Changes requested" listed.
+        let freed: Vec<usize> = gone
+            .iter()
+            .filter(|section| section.kind == Some(SectionKind::ChangesRequested))
+            .flat_map(|section| section.items.iter().copied())
+            .collect();
+        if !freed.is_empty()
+            && let Some(authored) = kept
+                .iter_mut()
+                .find(|section| section.kind == Some(SectionKind::AuthoredByMe))
+        {
+            for ix in freed {
+                if !authored.items.contains(&ix) {
+                    authored.items.push(ix);
+                }
+            }
+            authored
+                .items
+                .sort_by_key(|&ix| std::cmp::Reverse(inbox.prs.get(ix).map(|pr| pr.updated_at)));
+        }
+        inbox.sections = kept;
         self.set_inbox(inbox, cx);
     }
 

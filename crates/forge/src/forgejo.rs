@@ -1091,6 +1091,18 @@ impl ApiReview {
         !matches!(self.state.as_str(), "PENDING" | "REQUEST_REVIEW")
     }
 
+    /// Whether this review, of the same person, replaces `earlier` as
+    /// their verdict. Forgejo counts a person's latest approval, change
+    /// request or review request; a comment after one leaves it standing.
+    fn supersedes(&self, earlier: &Self) -> bool {
+        let verdict = |review: &Self| review.state != "COMMENT";
+        match (verdict(self), verdict(earlier)) {
+            (true, false) => true,
+            (false, true) => false,
+            _ => self.id >= earlier.id,
+        }
+    }
+
     fn has_inline_comments(&self) -> bool {
         self.is_submitted() && self.comments_count > 0
     }
@@ -1104,8 +1116,8 @@ impl ApiReview {
     }
 }
 
-/// One row per person: the latest review row (highest id), plus anyone still
-/// only requested.
+/// One row per person: the latest review row (highest id; a comment does not
+/// replace a verdict), plus anyone still only requested.
 ///
 /// A review request is a row of its own, so one made after a review is the
 /// latest row: the person is asked again and the earlier review no longer
@@ -1119,7 +1131,7 @@ fn reviewers(users: &[ApiUser], teams: &[ApiTeam], reviews: &[ApiReview]) -> Vec
             reviewed.insert(user.login.as_str());
         }
         let slot = latest.entry(user.login.clone()).or_insert(review);
-        if review.id >= slot.id {
+        if review.supersedes(slot) {
             *slot = review;
         }
     }
@@ -1655,6 +1667,55 @@ mod tests {
         assert_eq!(status_state("cancelled"), CiState::Canceled);
         assert_eq!(status_state("skipped"), CiState::Skipped);
         assert_eq!(status_state(""), CiState::None);
+    }
+
+    fn review(id: u64, login: &str, state: &str) -> ApiReview {
+        ApiReview {
+            id,
+            user: Some(ApiUser {
+                login: login.to_owned(),
+                ..ApiUser::default()
+            }),
+            state: state.to_owned(),
+            ..ApiReview::default()
+        }
+    }
+
+    fn decision(reviews: &[ApiReview]) -> ReviewDecision {
+        ReviewDecision::from_reviewers(&reviewers(&[], &[], reviews))
+    }
+
+    #[test]
+    fn the_latest_verdict_per_reviewer_counts() {
+        let changes = review(1, "mira", "REQUEST_CHANGES");
+        assert_eq!(
+            decision(std::slice::from_ref(&changes)),
+            ReviewDecision::ChangesRequested
+        );
+        assert_eq!(
+            decision(&[changes.clone(), review(2, "mira", "APPROVED")]),
+            ReviewDecision::Approved,
+            "an approval after a change request replaces it"
+        );
+        for reviews in [
+            [changes.clone(), review(2, "mira", "COMMENT")],
+            [review(2, "mira", "COMMENT"), changes.clone()],
+        ] {
+            assert_eq!(
+                decision(&reviews),
+                ReviewDecision::ChangesRequested,
+                "a comment after it leaves it standing, in either order"
+            );
+        }
+        assert_eq!(
+            decision(&[changes, review(2, "ansel", "APPROVED")]),
+            ReviewDecision::ChangesRequested,
+            "another reviewer's approval does not"
+        );
+        assert_eq!(
+            decision(&[review(1, "mira", "COMMENT")]),
+            ReviewDecision::Commented
+        );
     }
 
     #[test]

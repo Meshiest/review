@@ -32,15 +32,25 @@ const DEFAULT_CLONE_URL: &str = "git@{host}:{owner}/{name}.git";
 #[serde(rename_all = "snake_case")]
 pub enum SectionKind {
     ReviewRequested,
+    /// The user's own open pull requests that wait on them: a change
+    /// request or unresolved threads. Picked out of the authored list, so it
+    /// costs no query of its own.
+    ChangesRequested,
     AuthoredByMe,
 }
 
 impl SectionKind {
-    pub const ALL: [Self; 2] = [Self::ReviewRequested, Self::AuthoredByMe];
+    /// In inbox order.
+    pub const ALL: [Self; 3] = [
+        Self::ReviewRequested,
+        Self::ChangesRequested,
+        Self::AuthoredByMe,
+    ];
 
     pub fn title(self) -> &'static str {
         match self {
             Self::ReviewRequested => "Review requested",
+            Self::ChangesRequested => "Changes requested",
             Self::AuthoredByMe => "Created by me",
         }
     }
@@ -48,15 +58,36 @@ impl SectionKind {
     fn key(self) -> &'static str {
         match self {
             Self::ReviewRequested => "review_requested",
+            Self::ChangesRequested => "changes_requested",
             Self::AuthoredByMe => "authored_by_me",
         }
     }
 
+    /// The forge query whose list feeds it.
     pub fn query(self) -> forge::model::InboxSection {
         match self {
             Self::ReviewRequested => forge::model::InboxSection::ReviewRequested,
-            Self::AuthoredByMe => forge::model::InboxSection::AuthoredByMe,
+            Self::ChangesRequested | Self::AuthoredByMe => forge::model::InboxSection::AuthoredByMe,
         }
+    }
+
+    /// Whether its header offers "Hide drafts".
+    #[must_use]
+    pub fn can_hide_drafts(self) -> bool {
+        matches!(self, Self::ReviewRequested | Self::ChangesRequested)
+    }
+
+    /// Whether its header offers "Remove from inbox"; the others are taken
+    /// out by editing `sections`.
+    #[must_use]
+    pub fn removable(self) -> bool {
+        self == Self::ChangesRequested
+    }
+
+    /// The built-in section titled `title`.
+    #[must_use]
+    pub fn of_title(title: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|kind| kind.title() == title)
     }
 }
 
@@ -71,8 +102,28 @@ pub struct ForgeEntry {
     pub host: String,
     #[serde(default = "default_sections")]
     pub sections: Vec<SectionKind>,
+    /// Built-in sections the user took out with "Remove from inbox", so a
+    /// `sections` list that predates them does not gain them again.
+    #[serde(default)]
+    pub removed_sections: Vec<SectionKind>,
     /// A template with `{host}`, `{owner}` and `{name}`.
     pub clone_url: Option<String>,
+}
+
+impl ForgeEntry {
+    /// A `sections` list written before "Changes requested" existed gains
+    /// it when it feeds "Created by me", which it is picked out of, unless
+    /// the user removed it.
+    fn add_new_sections(&mut self) {
+        let new = SectionKind::ChangesRequested;
+        if self.sections.contains(&SectionKind::AuthoredByMe)
+            && !self.sections.contains(&new)
+            && !self.removed_sections.contains(&new)
+        {
+            self.sections.push(new);
+            self.sections.sort();
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
@@ -198,7 +249,12 @@ impl Config {
     /// # Errors
     /// If the text is not valid config TOML.
     pub fn parse(text: &str) -> Result<Self, toml::de::Error> {
-        toml::from_str(text)
+        let mut config: Self = toml::from_str(text)?;
+        config
+            .forges
+            .iter_mut()
+            .for_each(ForgeEntry::add_new_sections);
+        Ok(config)
     }
 
     /// Reads the file, or on first run detects the forges, writes the file
@@ -296,7 +352,11 @@ pub fn render(forges: &[ForgeEntry]) -> String {
          # One [[forges]] per forge account.\n\
          #   kind       github, gitlab or forgejo\n\
          #   host       the web host\n\
-         #   sections   inbox sections it feeds: \"review_requested\", \"authored_by_me\"\n\
+         #   sections   inbox sections it feeds: \"review_requested\", \"changes_requested\"\n\
+         #              (your pull requests with a change request or unresolved threads),\n\
+         #              \"authored_by_me\"\n\
+         #   removed_sections  built-in sections taken out with \"Remove from inbox\";\n\
+         #              list one in `sections` again to bring it back\n\
          #   clone_url  how git reaches its repositories; {host}, {owner}, {name} are filled in\n",
     );
     if forges.is_empty() {
@@ -527,6 +587,72 @@ fn without_repo(text: &str, repo: &RepoRef) -> Result<String, String> {
     Ok(doc.to_string())
 }
 
+/// Takes the built-in section `kind` out of every forge that feeds it in the
+/// config at `path`: out of `sections` (written out in full where it was
+/// left to the default) and into `removed_sections`. The rest of the file
+/// stays as it was; a missing file changes nothing.
+///
+/// # Errors
+/// If the file cannot be read, does not parse, or cannot be written.
+pub fn remove_section(path: &Path, kind: SectionKind) -> Result<(), ConfigError> {
+    let io_error = |source| ConfigError::Io {
+        path: path.to_owned(),
+        source,
+    };
+    let text = match std::fs::read_to_string(path) {
+        Ok(text) => text,
+        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(io_error(error)),
+    };
+    let edited = without_section(&text, kind).map_err(|message| ConfigError::Edit {
+        path: path.to_owned(),
+        message,
+    })?;
+    if edited == text {
+        return Ok(());
+    }
+    write_atomic(path, &edited).map_err(io_error)
+}
+
+fn without_section(text: &str, kind: SectionKind) -> Result<String, String> {
+    use toml_edit::{Array, DocumentMut, value};
+
+    fn keys(kinds: impl Iterator<Item = SectionKind>) -> Array {
+        kinds.map(SectionKind::key).collect()
+    }
+
+    let config = Config::parse(text).map_err(|e| e.to_string())?;
+    let mut doc: DocumentMut = text
+        .parse()
+        .map_err(|e: toml_edit::TomlError| e.to_string())?;
+    let Some(tables) = doc
+        .get_mut("forges")
+        .and_then(|item| item.as_array_of_tables_mut())
+    else {
+        return Ok(text.to_owned());
+    };
+    let mut changed = false;
+    for (table, forge) in tables.iter_mut().zip(&config.forges) {
+        if !forge.sections.contains(&kind) {
+            continue;
+        }
+        let kept = forge.sections.iter().copied().filter(|&s| s != kind);
+        table["sections"] = value(keys(kept));
+        let removed = forge
+            .removed_sections
+            .iter()
+            .copied()
+            .filter(|&s| s != kind);
+        table["removed_sections"] = value(keys(removed.chain([kind])));
+        changed = true;
+    }
+    Ok(if changed {
+        doc.to_string()
+    } else {
+        text.to_owned()
+    })
+}
+
 /// One `[[forges]]` table, after a blank line.
 fn render_forge(out: &mut String, forge: &ForgeEntry) {
     let sections: Vec<String> = forge.sections.iter().map(|s| quote(s.key())).collect();
@@ -537,6 +663,14 @@ fn render_forge(out: &mut String, forge: &ForgeEntry) {
         quote(&forge.host),
         sections.join(", ")
     );
+    if !forge.removed_sections.is_empty() {
+        let removed: Vec<String> = forge
+            .removed_sections
+            .iter()
+            .map(|s| quote(s.key()))
+            .collect();
+        let _ = writeln!(out, "removed_sections = [{}]", removed.join(", "));
+    }
     if let Some(url) = &forge.clone_url {
         let _ = writeln!(out, "clone_url = {}", quote(url));
     }
@@ -664,6 +798,7 @@ pub fn detect_forges() -> Vec<ForgeEntry> {
                 kind,
                 host,
                 sections: default_sections(),
+                removed_sections: Vec::new(),
                 clone_url,
             });
         }
@@ -791,6 +926,7 @@ mod tests {
             kind: ForgeKind::GitHub,
             host: "github.com".into(),
             sections: default_sections(),
+            removed_sections: Vec::new(),
             clone_url: None,
         }
     }
@@ -800,6 +936,7 @@ mod tests {
             kind: ForgeKind::GitLab,
             host: "gitlab.com".into(),
             sections: default_sections(),
+            removed_sections: Vec::new(),
             clone_url: None,
         }
     }
@@ -860,6 +997,7 @@ mod tests {
             kind: ForgeKind::Forgejo,
             host: "git.example.org".into(),
             sections: vec![SectionKind::ReviewRequested],
+            removed_sections: Vec::new(),
             clone_url: Some("ssh://git@{host}:2222/{owner}/{name}.git".into()),
         };
         let text = render(&[github(), forgejo.clone()]);
@@ -868,6 +1006,84 @@ mod tests {
         assert!(config.repos.is_empty());
         assert!(text.contains("# [[repos]]"), "examples stay commented");
         assert!(Config::parse(&render(&[])).unwrap().forges.is_empty());
+    }
+
+    #[test]
+    fn an_old_config_gains_changes_requested() {
+        let text = r#"
+            [[forges]]
+            kind = "github"
+            host = "github.com"
+            sections = ["review_requested", "authored_by_me"]
+
+            [[forges]]
+            kind = "forgejo"
+            host = "git.example.org"
+            sections = ["review_requested"]
+        "#;
+        let config = Config::parse(text).unwrap();
+        assert_eq!(
+            config.forges[0].sections,
+            SectionKind::ALL,
+            "in inbox order"
+        );
+        assert_eq!(
+            config.forges[1].sections,
+            [SectionKind::ReviewRequested],
+            "only a forge that feeds Created by me"
+        );
+    }
+
+    #[test]
+    fn a_removed_section_stays_out() {
+        let text = "[[forges]]
+kind = \"github\"
+host = \"github.com\"
+                    # mine
+
+[[forges]]
+kind = \"gitlab\"
+host = \"gitlab.com\"
+                    sections = [\"review_requested\", \"authored_by_me\"]
+
+                    [[forges]]
+kind = \"forgejo\"
+host = \"git.example.org\"
+                    sections = [\"review_requested\"]
+";
+        let edited = without_section(text, SectionKind::ChangesRequested).unwrap();
+        assert!(edited.contains("# mine"), "the rest of the file stays");
+        let config = Config::parse(&edited).unwrap();
+        let without = [SectionKind::ReviewRequested, SectionKind::AuthoredByMe];
+        for forge in &config.forges[..2] {
+            assert_eq!(forge.sections, without, "{}", forge.host);
+            assert_eq!(forge.removed_sections, [SectionKind::ChangesRequested]);
+        }
+        assert_eq!(
+            config.forges[2],
+            Config::parse(text).unwrap().forges[2],
+            "a forge without it is untouched"
+        );
+        assert_eq!(
+            without_section(&edited, SectionKind::ChangesRequested).unwrap(),
+            edited,
+            "removing it again changes nothing"
+        );
+
+        // Listed again by hand, it is back.
+        let back = edited.replacen(
+            "sections = [\"review_requested\", \"authored_by_me\"]",
+            "sections = [\"review_requested\", \"changes_requested\", \"authored_by_me\"]",
+            1,
+        );
+        assert_eq!(
+            Config::parse(&back).unwrap().forges[0].sections,
+            SectionKind::ALL
+        );
+
+        // The rendered file keeps the removal.
+        let rendered = render(&config.forges);
+        assert_eq!(Config::parse(&rendered).unwrap().forges, config.forges);
     }
 
     #[test]
@@ -895,7 +1111,10 @@ mod tests {
         "#;
         let config = Config::parse(text).unwrap();
         assert_eq!(config.forges[0].sections, SectionKind::ALL);
-        assert_eq!(config.forges[1].sections, [SectionKind::AuthoredByMe]);
+        assert_eq!(
+            config.forges[1].sections,
+            [SectionKind::ChangesRequested, SectionKind::AuthoredByMe]
+        );
         let nested = config.repos[0].repo_ref().unwrap();
         assert_eq!(
             (nested.owner.as_str(), nested.name.as_str()),
