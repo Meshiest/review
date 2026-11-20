@@ -249,7 +249,9 @@ impl Sidebar {
     }
 
     /// Shows `key`'s `kind` panel from its inbox row; opening it reads it
-    /// when the settings say so, also when it already had the focus.
+    /// when the settings say so, also when it already had the focus. A diff
+    /// reached from the inbox shows every file, not one picked earlier in
+    /// the file tree.
     pub(crate) fn show_row(
         &mut self,
         key: &PrKey,
@@ -257,6 +259,10 @@ impl Sidebar {
         mode: OpenMode,
         cx: &mut Context<Self>,
     ) {
+        if kind == PanelKind::Diff {
+            self.session
+                .update(cx, |session, cx| session.set_selected_file(key, None, cx));
+        }
         self.last_view = Some((key.clone(), kind));
         self.show(key, kind, mode, cx);
         let mark_seen = cx

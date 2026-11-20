@@ -140,6 +140,29 @@ fn entry_disabled(
 }
 
 #[gpui::test]
+fn the_inbox_brings_the_diff_back_with_every_file(cx: &mut TestAppContext) {
+    let mut shell = shell_on(cx, FORGEJO_PR);
+    let checkbox = (0..64)
+        .find_map(|ix| shell.element((SharedString::from("file-viewed"), ix)))
+        .expect("a file row in the tree");
+    shell.click_at(checkbox.bounds().center() + point(px(80.0), px(0.0)));
+    assert!(
+        shown_file(&mut shell).is_some(),
+        "one file picked in the tree"
+    );
+
+    let row = "inbox-row-41";
+    shell.click(row);
+    shell.click(row);
+    let diff = shell
+        .panel_of(FORGEJO_PR, app::panels::PanelKind::Diff)
+        .expect("the Diff tab");
+    assert!(shell.is_shown(diff), "the clicks came back to the diff");
+    assert_eq!(selected_file(&mut shell), None, "no file picked");
+    assert_eq!(shown_file(&mut shell), None, "every file shown");
+}
+
+#[gpui::test]
 fn a_tree_click_shows_the_file_alone_in_full(cx: &mut TestAppContext) {
     let mut shell = shell_on(cx, FORGEJO_PR);
     assert_eq!(shown_file(&mut shell), None, "every file at first");
