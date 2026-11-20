@@ -71,6 +71,54 @@ pub fn segmented<T: Clone + 'static>(
         }))
 }
 
+/// How tall a [`toggle_group`] is.
+pub const TOGGLE_HEIGHT: f32 = 22.0;
+
+/// One choice of a [`toggle_group`]: its value, its element id and
+/// `debug_selector`, and its label.
+pub type Toggle<T> = (T, &'static str, &'static str);
+
+/// Two or three choices joined in one bordered strip, the selected one
+/// filled: the diff's Unified / Split, a composer's Write / Preview.
+pub fn toggle_group<T: Clone + 'static>(
+    cx: &App,
+    options: Vec<Toggle<T>>,
+    selected: impl Fn(&T) -> bool,
+    on_pick: impl Fn(&T, &mut Window, &mut App) + 'static,
+) -> Div {
+    let t = theme(cx);
+    let c = &t.colors;
+    let on_pick: Pick<T> = Rc::new(on_pick);
+    let hover_text = c.text;
+    h_flex()
+        .flex_none()
+        .h(px(TOGGLE_HEIGHT))
+        .border_1()
+        .border_color(c.border_strong)
+        .rounded(t.radius.md)
+        .overflow_hidden()
+        .children(options.into_iter().map(|(value, id, label)| {
+            let on = selected(&value);
+            let on_pick = on_pick.clone();
+            div()
+                .id(id)
+                .debug_selector(move || id.into())
+                .h_full()
+                .px(px(9.0))
+                .flex()
+                .items_center()
+                .tiny(&t)
+                .cursor_pointer()
+                .when(on, |el| el.bg(c.selected).text_color(c.accent_fg))
+                .when(!on, |el| {
+                    el.text_color(c.text_muted)
+                        .hover(move |style| style.text_color(hover_text))
+                })
+                .on_click(move |_, window, cx| on_pick(&value, window, cx))
+                .child(label)
+        }))
+}
+
 /// `label  [-] value [+]`.
 pub fn stepper(
     cx: &App,

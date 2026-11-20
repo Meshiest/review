@@ -17,6 +17,7 @@ mod diff_files;
 mod diff_keys;
 mod dock;
 mod docking;
+mod drafts;
 mod folds;
 mod footer;
 mod header;

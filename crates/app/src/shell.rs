@@ -24,6 +24,7 @@ use gpui_kit::component::{
 };
 
 use diff_view::FrameClock;
+use store::DraftAnchor;
 
 use crate::appearance;
 use crate::commands::{self, Group};
@@ -32,7 +33,7 @@ use crate::machines::Machine;
 use crate::model::{ForgeKind, PrKey};
 use crate::palette::{Closed, Item, Mode, Palette};
 use crate::panels::{ConversationPanel, DiffPanel, LogPanel, PanelKind};
-use crate::session::{ForgeState, OpenMode, Session, SessionEvent, ShowPanel};
+use crate::session::{ForgeState, OpenMode, Session, SessionEvent, ShowPanel, draft_panel};
 use crate::settings_panel::SettingsPanel;
 use crate::sidebar::{Sidebar, SidebarEvent};
 use crate::sidebar_panels;
@@ -167,6 +168,12 @@ impl Shell {
                         return;
                     }
                     SessionEvent::Show(show) => show.clone(),
+                    SessionEvent::JumpToDraft { pr, anchor } => ShowPanel {
+                        pr: Some(pr.clone()),
+                        kind: draft_panel(anchor),
+                        replace: None,
+                        beside: false,
+                    },
                     SessionEvent::JumpToThread { pr, .. }
                     | SessionEvent::FileSelected { pr, .. }
                     | SessionEvent::CommitShown { pr, .. } => ShowPanel {
@@ -302,6 +309,10 @@ impl Shell {
     /// built for it just now.
     fn pass_on(&mut self, event: &SessionEvent, window: &mut Window, cx: &mut Context<Self>) {
         let pr = match event {
+            SessionEvent::JumpToDraft { pr, anchor } => {
+                self.reveal_draft(pr, anchor, cx);
+                return;
+            }
             SessionEvent::JumpToThread { pr, .. }
             | SessionEvent::FileSelected { pr, .. }
             | SessionEvent::CommitShown { pr, .. } => pr,
@@ -330,8 +341,31 @@ impl Shell {
             SessionEvent::FileSelected { path, .. } => panel.reveal_file(path.clone(), cx),
             // The list it was picked from is behind the diff now.
             SessionEvent::CommitShown { .. } => window.focus(&panel.focus_handle(cx), cx),
-            SessionEvent::Show(_) | SessionEvent::ClosePanel(_) => {}
+            SessionEvent::JumpToDraft { .. }
+            | SessionEvent::Show(_)
+            | SessionEvent::ClosePanel(_) => {}
         });
+    }
+
+    /// Hands a draft picked in the drafts menu to the panel it is written
+    /// in, which `show_panel` brought forward (and built, when missing).
+    fn reveal_draft(&mut self, pr: &PrKey, anchor: &DraftAnchor, cx: &mut Context<Self>) {
+        let kind = draft_panel(anchor);
+        let Some(view) = self
+            .session
+            .read(cx)
+            .panel_of(Some(pr), kind)
+            .map(PanelId::from)
+            .and_then(|id| self.dock.read(cx).panel(id))
+            .map(|panel| panel.view())
+        else {
+            return;
+        };
+        if let Ok(diff) = view.clone().downcast::<DiffPanel>() {
+            diff.update(cx, |diff, cx| diff.reveal_draft(anchor.clone(), cx));
+        } else if let Ok(conversation) = view.downcast::<ConversationPanel>() {
+            conversation.update(cx, ConversationPanel::reveal_composer);
+        }
     }
 
     fn show_panel(&mut self, show: &ShowPanel, window: &mut Window, cx: &mut Context<Self>) {

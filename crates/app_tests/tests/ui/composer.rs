@@ -24,7 +24,7 @@ fn on_new_line(path: &str, line: u32) -> DraftAnchor {
 
 /// Points at the `nth` drawn line of the new side, clicks it so the diff has
 /// focus, and returns its anchor.
-fn point_at_new_line(shell: &mut ShellWindow, nth: usize) -> DraftAnchor {
+pub(crate) fn point_at_new_line(shell: &mut ShellWindow, nth: usize) -> DraftAnchor {
     let lines = shell.drawn_lines();
     let (position, (row, _, line)) = lines
         .iter()

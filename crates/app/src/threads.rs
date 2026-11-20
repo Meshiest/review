@@ -551,17 +551,26 @@ impl ThreadCards {
             .map(|ix| BlockId(ix as u32))
     }
 
-    /// The block a composer for `anchor` shows in: its own, or the card of
-    /// the thread being replied to.
+    /// The block a composer for `anchor` shows in: its own, the card of the
+    /// thread being replied to, or the card of the queued comment it edits.
     pub fn block_for(&self, anchor: &DraftAnchor, cx: &App) -> Option<BlockId> {
-        let _ = cx;
-        if let DraftAnchor::Reply { thread } = anchor {
-            let ix = self.threads.iter().position(|t| t.id == *thread)?;
-            return self.block_of(ix);
-        }
+        let kind = match anchor {
+            DraftAnchor::Reply { thread } => {
+                let ix = self.threads.iter().position(|t| t.id == *thread)?;
+                return self.block_of(ix);
+            }
+            DraftAnchor::Edit { queued } => {
+                let writing = self.writing.read(cx);
+                ExtraKind::Pending(writing.queued().iter().position(|q| q.id == *queued)?)
+            }
+            DraftAnchor::Line { .. }
+            | DraftAnchor::File { .. }
+            | DraftAnchor::Conversation
+            | DraftAnchor::Review => ExtraKind::Composer(anchor.clone()),
+        };
         self.extras
             .iter()
-            .position(|extra| extra.kind == ExtraKind::Composer(anchor.clone()))
+            .position(|extra| extra.kind == kind)
             .map(|ix| BlockId((self.placements.len() + ix) as u32))
     }
 

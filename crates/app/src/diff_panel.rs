@@ -5,6 +5,7 @@
 //! A commit picked in the Conversation is shown alone, read-only, under a
 //! banner that leads back to all changes.
 
+mod drafts_menu;
 mod file_actions;
 mod file_header;
 mod menu;
@@ -172,6 +173,11 @@ pub struct DiffPanel {
     pending_thread: Option<ThreadId>,
     /// Where Back or Forward returns the diff to, likewise.
     pending_scroll: Option<f64>,
+    /// A draft picked in the drafts menu, opened and scrolled to once the
+    /// diff of all changes is on screen.
+    pending_draft: Option<DraftAnchor>,
+    /// The "N drafts" chip's, a stop in the tab order.
+    drafts_focus: FocusHandle,
     /// What the user writes on the pull request shown; an empty one until
     /// a pull request is open.
     writing: Entity<Writing>,
@@ -289,6 +295,8 @@ impl DiffPanel {
                 pending_jump: None,
                 pending_thread: None,
                 pending_scroll: None,
+                pending_draft: None,
+                drafts_focus: cx.focus_handle().tab_stop(true),
                 writing,
                 writing_subscriptions: Vec::new(),
                 actions,
@@ -357,6 +365,19 @@ impl DiffPanel {
             window.focus(&self.focus, cx);
         }
         cx.notify();
+    }
+
+    /// Opens the draft at `anchor` and scrolls to it once the diff of all
+    /// changes is up: a jump from the drafts menu.
+    pub fn reveal_draft(&mut self, anchor: DraftAnchor, cx: &mut Context<Self>) {
+        self.pending_draft = Some(anchor);
+        cx.notify();
+    }
+
+    /// The focus of the "N drafts" chip, which opens its menu on Enter or
+    /// Space.
+    pub fn drafts_focus(&self) -> &FocusHandle {
+        &self.drafts_focus
     }
 
     /// Scrolls to `path` once the diff is up.
@@ -693,7 +714,9 @@ impl DiffPanel {
         view: &Entity<DiffView>,
         cx: &mut Context<Self>,
     ) {
-        open_file_of(anchor, view, cx);
+        if let Some(path) = self.draft_path(anchor, cx) {
+            open_file(&path, view, cx);
+        }
         let block = self.cards.read(cx).block_for(anchor, cx);
         let Some(block) = block else {
             return;
@@ -707,6 +730,29 @@ impl DiffPanel {
             }
             cx.notify();
         });
+    }
+
+    /// The file a composer for `anchor` is drawn in: its own, the replied
+    /// thread's, or the edited queued comment's.
+    fn draft_path(&self, anchor: &DraftAnchor, cx: &App) -> Option<String> {
+        match anchor {
+            DraftAnchor::Line { path, .. } | DraftAnchor::File { path } => Some(path.clone()),
+            DraftAnchor::Reply { thread } => self
+                .cards
+                .read(cx)
+                .threads()
+                .iter()
+                .find(|t| t.id == *thread)?
+                .anchor
+                .as_ref()
+                .map(|at| at.path.clone()),
+            DraftAnchor::Edit { queued } => {
+                let writing = self.writing.read(cx);
+                let queued = writing.queued().iter().find(|q| q.id == *queued)?;
+                self.draft_path(&queued.anchor, cx)
+            }
+            DraftAnchor::Conversation | DraftAnchor::Review => None,
+        }
     }
 
     fn capabilities(&self, cx: &App) -> Option<Capabilities> {
@@ -955,13 +1001,13 @@ impl DiffPanel {
             .update(cx, |cards, cx| cards.set_current(Some(thread), cx));
     }
 
-    /// A thread asked for while one commit is shown is on all changes:
-    /// shows them, and the thread once they are drawn.
+    /// A thread or draft asked for while one commit is shown is on all
+    /// changes: shows them, and the thread or draft once they are drawn.
     fn leave_commit_for_thread(&mut self, cx: &mut Context<Self>) {
         let Some(key) = self
             .binding
             .key(cx)
-            .filter(|_| self.pending_thread.is_some())
+            .filter(|_| self.pending_thread.is_some() || self.pending_draft.is_some())
         else {
             return;
         };
@@ -1084,38 +1130,20 @@ impl DiffPanel {
     }
 
     /// A two-button segmented control for unified and split.
-    fn layout_toggle(&self, current: Layout, t: &Theme, cx: &mut Context<Self>) -> Div {
-        let c = &t.colors;
-        let hover_text = c.text;
-        let button = |label: &'static str, layout: Layout| {
-            let on = current == layout;
-            div()
-                .id(label)
-                .h_full()
-                .px(px(9.0))
-                .flex()
-                .items_center()
-                .tiny(t)
-                .cursor_pointer()
-                .when(on, |el| el.bg(c.selected).text_color(c.accent_fg))
-                .when(!on, |el| {
-                    el.text_color(c.text_muted)
-                        .hover(move |style| style.text_color(hover_text))
-                })
-                .on_click(cx.listener(move |this, _, _, cx| {
-                    this.session
-                        .update(cx, |session, cx| session.set_diff_layout(layout, cx));
-                }))
-                .child(label)
-        };
-        h_flex()
-            .h(px(22.0))
-            .border_1()
-            .border_color(c.border_strong)
-            .rounded(t.radius.md)
-            .overflow_hidden()
-            .child(button("Unified", Layout::Unified))
-            .child(button("Split", Layout::Split))
+    fn layout_toggle(&self, current: Layout, cx: &mut Context<Self>) -> Div {
+        let session = self.session.clone();
+        ui::toggle_group(
+            cx,
+            vec![
+                (Layout::Unified, "layout-unified", "Unified"),
+                (Layout::Split, "layout-split", "Split"),
+            ],
+            move |layout| *layout == current,
+            move |layout, _, cx| {
+                let layout = *layout;
+                session.update(cx, |session, cx| session.set_diff_layout(layout, cx));
+            },
+        )
     }
 }
 
@@ -1218,10 +1246,19 @@ impl Render for DiffPanel {
             .filter(|thread| thread.anchor.is_some() && !thread.is_resolved())
             .count();
         let drafts = self.writing.read(cx).draft_count();
-        let writing = self.writing.clone();
+        let drafts_chip = (drafts > 0).then(|| {
+            drafts_menu::chip(
+                drafts,
+                &self.drafts_focus,
+                key.clone(),
+                self.writing.clone(),
+                self.session.clone(),
+                cx,
+            )
+        });
         let selected = open.selected_file.clone();
 
-        let toggle = self.layout_toggle(layout, &t, cx);
+        let toggle = self.layout_toggle(layout, cx);
         let body = match diff {
             Some(diff) => {
                 let view =
@@ -1232,6 +1269,17 @@ impl Render for DiffPanel {
                 let jump = self.pending_jump.take().is_some();
                 self.sync_shown_file(selected.as_ref(), jump, cx);
                 self.take_pending_thread(cx);
+                if shown_commit.is_none()
+                    && let Some(anchor) = self.pending_draft.take()
+                {
+                    // Opening it again brings it into view (`reveal_composer`),
+                    // once this frame is drawn: the diff panel hears nothing
+                    // the writing state says while it draws.
+                    let writing = self.writing.clone();
+                    cx.defer(move |cx| {
+                        writing.update(cx, |writing, cx| writing.open(anchor, None, cx));
+                    });
+                }
                 if let Some(scrolled) = self.pending_scroll.take() {
                     view.update(cx, |view, cx| {
                         if view.set_scroll_y(scrolled) {
@@ -1281,7 +1329,7 @@ impl Render for DiffPanel {
         let alone = self
             .view()
             .is_some_and(|view| view.read(cx).shown_file().is_some());
-        let whole = alone.then(|| self.whole_file_controls(&t, cx));
+        let whole = alone.then(|| self.whole_file_controls(cx));
         let menu = self
             .menu
             .as_ref()
@@ -1346,21 +1394,7 @@ impl Render for DiffPanel {
                     .flex_none()
                     .gap(px(10.0))
                     .items_center()
-                    .when(drafts > 0, |el| {
-                        el.child(
-                            div()
-                                .id("drafts-chip")
-                                .cursor_pointer()
-                                .on_click(move |_, _, cx| {
-                                    writing.update(cx, |writing, cx| writing.reopen_all(cx));
-                                })
-                                .child(ui::chip(
-                                    cx,
-                                    format!("{drafts} draft{}", if drafts == 1 { "" } else { "s" }),
-                                    c.accent_fg,
-                                )),
-                        )
-                    })
+                    .children(drafts_chip)
                     .when(open_threads > 0, |el| {
                         el.child(ui::chip(
                             cx,

@@ -106,6 +106,9 @@ pub struct ConversationPanel {
     laid_out: bool,
     /// The pull request whose commit list is open under the header.
     commits_open: Option<PrKey>,
+    /// Scroll the comment box into view on the next frames: a draft on the
+    /// pull request was picked in the drafts menu.
+    reveal_box: Rc<Cell<bool>>,
 }
 
 dock_panel!(ConversationPanel, "Conversation", bound, spinners);
@@ -189,6 +192,7 @@ impl ConversationPanel {
                 nav,
                 laid_out: false,
                 commits_open: None,
+                reveal_box: Rc::default(),
             }
         })
     }
@@ -241,6 +245,19 @@ impl ConversationPanel {
     pub fn scroll_to(&mut self, scrolled: f32, cx: &mut Context<Self>) {
         let offset = self.scroll.offset();
         self.scroll.set_offset(point(offset.x, px(-scrolled)));
+        cx.notify();
+    }
+
+    /// Scrolls to the comment box and puts the cursor in it, for the draft
+    /// on the pull request picked in the drafts menu.
+    pub fn reveal_composer(&mut self, cx: &mut Context<Self>) {
+        if let Some(key) = self.binding.key(cx) {
+            self.sync_writing(&key, cx);
+        }
+        self.writing.update(cx, |writing, cx| {
+            writing.open(DraftAnchor::Conversation, None, cx);
+        });
+        self.reveal_box.set(true);
         cx.notify();
     }
 
@@ -368,7 +385,15 @@ impl ConversationPanel {
     /// Scrolls the conversation, once, so the element this is drawn in
     /// starts near the top of the view.
     fn reveal_marker(&self, pr: &PrKey) -> AnyElement {
-        let (scroll, nav, key) = (self.scroll.clone(), self.nav.clone(), pr.clone());
+        let (nav, key) = (self.nav.clone(), pr.clone());
+        self.scroll_marker(move |cx| nav.update(cx, |nav, _| nav.revealed(&key)))
+    }
+
+    /// Scrolls the conversation so the element this is drawn in starts near
+    /// the top of the view (as far as it goes), then calls `done` once no
+    /// code still being read can move it.
+    fn scroll_marker(&self, done: impl FnOnce(&mut App) + 'static) -> AnyElement {
+        let scroll = self.scroll.clone();
         let laid_out = self.laid_out;
         canvas(
             move |bounds, window, cx| {
@@ -379,7 +404,10 @@ impl ConversationPanel {
                     return;
                 }
                 let offset = scroll.offset();
-                let y = (offset.y - (bounds.top() - view.top()) + px(REVEAL_MARGIN)).min(px(0.0));
+                // As far as it goes: past that, every frame would ask again.
+                let y = (offset.y - (bounds.top() - view.top()) + px(REVEAL_MARGIN))
+                    .min(px(0.0))
+                    .max(-scroll.max_offset().y);
                 if (y - offset.y).abs() > px(0.5) {
                     scroll.set_offset(point(offset.x, y));
                     window.refresh();
@@ -387,7 +415,7 @@ impl ConversationPanel {
                 // Code still being read changes the heights above it: the
                 // thread is scrolled to again when it lands.
                 if laid_out {
-                    nav.update(cx, |nav, _| nav.revealed(&key));
+                    done(cx);
                 }
             },
             |_, (), _, _| {},
@@ -997,7 +1025,15 @@ impl Render for ConversationPanel {
                 local_card(cx, &local, anchor_label(&comment.anchor))
             }))
             .child(div().pt(px(8.0)).child(merge_box))
-            .child(comment_box);
+            .child(
+                div()
+                    .relative()
+                    .child(comment_box)
+                    .when(self.reveal_box.get(), |el| {
+                        let reveal = self.reveal_box.clone();
+                        el.child(self.scroll_marker(move |_| reveal.set(false)))
+                    }),
+            );
 
         let wide = self.width.get() >= px(WIDE);
         self.wide.set(wide);

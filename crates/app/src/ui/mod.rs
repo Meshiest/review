@@ -9,6 +9,7 @@ pub mod fold;
 pub mod label;
 pub mod link;
 pub mod list;
+mod menu_button;
 pub mod spinner;
 
 use std::sync::Arc;
@@ -24,9 +25,12 @@ pub use chrome::{
     Button, ButtonKind, CONTROL_HEIGHT, CONTROL_ICON, bar, card, checkbox, chip, divider,
     empty_note, empty_state, panel, secondary_style, status_bar, title_bar, vdivider, wordmark,
 };
-pub use controls::{icon_button, search_input, segmented, stepper};
+pub use controls::{
+    TOGGLE_HEIGHT, Toggle, icon_button, search_input, segmented, stepper, toggle_group,
+};
 pub use label::label_chip;
 pub use link::web_link;
+pub use menu_button::{MenuTrigger, SplitButton};
 
 use crate::model::{CiState, FileStatus, ReviewState};
 use crate::ui::spinner::SpinnerSlots;

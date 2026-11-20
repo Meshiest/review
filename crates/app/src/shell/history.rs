@@ -162,7 +162,7 @@ impl Shell {
             return;
         };
         let moved = match event {
-            SessionEvent::JumpToThread { .. } => true,
+            SessionEvent::JumpToThread { .. } | SessionEvent::JumpToDraft { .. } => true,
             // The file was picked before the event was heard: the diff of
             // its pull request showed the one before it.
             SessionEvent::FileSelected { pr, previous, .. } => {

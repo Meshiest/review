@@ -17,14 +17,13 @@ use gpui::{
     InteractiveElement as _, IntoElement, ParentElement, Render, SharedString, Styled, Window,
     actions, canvas, div, prelude::FluentBuilder as _, px,
 };
-use gpui_kit::component::button::{Button as FlatButton, DropdownButton};
 use gpui_kit::component::input::{Escape, InputEvent, Textarea, TextareaState};
 use gpui_kit::component::menu::PopupMenuItem;
 use gpui_kit::component::text::TextViewState;
-use gpui_kit::component::{Disableable as _, Sizable as _, Size, h_flex, v_flex};
+use gpui_kit::component::{h_flex, v_flex};
 use store::DraftAnchor;
 
-use crate::ui::{self, Button, ButtonKind, TextExt as _};
+use crate::ui::{self, Button, TextExt as _};
 use crate::untrusted;
 
 actions!(
@@ -321,17 +320,14 @@ impl Composer {
     fn header(&mut self, t: &theme::Theme, cx: &mut Context<Self>) -> gpui::Div {
         let c = &t.colors;
         let this = cx.entity();
-        let modes = ui::segmented(
+        let mode = self.mode;
+        let modes = ui::toggle_group(
             cx,
-            "composer-mode",
             vec![
-                (Mode::Write, SharedString::new_static("Write")),
-                (Mode::Preview, SharedString::new_static("Preview")),
+                (Mode::Write, "composer-write", "Write"),
+                (Mode::Preview, "composer-preview", "Preview"),
             ],
-            {
-                let mode = self.mode;
-                move |m| *m == mode
-            },
+            move |m| *m == mode,
             move |mode, window, cx| {
                 let mode = *mode;
                 this.update(cx, |this, cx| this.set_mode(mode, window, cx));
@@ -407,13 +403,13 @@ impl Composer {
         let mut row = h_flex().gap(px(8.0)).items_center();
         if let Some(leading) = self.leading.clone() {
             row = row.child(
-                Button::new(leading.id, leading.label, ButtonKind::Secondary)
+                Button::toolbar(leading.id, leading.label)
                     .on_click(move |_, window, cx| (leading.on_click)(window, cx)),
             );
         }
         if self.kind == Kind::Code && self.suggestion.is_some() {
             row = row.child(
-                Button::new("composer-suggest", "Suggest change", ButtonKind::Ghost).on_click({
+                Button::toolbar("composer-suggest", "Suggest change").on_click({
                     let this = this.clone();
                     move |_, window, cx| this.update(cx, |this, cx| this.suggest(window, cx))
                 }),
@@ -430,57 +426,40 @@ impl Composer {
         };
         row = row
             .child(div().flex_1().min_w_0().truncate().small(t).child(hint))
-            .child(
-                Button::new("composer-discard", "Discard", ButtonKind::Ghost).on_click({
-                    let this = this.clone();
-                    move |_, _, cx| this.update(cx, |_, cx| cx.emit(ComposerEvent::Discard))
-                }),
-            );
-        let disabled = self.busy;
-        if self.kind == Kind::Code {
-            let click = this.clone();
-            let menu = this.clone();
-            row.child(
-                DropdownButton::new("composer-send")
-                    .button(
-                        FlatButton::new("composer-queue")
-                            .label(if disabled { "Adding" } else { "Add to review" })
-                            .with_size(Size::Small)
-                            .disabled(disabled)
-                            .when(!disabled, |button| button.cursor_pointer())
-                            .on_click(move |_, window, cx| {
-                                click.update(cx, |this, cx| {
-                                    this.submit(SubmitAction::Queue, window, cx);
-                                });
-                            }),
-                    )
-                    .dropdown_menu(move |popup, _, _| {
-                        let menu = menu.clone();
-                        popup.item(PopupMenuItem::new("Comment now").on_click(
-                            move |_, window, cx| {
-                                menu.update(cx, |this, cx| {
-                                    this.submit(SubmitAction::SendNow, window, cx);
-                                });
-                            },
-                        ))
-                    }),
+            .child(Button::toolbar("composer-discard", "Discard").on_click({
+                let this = this.clone();
+                move |_, _, cx| this.update(cx, |_, cx| cx.emit(ComposerEvent::Discard))
+            }));
+        let busy = self.busy;
+        let submit = move |action: SubmitAction| {
+            let this = this.clone();
+            move |_: &gpui::ClickEvent, window: &mut Window, cx: &mut gpui::App| {
+                this.update(cx, |this, cx| this.submit(action, window, cx));
+            }
+        };
+        let send = if self.kind == Kind::Code {
+            let comment_now = submit(SubmitAction::SendNow);
+            ui::SplitButton::new(
+                "composer-queue",
+                if busy { "Adding" } else { "Add to review" },
             )
+            .disabled(busy)
+            .on_click(submit(SubmitAction::Queue))
+            .menu(move |popup, _, _| {
+                let comment_now = comment_now.clone();
+                popup.item(
+                    PopupMenuItem::new("Comment now")
+                        .on_click(move |event, window, cx| comment_now(event, window, cx)),
+                )
+            })
             .into_any_element()
         } else {
-            row.child(
-                FlatButton::new("composer-send-now")
-                    .label(self.kind.solo_label())
-                    .with_size(Size::Small)
-                    .disabled(disabled)
-                    .when(!disabled, |button| button.cursor_pointer())
-                    .on_click(move |_, window, cx| {
-                        this.update(cx, |this, cx| {
-                            this.submit(SubmitAction::SendNow, window, cx);
-                        });
-                    }),
-            )
-            .into_any_element()
-        }
+            Button::toolbar("composer-send-now", self.kind.solo_label())
+                .disabled(busy)
+                .on_click(submit(SubmitAction::SendNow))
+                .into_any_element()
+        };
+        row.child(send).into_any_element()
     }
 }
 

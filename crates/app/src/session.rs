@@ -22,6 +22,7 @@ use futures::channel::mpsc;
 use gpui::{
     App, AppContext as _, Context, Entity, EntityId, EventEmitter, Global, SharedString, Task,
 };
+use store::DraftAnchor;
 
 use forge::model::Timestamp;
 
@@ -452,6 +453,13 @@ pub enum SessionEvent {
         /// came from (the sidebar list, which keeps j, k and Enter).
         focus_diff: bool,
     },
+    /// Show this draft where it is written: the composer of a draft on
+    /// code, a reply or an edit in the pull request's diff, the comment box
+    /// of a draft on the pull request in its conversation.
+    JumpToDraft {
+        pr: PrKey,
+        anchor: DraftAnchor,
+    },
     /// A commit was picked to show alone in the pull request's diff, or
     /// all changes for `None`.
     CommitShown {
@@ -466,6 +474,19 @@ pub enum SessionEvent {
 }
 
 impl EventEmitter<SessionEvent> for Session {}
+
+/// The panel a draft at `anchor` is written in.
+#[must_use]
+pub fn draft_panel(anchor: &DraftAnchor) -> PanelKind {
+    match anchor {
+        DraftAnchor::Conversation => PanelKind::Conversation,
+        DraftAnchor::Line { .. }
+        | DraftAnchor::File { .. }
+        | DraftAnchor::Reply { .. }
+        | DraftAnchor::Edit { .. }
+        | DraftAnchor::Review => PanelKind::Diff,
+    }
+}
 
 struct SessionHandle(Entity<Session>);
 
@@ -1640,6 +1661,12 @@ impl Session {
             thread,
             focus_diff,
         });
+    }
+
+    /// Asks the panel `anchor` is written in, of the pull request `pr`, to
+    /// show the draft there.
+    pub fn jump_to_draft(&mut self, pr: PrKey, anchor: DraftAnchor, cx: &mut Context<Self>) {
+        cx.emit(SessionEvent::JumpToDraft { pr, anchor });
     }
 
     pub fn select_file(&mut self, path: SharedString, cx: &mut Context<Self>) {

@@ -21,7 +21,7 @@ use super::{
     collapse_viewed, copy, file_header, show_all_changes,
 };
 use crate::gutter;
-use crate::ui::{Button, TextExt as _};
+use crate::ui::{self, Button, TextExt as _};
 use crate::untrusted::is_web_url;
 
 impl DiffPanel {
@@ -493,30 +493,10 @@ impl DiffPanel {
 
     /// For a file shown alone: back to every file, and a two-button
     /// segmented control for the full file or its changes only.
-    pub(super) fn whole_file_controls(&self, t: &Theme, cx: &mut Context<Self>) -> Div {
-        let c = &t.colors;
-        let hover_text = c.text;
+    pub(super) fn whole_file_controls(&self, cx: &mut Context<Self>) -> Div {
         let current = self.whole_mode;
-        let button = |label: &'static str, selector: &'static str, mode: ContextMode| {
-            let on = current == mode;
-            div()
-                .id(selector)
-                .debug_selector(move || selector.into())
-                .h_full()
-                .px(px(9.0))
-                .flex()
-                .items_center()
-                .tiny(t)
-                .cursor_pointer()
-                .when(on, |el| el.bg(c.selected).text_color(c.accent_fg))
-                .when(!on, |el| {
-                    el.text_color(c.text_muted)
-                        .hover(move |style| style.text_color(hover_text))
-                })
-                .on_click(cx.listener(move |this, _, _, cx| this.set_whole_mode(mode, cx)))
-                .child(label)
-        };
         let session = self.session.clone();
+        let me = cx.weak_entity();
         h_flex()
             .gap(px(10.0))
             .items_center()
@@ -525,15 +505,17 @@ impl DiffPanel {
                     session.update(cx, show_all_changes);
                 }),
             )
-            .child(
-                h_flex()
-                    .h(px(22.0))
-                    .border_1()
-                    .border_color(c.border_strong)
-                    .rounded(t.radius.md)
-                    .overflow_hidden()
-                    .child(button("Full file", "whole-file-full", ContextMode::Full))
-                    .child(button("Changes", "whole-file-changes", ContextMode::Hunks)),
-            )
+            .child(ui::toggle_group(
+                cx,
+                vec![
+                    (ContextMode::Full, "whole-file-full", "Full file"),
+                    (ContextMode::Hunks, "whole-file-changes", "Changes"),
+                ],
+                move |mode| *mode == current,
+                move |mode, _, cx| {
+                    let mode = *mode;
+                    me.update(cx, |this, cx| this.set_whole_mode(mode, cx)).ok();
+                },
+            ))
     }
 }
