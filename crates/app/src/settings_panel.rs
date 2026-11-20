@@ -7,12 +7,13 @@
 use std::cell::Cell;
 use std::rc::Rc;
 
+use forge::model::RepoRef;
 use gpui::{
     Anchor, AnyElement, App, AppContext as _, Bounds, Context, ElementId, Entity, FocusHandle,
     Focusable as _, FontFallbacks, Global, InteractiveElement as _, IntoElement, MouseDownEvent,
-    ParentElement, Pixels, Render, ScrollHandle, SharedString, StatefulInteractiveElement as _,
-    Styled, Subscription, Window, actions, anchored, canvas, deferred, div, point,
-    prelude::FluentBuilder as _, px,
+    ParentElement, PathPromptOptions, Pixels, Render, ScrollHandle, SharedString,
+    StatefulInteractiveElement as _, Styled, Subscription, Task, Window, actions, anchored, canvas,
+    deferred, div, point, prelude::FluentBuilder as _, px,
 };
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{
@@ -25,13 +26,15 @@ use gpui_kit::component::{
 use theme::{FontSettings, ModeSetting, Theme};
 
 use crate::appearance::{self, Appearance};
-use crate::config::WorkspaceEntry;
-use crate::machines;
+use crate::config::{Config, WorkspaceEntry};
+use crate::dir_browser::{self, Listing};
+use crate::machines::{self, Machine};
 use crate::panels::{dock_panel, header};
+use crate::session::Session;
 use crate::settings::{
     FontOverride, LINE_HEIGHT_RANGE, NotificationSettings, SIZE_RANGE, Settings,
 };
-use crate::terminals::Terminals;
+use crate::terminals::{self, Terminals};
 use crate::ui::{self, Button, ButtonKind, TextExt as _};
 use crate::workspaces::{self, SaveState, Workspaces};
 
@@ -149,6 +152,8 @@ pub struct SettingsPanel {
     workspace_rows: Vec<WorkspaceRow>,
     /// The workspaces' epoch the rows were built from.
     workspaces_epoch: u64,
+    /// The folder list open under one row's directory on an SSH machine.
+    browser: Option<DirBrowser>,
     _subscriptions: Vec<Subscription>,
 }
 
@@ -193,6 +198,7 @@ impl SettingsPanel {
                 scroll: ScrollHandle::new(),
                 workspace_rows: Vec::new(),
                 workspaces_epoch: u64::MAX,
+                browser: None,
                 _subscriptions: subscriptions,
             };
             panel.sync_workspaces(window, cx);
@@ -788,11 +794,48 @@ struct WorkspaceRow {
     prompt: Entity<TextareaState>,
     allow_commands: bool,
     error: Option<String>,
+    /// Draws the panel again as the repository or directory is typed, which
+    /// the line about cloning shows.
+    _watch: [Subscription; 2],
+}
+
+/// Which of a row's directories a folder button fills.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DirField {
+    /// The repository's directory.
+    Repository,
+    /// The agent's working directory.
+    Workdir,
+}
+
+impl DirField {
+    /// The prefix of the field's selectors: `<id>-browse-<row>` for its
+    /// folder button, `<id>-input-<row>` for its input.
+    #[must_use]
+    pub fn id(self) -> &'static str {
+        match self {
+            Self::Repository => "workspace-path",
+            Self::Workdir => "workspace-workdir",
+        }
+    }
+}
+
+/// The folder list under one row's directory, on an SSH machine.
+struct DirBrowser {
+    row: usize,
+    field: DirField,
+    machine: Machine,
+    /// The last folder listed.
+    listing: Option<Listing>,
+    /// The folder being listed now.
+    loading: Option<String>,
+    error: Option<String>,
+    _task: Option<Task<()>>,
 }
 
 impl WorkspaceRow {
-    fn new(entry: &WorkspaceEntry, window: &mut Window, cx: &mut App) -> Self {
-        let input = |value: &str, placeholder: &'static str, window: &mut Window, cx: &mut App| {
+    fn new(entry: &WorkspaceEntry, window: &mut Window, cx: &mut Context<SettingsPanel>) -> Self {
+        let mut input = |value: &str, placeholder: &'static str, window: &mut Window| {
             let value = value.to_owned();
             cx.new(|cx| {
                 InputState::new(window, cx)
@@ -800,29 +843,31 @@ impl WorkspaceRow {
                     .default_value(value)
             })
         };
+        let repo = input(&entry.repo, "owner/name", window);
+        let path = input(
+            &entry.path,
+            "the clone, or an empty folder to clone into",
+            window,
+        );
+        let workdir = input(
+            entry.workdir.as_deref().unwrap_or_default(),
+            "optional: your project, where the agent starts",
+            window,
+        );
+        let command = input(
+            entry.command.as_deref().unwrap_or_default(),
+            machines::DEFAULT_COMMAND,
+            window,
+        );
         let prompt = entry.prompt.clone().unwrap_or_default();
+        let watch = [&repo, &path].map(|state| cx.observe(state, |_, _, cx| cx.notify()));
         Self {
             host: entry.host.clone(),
-            repo: input(&entry.repo, "owner/name", window, cx),
+            repo,
             machine: entry.machine.clone(),
-            path: input(
-                &entry.path,
-                "the clone, or an empty folder to clone into",
-                window,
-                cx,
-            ),
-            workdir: input(
-                entry.workdir.as_deref().unwrap_or_default(),
-                "optional: your project, where the agent starts",
-                window,
-                cx,
-            ),
-            command: input(
-                entry.command.as_deref().unwrap_or_default(),
-                machines::DEFAULT_COMMAND,
-                window,
-                cx,
-            ),
+            path,
+            workdir,
+            command,
             prompt: cx.new(|cx| {
                 TextareaState::new(window, cx)
                     .auto_grow(2, 6)
@@ -831,6 +876,14 @@ impl WorkspaceRow {
             }),
             allow_commands: entry.allow_commands,
             error: None,
+            _watch: watch,
+        }
+    }
+
+    fn dir_input(&self, field: DirField) -> &Entity<InputState> {
+        match field {
+            DirField::Repository => &self.path,
+            DirField::Workdir => &self.workdir,
         }
     }
 
@@ -865,6 +918,7 @@ impl SettingsPanel {
         };
         if epoch != self.workspaces_epoch {
             self.workspaces_epoch = epoch;
+            self.browser = None;
             self.workspace_rows = entries
                 .iter()
                 .map(|entry| WorkspaceRow::new(entry, window, cx))
@@ -904,11 +958,233 @@ impl SettingsPanel {
             .collect()
     }
 
+    /// The line under row `ix`'s directory about cloning into it, for tests.
+    #[must_use]
+    pub fn clone_note(&self, ix: usize, cx: &App) -> Option<String> {
+        self.workspace_rows
+            .get(ix)
+            .map(|row| Self::clone_line(&row.entry(cx), cx))
+    }
+
+    /// The open folder list's error line, for tests: `Some(None)` while it
+    /// is open without one.
+    #[must_use]
+    pub fn browser_error(&self) -> Option<Option<String>> {
+        self.browser.as_ref().map(|browser| browser.error.clone())
+    }
+
+    /// Shows `listing` in the open folder list as if the machine had sent
+    /// it, for tests.
+    pub fn show_listing(&mut self, listing: Listing, cx: &mut Context<Self>) {
+        if let Some(browser) = &mut self.browser {
+            browser.loading = None;
+            browser.error = None;
+            browser.listing = Some(listing);
+            cx.notify();
+        }
+    }
+
+    /// This PC and every listed host.
+    fn machines(cx: &App) -> Vec<Machine> {
+        Terminals::global(cx)
+            .map(|terminals| terminals.read(cx).machines(cx))
+            .unwrap_or_else(|| vec![Machine::this_pc(None)])
+    }
+
+    /// The machine a row names by its key.
+    fn find_machine(key: &str, cx: &App) -> Option<Machine> {
+        Self::machines(cx)
+            .into_iter()
+            .find(|machine| workspaces::machine_key(machine) == key)
+    }
+
+    /// The URL git clones `entry`'s repository from, when its forge is
+    /// named: the config's, or the default one's in a fixtures run.
+    fn remote_url(entry: &WorkspaceEntry, cx: &App) -> Option<String> {
+        let host = entry.host.as_deref()?;
+        let (owner, name) = entry.repo.trim().trim_matches('/').rsplit_once('/')?;
+        if owner.is_empty() || name.is_empty() {
+            return None;
+        }
+        let repo = RepoRef::new(host, owner, name);
+        let session = Session::try_global(cx)?;
+        Some(match session.read(cx).services() {
+            Some(services) => services.config.remote_url(&repo),
+            None => Config::default().remote_url(&repo),
+        })
+    }
+
+    /// What "Review with agent" does with an empty directory: the terminal
+    /// it opens and the command that terminal runs, when it is known.
+    fn clone_line(entry: &WorkspaceEntry, cx: &App) -> String {
+        let machine = Self::find_machine(&entry.machine, cx);
+        let (name, over) = match &machine {
+            Some(machine) if machine.is_local() => (machine.name.clone(), ""),
+            Some(machine) => (machine.name.clone(), " over SSH"),
+            None => (entry.machine.clone(), ""),
+        };
+        let command = machine
+            .as_ref()
+            .zip(Self::remote_url(entry, cx))
+            .and_then(|(machine, url)| terminals::clone_command(machine, &url, &entry.path).ok())
+            .unwrap_or_else(|| "git clone".to_owned());
+        format!(
+            "When the directory is empty, Review with agent opens a terminal on {name}{over} \
+             that runs `{command}`; you can keep typing in it."
+        )
+    }
+
+    /// The folder button of row `ix`'s `field`: the system's folder picker
+    /// for this PC, the folder list for an SSH machine. A second press
+    /// closes the list.
+    pub fn browse(
+        &mut self,
+        ix: usize,
+        field: DirField,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if self
+            .browser
+            .as_ref()
+            .is_some_and(|browser| browser.row == ix && browser.field == field)
+        {
+            self.browser = None;
+            cx.notify();
+            return;
+        }
+        let Some(row) = self.workspace_rows.get_mut(ix) else {
+            return;
+        };
+        let input = row.dir_input(field).clone();
+        let Some(machine) = Self::find_machine(&row.machine, cx) else {
+            row.error = Some(format!("{} is not a machine listed here.", row.machine));
+            cx.notify();
+            return;
+        };
+        if machine.is_local() {
+            self.browser = None;
+            Self::pick_local(ix, input, window, cx);
+        } else {
+            let start = input.read(cx).value().trim().to_owned();
+            self.browser = Some(DirBrowser {
+                row: ix,
+                field,
+                machine,
+                listing: None,
+                loading: None,
+                error: None,
+                _task: None,
+            });
+            self.list_folder(start, cx);
+        }
+        cx.notify();
+    }
+
+    /// The system's folder picker; the folder chosen fills `input`.
+    fn pick_local(
+        ix: usize,
+        input: Entity<InputState>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let paths = cx.prompt_for_paths(PathPromptOptions {
+            files: false,
+            directories: true,
+            multiple: false,
+            prompt: Some("Use this folder".into()),
+        });
+        cx.spawn_in(window, async move |this, cx| {
+            let chosen = match paths.await {
+                Ok(Ok(paths)) => paths.and_then(|paths| paths.into_iter().next()),
+                Ok(Err(error)) => {
+                    this.update(cx, |this, cx| {
+                        if let Some(row) = this.workspace_rows.get_mut(ix) {
+                            row.error = Some(format!("The folder picker failed: {error}"));
+                            cx.notify();
+                        }
+                    })
+                    .ok();
+                    None
+                }
+                // Closed without an answer.
+                Err(_) => None,
+            };
+            if let Some(path) = chosen {
+                let path = path.to_string_lossy().into_owned();
+                input
+                    .update_in(cx, |input, window, cx| input.set_value(path, window, cx))
+                    .ok();
+            }
+        })
+        .detach();
+    }
+
+    /// Lists `dir` on the open folder list's machine, off the UI thread;
+    /// an answer for a folder no longer asked for is dropped.
+    fn list_folder(&mut self, dir: String, cx: &mut Context<Self>) {
+        let Some(browser) = &mut self.browser else {
+            return;
+        };
+        let machine = browser.machine.clone();
+        browser.loading = Some(dir.clone());
+        browser.error = None;
+        let asked = dir.clone();
+        browser._task = Some(cx.spawn(async move |this, cx| {
+            let result = cx
+                .background_executor()
+                .spawn(async move { dir_browser::list_remote(&machine, &dir) })
+                .await;
+            this.update(cx, |this, cx| {
+                let Some(browser) = &mut this.browser else {
+                    return;
+                };
+                if browser.loading.as_deref() != Some(asked.as_str()) {
+                    return;
+                }
+                browser.loading = None;
+                match result {
+                    Ok(listing) => browser.listing = Some(listing),
+                    Err(error) => browser.error = Some(error),
+                }
+                cx.notify();
+            })
+            .ok();
+        }));
+        cx.notify();
+    }
+
+    /// The folder list moves to `to(shown folder)`.
+    fn browse_to(&mut self, to: impl FnOnce(&str) -> String, cx: &mut Context<Self>) {
+        let Some(dir) = self
+            .browser
+            .as_ref()
+            .and_then(|browser| browser.listing.as_ref())
+            .map(|listing| to(&listing.dir))
+        else {
+            return;
+        };
+        self.list_folder(dir, cx);
+    }
+
+    /// "Use this folder": the folder shown fills the row's input.
+    fn use_browsed(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let Some(browser) = self.browser.take() else {
+            return;
+        };
+        let (Some(listing), Some(row)) = (browser.listing, self.workspace_rows.get(browser.row))
+        else {
+            return;
+        };
+        let chosen = listing.chosen();
+        row.dir_input(browser.field)
+            .update(cx, |input, cx| input.set_value(chosen, window, cx));
+        cx.notify();
+    }
+
     /// The machine names a row may pick: this PC and every listed host.
     fn machine_choices(cx: &App) -> Vec<(String, SharedString)> {
-        let machines = Terminals::global(cx)
-            .map(|terminals| terminals.read(cx).machines(cx))
-            .unwrap_or_else(|| vec![machines::Machine::this_pc(None)]);
+        let machines = Self::machines(cx);
         machines
             .iter()
             .map(|machine| {
@@ -950,6 +1226,161 @@ impl SettingsPanel {
             workspaces.update(cx, |workspaces, cx| workspaces.save(entries, cx));
         }
         cx.notify();
+    }
+
+    /// A directory input with its folder button on the left.
+    fn dir_field(
+        &self,
+        t: &Theme,
+        ix: usize,
+        field: DirField,
+        state: &Entity<InputState>,
+        cx: &Context<Self>,
+    ) -> gpui::Div {
+        let side = px(ui::CONTROL_HEIGHT + 2.0);
+        let button = ui::icon_button(
+            cx,
+            (field.id(), ix),
+            IconName::FolderOpen,
+            cx.listener(move |this, _, window, cx| this.browse(ix, field, window, cx)),
+        )
+        .w(side)
+        .h(side)
+        .debug_selector(move || format!("{}-browse-{ix}", field.id()));
+        h_flex().gap(px(6.0)).items_center().child(button).child(
+            div()
+                .flex_1()
+                .min_w_0()
+                .debug_selector(move || format!("{}-input-{ix}", field.id()))
+                .child(
+                    Input::new(state)
+                        .h(side)
+                        .text_size(t.fonts.interface.size_px()),
+                ),
+        )
+    }
+
+    /// The folder list of an SSH machine, under the directory it fills.
+    fn browser_view(&self, browser: &DirBrowser, t: &Theme, cx: &Context<Self>) -> AnyElement {
+        let c = &t.colors;
+        let hover = c.hover;
+        let on = &browser.machine.name;
+        let title = match (&browser.loading, &browser.listing) {
+            (Some(dir), _) if dir.is_empty() => format!("Listing the home folder on {on}..."),
+            (Some(dir), _) => format!("Listing {dir} on {on}..."),
+            (None, Some(listing)) => format!("{} on {on}", listing.dir),
+            (None, None) => format!("Folders on {on}"),
+        };
+        let entry = |id: ElementId, label: &str, selector: String| {
+            h_flex()
+                .id(id)
+                .debug_selector(move || selector)
+                .h(px(22.0))
+                .flex_none()
+                .px(px(6.0))
+                .gap(px(6.0))
+                .items_center()
+                .rounded(t.radius.sm)
+                .cursor_pointer()
+                .text_color(c.text)
+                .hover(move |s| s.bg(hover))
+                .child(
+                    Icon::new(IconName::Folder)
+                        .size(px(14.0))
+                        .text_color(c.text_muted),
+                )
+                .child(div().truncate().child(label.to_owned()))
+        };
+        let mut list = v_flex().gap(px(1.0));
+        if let Some(listing) = &browser.listing {
+            if listing.dir != "/" {
+                list = list.child(
+                    entry(
+                        "workspace-browser-up".into(),
+                        "..",
+                        "workspace-browser-up".to_owned(),
+                    )
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.browse_to(dir_browser::parent, cx);
+                    })),
+                );
+            }
+            for (i, name) in listing.folders.iter().enumerate() {
+                let into = name.clone();
+                list = list.child(
+                    entry(
+                        ("workspace-browser-folder", i).into(),
+                        name,
+                        format!("workspace-browser-folder-{i}"),
+                    )
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        this.browse_to(|dir| dir_browser::child(dir, &into), cx);
+                    })),
+                );
+            }
+            if listing.folders.is_empty() {
+                list = list.child(
+                    div()
+                        .px(px(6.0))
+                        .text_color(c.text_muted)
+                        .child("No folders here"),
+                );
+            }
+        }
+        let ready = browser.loading.is_none() && browser.listing.is_some();
+        v_flex()
+            .debug_selector(|| "workspace-browser".into())
+            .gap(px(6.0))
+            .p(px(8.0))
+            .rounded(t.radius.md)
+            .border_1()
+            .border_color(c.border)
+            .bg(c.field)
+            .small(t)
+            .child(
+                h_flex()
+                    .gap(px(8.0))
+                    .items_center()
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .truncate()
+                            .text_color(c.text_secondary)
+                            .child(title),
+                    )
+                    .child(
+                        Button::new(
+                            "workspace-browser-use",
+                            "Use this folder",
+                            ButtonKind::Secondary,
+                        )
+                        .disabled(!ready)
+                        .on_click(cx.listener(|this, _, window, cx| this.use_browsed(window, cx))),
+                    )
+                    .child(
+                        Button::new("workspace-browser-cancel", "Cancel", ButtonKind::Ghost)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.browser = None;
+                                cx.notify();
+                            })),
+                    ),
+            )
+            .children(browser.error.clone().map(|error| {
+                div()
+                    .debug_selector(|| "workspace-browser-error".into())
+                    .tiny(t)
+                    .text_color(c.danger)
+                    .child(error)
+            }))
+            .child(
+                div()
+                    .id("workspace-browser-list")
+                    .max_h(px(200.0))
+                    .overflow_y_scroll()
+                    .child(list),
+            )
+            .into_any_element()
     }
 
     fn workspace_field(t: &Theme, label: &'static str, field: impl IntoElement) -> gpui::Div {
@@ -996,12 +1427,20 @@ impl SettingsPanel {
                     pick.update(cx, |this, cx| {
                         if let Some(row) = this.workspace_rows.get_mut(ix) {
                             row.machine = name;
+                            if this.browser.as_ref().is_some_and(|b| b.row == ix) {
+                                this.browser = None;
+                            }
                             cx.notify();
                         }
                     })
                     .ok();
                 },
             );
+            let open = self.browser.as_ref().filter(|browser| browser.row == ix);
+            let browser = |field: DirField| {
+                open.filter(|browser| browser.field == field)
+                    .map(|browser| Self::workspace_field(t, "", self.browser_view(browser, t, cx)))
+            };
             let host = row
                 .host
                 .as_deref()
@@ -1044,14 +1483,34 @@ impl SettingsPanel {
                                 .on_click(cx.listener(move |this, _, _, cx| {
                                     if ix < this.workspace_rows.len() {
                                         this.workspace_rows.remove(ix);
+                                        this.browser = None;
                                         cx.notify();
                                     }
                                 })),
                         ),
                 )
                 .child(Self::workspace_field(t, "Machine", machine))
-                .child(Self::workspace_field(t, "Directory", input(&row.path)))
-                .child(Self::workspace_field(t, "Working dir", input(&row.workdir)))
+                .child(Self::workspace_field(
+                    t,
+                    "Directory",
+                    self.dir_field(t, ix, DirField::Repository, &row.path, cx),
+                ))
+                .children(browser(DirField::Repository))
+                .child(Self::workspace_field(
+                    t,
+                    "",
+                    div()
+                        .debug_selector(move || format!("workspace-clone-note-{ix}"))
+                        .tiny(t)
+                        .text_color(c.text_muted)
+                        .child(Self::clone_line(&row.entry(cx), cx)),
+                ))
+                .child(Self::workspace_field(
+                    t,
+                    "Working dir",
+                    self.dir_field(t, ix, DirField::Workdir, &row.workdir, cx),
+                ))
+                .children(browser(DirField::Workdir))
                 .child(Self::workspace_field(t, "Command", input(&row.command)))
                 .child(Self::workspace_field(t, "Prompt", prompt))
                 .child(Self::workspace_field(

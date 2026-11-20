@@ -39,3 +39,4 @@ mod terminals;
 mod thread_menus;
 mod viewed;
 mod widths;
+mod workspace_dirs;

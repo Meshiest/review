@@ -5,7 +5,7 @@
 //! `~/.cache/review` over SSH), so the checkout is never inside a folder the
 //! user trusts; a plain worktree may go in the user's clone instead
 //! (`.claude/worktrees/pr-N`), and "Review with agent" puts it off the
-//! directory its workspace names, cloning there first when it is empty.
+//! directory its workspace names, once a terminal has cloned there.
 //! Over SSH it is worked on with plain `git`.
 //!
 //! Everything here blocks on git, the disk and the network; the app runs it
@@ -331,28 +331,47 @@ pub fn expand_home(path: &str) -> PathBuf {
     }
 }
 
-/// Makes sure `dir` holds a clone of the pull request's repository, cloning
-/// into it when it is missing or empty, then its worktree as
-/// [`ensure_local`] makes one: at `.claude/worktrees/pr-N`, which is added
-/// to the clone's `info/exclude` first.
+/// Whether `dir` is missing or empty, so the repository is cloned into it
+/// first.
 ///
 /// # Errors
-/// Clone, fetch and git failures, as text for the header.
+/// When the directory cannot be read.
+pub fn needs_clone_local(dir: &Path) -> Result<bool, String> {
+    match std::fs::read_dir(dir) {
+        Ok(mut entries) => Ok(entries.next().is_none()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(true),
+        Err(error) => Err(format!("{}: {error}", dir.display())),
+    }
+}
+
+/// Whether `dir` on `machine` is not a repository yet, so the repository is
+/// cloned into it first.
+///
+/// # Errors
+/// When the machine is this PC, or `ssh` fails.
+pub fn needs_clone_remote(machine: &Machine, dir: &str) -> Result<bool, String> {
+    let Place::Ssh(host) = &machine.place else {
+        return Err("this PC is not reached over SSH".to_owned());
+    };
+    let exists = RemoteRepo::new(host.clone(), dir)
+        .exists()
+        .map_err(|e| e.to_string())?;
+    Ok(!exists)
+}
+
+/// The pull request's worktree in the clone at `dir`, as [`ensure_local`]
+/// makes one: at `.claude/worktrees/pr-N`, which is added to the clone's
+/// `info/exclude` first. The clone is made beforehand, in a terminal the
+/// user sees (see [`needs_clone_local`]).
+///
+/// # Errors
+/// Fetch and git failures, as text for the header.
 pub fn ensure_in_dir_local(
     dir: &Path,
     source: &PrSource,
     progress: Progress<'_>,
 ) -> Result<(repo::Store, WorktreeInfo), String> {
     let at = |e: &dyn std::fmt::Display| format!("{}: {e}", dir.display());
-    let empty = match std::fs::read_dir(dir) {
-        Ok(mut entries) => entries.next().is_none(),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => true,
-        Err(error) => return Err(at(&error)),
-    };
-    if empty {
-        progress("cloning");
-        repo::clone_repo(source.url(), dir).map_err(|e| at(&e))?;
-    }
     let clone = repo::Store::open(dir).map_err(|e| at(&e))?;
     if clone.work_dir().is_some() {
         let common = repo::common_dir(dir).map_err(|e| at(&e))?;
@@ -362,10 +381,11 @@ pub fn ensure_in_dir_local(
     Ok((clone, info))
 }
 
-/// [`ensure_in_dir_local`] on another machine, over SSH.
+/// [`ensure_in_dir_local`] on another machine, over SSH, in the repository
+/// at `dir` there (see [`needs_clone_remote`]).
 ///
 /// # Errors
-/// Clone, fetch, git and `ssh` failures, as text for the header.
+/// Fetch, git and `ssh` failures, as text for the header.
 pub fn ensure_in_dir_remote(
     machine: &Machine,
     source: &PrSource,
@@ -376,12 +396,7 @@ pub fn ensure_in_dir_remote(
     let Place::Ssh(host) = &machine.place else {
         return Err("this PC is not reached over SSH".to_owned());
     };
-    progress("connecting");
     let repo = RemoteRepo::new(host.clone(), dir);
-    if !repo.exists().map_err(err)? {
-        progress("cloning");
-        repo.clone_into(source.url()).map_err(err)?;
-    }
     if !repo.is_bare().map_err(err)? {
         let args = [shell::home_relative(dir), WORKTREES_PATTERN];
         remote_sh(host, EXCLUDE_SCRIPT, &args, None)?;
@@ -593,7 +608,7 @@ const REMOTE_TIMEOUT: Duration = Duration::from_secs(120);
 /// The command line `ssh` hands the remote shell: `/bin/sh` runs `script`
 /// with `args` as `$1`, `$2`... In the remote home directory, never in a
 /// checkout.
-fn remote_line(script: &str, args: &[&str]) -> String {
+pub(crate) fn remote_line(script: &str, args: &[&str]) -> String {
     format!(
         "exec /bin/sh -c {} review {}",
         shell::quote(script),
@@ -609,6 +624,43 @@ fn remote_sh(
     args: &[&str],
     stdin: Option<&[u8]>,
 ) -> Result<String, String> {
+    remote_sh_limited(host, script, &RemoteRun::new(args, stdin))
+}
+
+/// One remote script run's inputs and limits.
+#[derive(Clone, Copy)]
+pub(crate) struct RemoteRun<'a> {
+    pub args: &'a [&'a str],
+    pub stdin: Option<&'a [u8]>,
+    pub timeout: Duration,
+    /// Bytes of standard output kept.
+    pub output: usize,
+}
+
+impl<'a> RemoteRun<'a> {
+    fn new(args: &'a [&'a str], stdin: Option<&'a [u8]>) -> Self {
+        Self {
+            args,
+            stdin,
+            timeout: REMOTE_TIMEOUT,
+            output: REMOTE_OUTPUT,
+        }
+    }
+}
+
+/// [`remote_sh`] with its own time and output limits. Blocks until the
+/// script ends or the time is up, when `ssh` is killed.
+pub(crate) fn remote_sh_limited(
+    host: &repo::SshHost,
+    script: &str,
+    run: &RemoteRun<'_>,
+) -> Result<String, String> {
+    let RemoteRun {
+        args,
+        stdin,
+        timeout,
+        output: kept,
+    } = *run;
     let failed = |e: &dyn std::fmt::Display| format!("ssh {host}: {e}");
     let ssh = term::program::resolve("ssh").map_err(|e| failed(&e))?;
     let mut command = Command::new(ssh);
@@ -634,9 +686,9 @@ fn remote_sh(
     std::thread::spawn(move || {
         let _ = tx.send(child.wait_with_output());
     });
-    match rx.recv_timeout(REMOTE_TIMEOUT) {
+    match rx.recv_timeout(timeout) {
         Ok(Ok(output)) if output.status.success() => {
-            let end = output.stdout.len().min(REMOTE_OUTPUT);
+            let end = output.stdout.len().min(kept);
             Ok(String::from_utf8_lossy(&output.stdout[..end]).into_owned())
         }
         Ok(Ok(output)) => Err(failed(&String::from_utf8_lossy(&output.stderr).trim())),
@@ -817,6 +869,20 @@ mod tests {
             assert!(write_review_files_local(&linked, "x", false).is_err());
             assert!(!outside.join("context.md").exists());
         }
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_missing_or_empty_directory_needs_a_clone() {
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../.scratch/worktrees-tests")
+            .join(format!("needs-clone-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        assert_eq!(needs_clone_local(&dir), Ok(true), "missing");
+        std::fs::create_dir_all(&dir).unwrap();
+        assert_eq!(needs_clone_local(&dir), Ok(true), "empty");
+        std::fs::write(dir.join("README"), "").unwrap();
+        assert_eq!(needs_clone_local(&dir), Ok(false), "has files");
         let _ = std::fs::remove_dir_all(&dir);
     }
 

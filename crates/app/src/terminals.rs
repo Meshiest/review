@@ -45,7 +45,27 @@ actions!(
 
 /// Blocking work that makes a worktree and checks its agent config,
 /// reporting its steps.
-type WorktreeJob = Box<dyn FnOnce(worktrees::Progress<'_>) -> Result<Prepared, String> + Send>;
+type WorktreeJob = Box<dyn FnOnce(worktrees::Progress<'_>) -> Result<Outcome, String> + Send>;
+
+/// How a worktree job ends.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Outcome {
+    /// The worktree is ready for its command.
+    Prepared(Box<Prepared>),
+    /// The workspace's directory has no clone yet: a terminal runs the clone
+    /// where the user sees it and can answer git, and "Review with agent"
+    /// goes on from there when asked again.
+    Clone {
+        spec: Box<TerminalSpec>,
+        dir: String,
+    },
+}
+
+impl From<Prepared> for Outcome {
+    fn from(prepared: Prepared) -> Self {
+        Self::Prepared(Box::new(prepared))
+    }
+}
 
 /// A pull request's worktree, ready for its command.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -156,6 +176,91 @@ pub fn sign_in_command(kind: ForgeKind, host: &str) -> String {
     }
 }
 
+/// The command a terminal on `machine` runs to clone `url` into `dir`:
+/// `git clone <url> <dir>`, each word quoted for the shell that reads the
+/// line (the machine's shell here, a POSIX shell over SSH). A local `dir`
+/// is made absolute with `~` expanded; a remote one is relative to the
+/// home directory `ssh` starts in.
+///
+/// # Errors
+/// For an unusable URL, or a word the local shell cannot quote.
+pub fn clone_command(machine: &Machine, url: &str, dir: &str) -> Result<String, String> {
+    let url = url.trim();
+    if !url.starts_with(|ch: char| ch.is_ascii_alphanumeric()) {
+        return Err(format!("unusable remote URL `{url}`"));
+    }
+    let dir = dir.trim();
+    if dir.is_empty() {
+        return Err("no directory to clone into".to_owned());
+    }
+    let (kind, dir) = match &machine.place {
+        Place::Local => {
+            let path = worktrees::expand_home(dir);
+            let path = std::path::absolute(&path).unwrap_or(path);
+            (local_shell_kind(machine), path_text(&path))
+        }
+        Place::Ssh(_) => {
+            let dir = repo::shell::home_relative(dir);
+            // Never read as an option.
+            let dir = if dir.starts_with('-') {
+                format!("./{dir}")
+            } else {
+                dir.to_owned()
+            };
+            (ShellKind::Posix, dir)
+        }
+    };
+    Ok(format!(
+        "git clone {} {}",
+        quote_for(kind, url)?,
+        quote_for(kind, &dir)?
+    ))
+}
+
+/// The kind of shell a terminal on this PC starts: the machine's own, else
+/// the terminal's default (`pwsh` on Windows, the login shell elsewhere).
+fn local_shell_kind(machine: &Machine) -> ShellKind {
+    match machine.shell() {
+        Some(shell) => ShellKind::of(shell),
+        None if cfg!(windows) => ShellKind::PowerShell,
+        None => ShellKind::Posix,
+    }
+}
+
+/// `word` as one literal argument for `kind`.
+///
+/// # Errors
+/// For control characters, and for `"` or `%` under `cmd`, which no
+/// quoting there keeps literal.
+fn quote_for(kind: ShellKind, word: &str) -> Result<String, String> {
+    if word.contains(char::is_control) {
+        return Err(format!("`{word}` has control characters"));
+    }
+    Ok(match kind {
+        ShellKind::Posix => repo::shell::quote(word).into_owned(),
+        // PowerShell reads the typographic single quotes as `'` too; each
+        // is doubled inside single quotes, where nothing else expands.
+        ShellKind::PowerShell => {
+            let mut quoted = String::with_capacity(word.len() + 2);
+            quoted.push('\'');
+            for ch in word.chars() {
+                if matches!(ch, '\'' | '\u{2018}' | '\u{2019}' | '\u{201a}' | '\u{201b}') {
+                    quoted.push(ch);
+                }
+                quoted.push(ch);
+            }
+            quoted.push('\'');
+            quoted
+        }
+        ShellKind::Cmd => {
+            if word.contains(['"', '%']) {
+                return Err(format!("`{word}` cannot be quoted for cmd"));
+            }
+            format!("\"{word}\"")
+        }
+    })
+}
+
 /// How a local shell is told to run a command and stay.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum ShellKind {
@@ -209,6 +314,18 @@ impl TerminalSpec {
         }
         Some(Self {
             command: Some(sign_in_command(kind, host)),
+            ..Self::shell_on(machine)
+        })
+    }
+
+    /// A shell on `machine` that runs [`clone_command`] first and stays
+    /// open, so git can ask for credentials and the user can go on typing.
+    ///
+    /// # Errors
+    /// As [`clone_command`].
+    pub fn clone_into(machine: &Machine, url: &str, dir: &str) -> Result<Self, String> {
+        Ok(Self {
+            command: Some(clone_command(machine, url, dir)?),
             ..Self::shell_on(machine)
         })
     }
@@ -552,6 +669,12 @@ pub enum WorktreeState {
     /// Ready, but its command waits for the user: the pull request changes
     /// agent config, or the command has no safe launch.
     Choosing(WorktreeInfo),
+    /// A terminal clones into the workspace's directory; the review starts
+    /// when asked again after it is done.
+    Cloning {
+        machine: String,
+        dir: String,
+    },
     Failed {
         machine: String,
         error: String,
@@ -582,6 +705,10 @@ impl WorktreeState {
             Self::Choosing(info) => format!(
                 "{}; waiting for you to choose how its command starts",
                 ready(info)
+            ),
+            Self::Cloning { machine, dir } => format!(
+                "Cloning into {dir} in a terminal on {machine}; choose Review with agent again \
+                 once it is done"
             ),
             Self::Failed { machine, error } => format!("Worktree on {machine} failed: {error}"),
         }
@@ -838,7 +965,7 @@ impl Terminals {
                 return;
             }
         };
-        let (tx, mut rx) = mpsc::unbounded::<Result<String, Result<Prepared, String>>>();
+        let (tx, mut rx) = mpsc::unbounded::<Result<String, Result<Outcome, String>>>();
         thread::Builder::new()
             .name(format!("worktree-{}", key.number))
             .spawn(move || {
@@ -859,21 +986,31 @@ impl Terminals {
                             machine: machine.name.clone(),
                             step,
                         },
-                        Err(Ok(prepared)) => this.prepared(
+                        Err(Ok(Outcome::Prepared(prepared))) => this.prepared(
                             task_key.clone(),
                             machine.clone(),
                             at,
-                            prepared,
+                            *prepared,
                             review.clone(),
                             cx,
                         ),
+                        Err(Ok(Outcome::Clone { spec, dir })) => {
+                            cx.emit(TerminalsEvent::Open { spec: *spec, at });
+                            WorktreeState::Cloning {
+                                machine: machine.name.clone(),
+                                dir,
+                            }
+                        }
                         Err(Err(error)) => WorktreeState::Failed {
                             machine: machine.name.clone(),
                             error,
                         },
                     };
                     let done = !matches!(next, WorktreeState::Working { .. });
-                    if matches!(next, WorktreeState::Failed { .. }) {
+                    if matches!(
+                        next,
+                        WorktreeState::Failed { .. } | WorktreeState::Cloning { .. }
+                    ) {
                         claude_review::forget(review.as_ref(), cx);
                     }
                     this.worktrees.insert(task_key.clone(), next);
@@ -1495,6 +1632,97 @@ mod tests {
         }
     }
 
+    fn local_with_shell(shell: &str) -> Machine {
+        Machine::this_pc(Some(&machines::MachineEntry {
+            host: machines::LOCAL_HOST.into(),
+            shell: Some(shell.into()),
+            ..machines::MachineEntry::default()
+        }))
+    }
+
+    #[test]
+    fn a_clone_is_one_quoted_line_for_the_shell_that_reads_it() {
+        let url = "git@github.com:o/r.git";
+        let remote = clone_command(&devbox(), url, "~/src/it's here").unwrap();
+        assert_eq!(
+            remote,
+            r"git clone git@github.com:o/r.git 'src/it'\''s here'"
+        );
+        let dashed = clone_command(&devbox(), url, "-oops").unwrap();
+        assert_eq!(dashed, "git clone git@github.com:o/r.git ./-oops");
+
+        let dir = if cfg!(windows) {
+            "C:/src/a b"
+        } else {
+            "/src/a b"
+        };
+        let absolute = path_text(&std::path::absolute(dir).unwrap());
+        let pwsh = clone_command(&local_with_shell("pwsh"), url, dir).unwrap();
+        assert_eq!(pwsh, format!("git clone '{url}' '{absolute}'"));
+        let cmd = clone_command(&local_with_shell("cmd.exe"), url, dir).unwrap();
+        assert_eq!(cmd, format!("git clone \"{url}\" \"{absolute}\""));
+        let posix = clone_command(&local_with_shell("/bin/bash"), url, dir).unwrap();
+        assert_eq!(posix, format!("git clone {url} '{absolute}'"));
+
+        for bad_url in ["", "-u", "--upload-pack=x", " ;rm"] {
+            assert!(
+                clone_command(&devbox(), bad_url, "x").is_err(),
+                "{bad_url:?}"
+            );
+        }
+        assert!(clone_command(&devbox(), url, "  ").is_err());
+        assert!(clone_command(&devbox(), url, "a\nb").is_err());
+    }
+
+    #[test]
+    fn words_are_quoted_so_no_shell_expands_them() {
+        let pwsh = |word| quote_for(ShellKind::PowerShell, word).unwrap();
+        assert_eq!(pwsh("it's"), "'it''s'");
+        assert_eq!(pwsh("a\u{2019}b"), "'a\u{2019}\u{2019}b'");
+        assert_eq!(pwsh("$(rm -rf ~); `x` @a"), "'$(rm -rf ~); `x` @a'");
+        let cmd = |word| quote_for(ShellKind::Cmd, word);
+        assert_eq!(cmd("a & b | c ^ d").unwrap(), "\"a & b | c ^ d\"");
+        assert!(cmd("%PATH%").is_err());
+        assert!(cmd("a\"b").is_err());
+        let posix = |word| quote_for(ShellKind::Posix, word).unwrap();
+        assert_eq!(posix("$(id) `id`"), "'$(id) `id`'");
+        for kind in [ShellKind::PowerShell, ShellKind::Cmd, ShellKind::Posix] {
+            assert!(quote_for(kind, "a\rb").is_err());
+        }
+    }
+
+    #[test]
+    fn the_clone_terminal_runs_git_then_stays() {
+        let spec = TerminalSpec::clone_into(&devbox(), "https://h/o/r.git", "src/r").unwrap();
+        assert_eq!(
+            spec.command.as_deref(),
+            Some("git clone https://h/o/r.git src/r")
+        );
+        assert_eq!(spec.cwd, None, "in the home directory");
+        let config = spec.session_config_with(&on_path).unwrap();
+        assert_eq!(config.args[..3], ["-t", "devbox", "--"]);
+        let guard = repo::shell::quote(REMOTE_GUARD);
+        let run = format!("/bin/sh -c {guard} review git clone https://h/o/r.git src/r");
+        let login = format!("/bin/sh -c {guard} review \"${{SHELL:-/bin/sh}}\" -l");
+        assert_eq!(
+            config.args[3],
+            format!(
+                "exec /bin/sh -c {guard} review \"${{SHELL:-/bin/sh}}\" -lic {}",
+                repo::shell::quote(&format!("{run}; exec {login}"))
+            )
+        );
+
+        let local =
+            TerminalSpec::clone_into(&local_with_shell("pwsh"), "https://h/o/r.git", "/r").unwrap();
+        let config = local.session_config_with(&on_path).unwrap();
+        assert_eq!(config.args[..3], ["-NoLogo", "-NoExit", "-Command"]);
+        assert!(
+            config.args[3].starts_with("& '/abs/git' clone 'https://h/o/r.git' '"),
+            "{}",
+            config.args[3]
+        );
+    }
+
     #[test]
     fn a_remote_command_runs_in_a_login_shell_in_the_worktree() {
         let spec = safe_spec(&devbox(), "/home/u/x y/pr-4");
@@ -1775,5 +2003,15 @@ mod tests {
         assert_eq!(line, "Worktree, remote on devbox: /w/pr-4 at b4c0f06");
         let choosing = WorktreeState::Choosing(worktree("/w/pr-4")).line();
         assert!(choosing.ends_with("choose how its command starts"));
+        let cloning = WorktreeState::Cloning {
+            machine: "devbox".into(),
+            dir: "~/src/r".into(),
+        }
+        .line();
+        assert_eq!(
+            cloning,
+            "Cloning into ~/src/r in a terminal on devbox; choose Review with agent again once \
+             it is done"
+        );
     }
 }

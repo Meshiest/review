@@ -38,7 +38,7 @@ use crate::config::WorkspaceEntry;
 use crate::machines::{self, Machine};
 use crate::model::{ChangedFile, FileStatus, PrKey};
 use crate::session::Session;
-use crate::terminals::{CommandLine, Prepared, TerminalSpec};
+use crate::terminals::{CommandLine, Outcome, Prepared, TerminalSpec};
 use crate::worktrees::{self, Placement, PrSource, WorktreeInfo};
 
 /// Claude Code flags that keep a checkout's config out: settings from the
@@ -336,7 +336,7 @@ pub fn agent_command(command: &str, mode: LaunchMode) -> Result<Option<String>, 
 
 /// Blocking work that makes a pull request's worktree and checks what agent
 /// config the pull request changes, reporting its steps.
-pub type PrepareJob = Box<dyn FnOnce(worktrees::Progress<'_>) -> Result<Prepared, String> + Send>;
+pub type PrepareJob = Box<dyn FnOnce(worktrees::Progress<'_>) -> Result<Outcome, String> + Send>;
 
 /// The work that makes `key`'s worktree on `machine` in a repository the app
 /// owns ([`Placement::AppOwned`]) and compares its agent config with the
@@ -387,7 +387,8 @@ pub fn prepare_job(
                 check,
                 links: Ok(Vec::new()),
                 mcp_file: None,
-            })
+            }
+            .into())
         }));
     }
     let services = session
@@ -409,7 +410,8 @@ pub fn prepare_job(
                 check,
                 links,
                 mcp_file: None,
-            });
+            }
+            .into());
         }
         let info = worktrees::ensure_remote(&machine, &source, Placement::AppOwned, progress)?;
         // The remote checkout is compared here, in this PC's copy, which has
@@ -430,13 +432,15 @@ pub fn prepare_job(
             check,
             links,
             mcp_file: None,
-        })
+        }
+        .into())
     }))
 }
 
 /// The work behind "Review with agent": makes `key`'s worktree off the
-/// workspace's repository directory on `machine` (cloning into it when it
-/// is missing or empty), compares its agent config with the merge base,
+/// workspace's repository directory on `machine` (or, when that has no
+/// clone yet, ends with [`Outcome::Clone`]: a terminal the user sees runs
+/// `git clone` there), compares its agent config with the merge base,
 /// lists links that leave it, writes `context` to its `.review/context.md`
 /// (kept out of git) and `mcp`'s config, which holds the launch's token, to
 /// a file only the user can read outside the worktree. A fixtures run makes
@@ -498,7 +502,8 @@ pub fn prepare_review_job(
                 check,
                 links: Ok(Vec::new()),
                 mcp_file,
-            })
+            }
+            .into())
         }));
     }
     let services = session
@@ -516,6 +521,20 @@ pub fn prepare_review_job(
         refuse_nested(&place, workdir.as_deref(), local)?;
     }
     Ok(Box::new(move |progress: worktrees::Progress<'_>| {
+        let needs_clone = if local {
+            worktrees::needs_clone_local(&worktrees::expand_home(&dir))?
+        } else {
+            progress("connecting");
+            worktrees::needs_clone_remote(&machine, &dir)?
+        };
+        if needs_clone {
+            let spec = Box::new(TerminalSpec::clone_into(
+                &machine,
+                &source.fetch.remote_url,
+                &dir,
+            )?);
+            return Ok(Outcome::Clone { spec, dir });
+        }
         let (info, check, links) = if local {
             let dir = worktrees::expand_home(&dir);
             let (clone, info) = worktrees::ensure_in_dir_local(&dir, &source, progress)?;
@@ -548,7 +567,8 @@ pub fn prepare_review_job(
                 check,
                 links,
                 mcp_file: None,
-            });
+            }
+            .into());
         }
         progress("writing the context file");
         if local {
@@ -565,7 +585,8 @@ pub fn prepare_review_job(
             check,
             links,
             mcp_file,
-        })
+        }
+        .into())
     }))
 }
 

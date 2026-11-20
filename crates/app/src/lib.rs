@@ -19,6 +19,7 @@ pub mod config;
 pub mod conversation;
 pub mod diff_panel;
 pub mod diff_style;
+pub mod dir_browser;
 pub mod dock_skin;
 pub mod drafts;
 pub mod fixtures;

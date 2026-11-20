@@ -1436,7 +1436,9 @@ impl Render for PrActions {
             let color = match state {
                 WorktreeState::Failed { .. } => c.danger,
                 WorktreeState::Choosing(_) => c.warn,
-                WorktreeState::Working { .. } | WorktreeState::Ready(_) => c.text_muted,
+                WorktreeState::Working { .. }
+                | WorktreeState::Ready(_)
+                | WorktreeState::Cloning { .. } => c.text_muted,
             };
             Some(
                 div()
