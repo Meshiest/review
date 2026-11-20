@@ -24,11 +24,12 @@ and [gpui-component](https://github.com/longbridge/gpui-kit).
   `~/.ssh/config`, opened in the pull request's worktree. SSH goes through the
   system `ssh` binary.
 - **Review with agent**: starts Claude Code in a terminal on the pull
-  request's worktree, with a local MCP server whose one tool,
-  `add_review_comment`, turns its findings into draft comments marked "from
-  Claude". Nothing is sent until you submit the review. The launch is
-  restricted because a pull request's content is untrusted; see "Launch
-  policy" in [docs/design.md](docs/design.md).
+  request's worktree, with a local MCP server whose tools turn its findings
+  into draft comments marked "from Claude" (`add_review_comment`) and fill in
+  the Submit review form with a suggested verdict and summary
+  (`suggest_review`). Nothing is sent until you submit the review. The
+  launch is restricted because a pull request's content is untrusted; see
+  "Launch policy" in [docs/design.md](docs/design.md).
 - **Themes**: Vercel dark and light (Geist), following the OS or fixed, plus
   your own theme files; interface and buffer fonts are configurable.
 

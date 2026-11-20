@@ -1,6 +1,7 @@
-//! The MCP server an agent adds its findings through: one tool,
-//! `add_review_comment`, over MCP's streamable HTTP transport with plain
-//! JSON responses (`initialize`, `tools/list`, `tools/call`, notifications).
+//! The MCP server an agent adds its findings through: `add_review_comment`
+//! for a draft comment and `suggest_review` for a suggested verdict and
+//! summary, over MCP's streamable HTTP transport with plain JSON responses
+//! (`initialize`, `tools/list`, `tools/call`, notifications).
 //!
 //! Anything on this computer can connect to a local port, and over SSH the
 //! forwarded port is open to every user of the remote machine, so:
@@ -13,7 +14,8 @@
 //!   capped, and every argument is untrusted: the agent read the pull
 //!   request, whose author can tell it anything. Paths and lines are checked
 //!   against the loaded diff by the handler, and nothing is posted: a call
-//!   makes a draft the user reads first.
+//!   makes a draft, or fills in the Submit review form, for the user to
+//!   read first.
 
 use std::io::{self, Read, Write};
 use std::net::{Ipv4Addr, TcpListener, TcpStream};
@@ -26,15 +28,18 @@ use forge::model::Side;
 use serde_json::{Map, Value, json};
 
 use crate::model::PrKey;
+use crate::sink::Verdict;
 use crate::untrusted::strip_controls;
 
 /// The name the agent's config gives the server; its tools are
 /// `mcp__review__<tool>` in Claude Code's permission rules.
 pub const SERVER_NAME: &str = "review";
-/// The one tool.
+/// The tool that adds a draft comment.
 pub const TOOL: &str = "add_review_comment";
-/// What `--allowedTools` names so the tool runs without a prompt.
-pub const TOOL_RULE: &str = "mcp__review__add_review_comment";
+/// The tool that suggests the review's verdict and summary.
+pub const SUGGEST_TOOL: &str = "suggest_review";
+/// What `--allowedTools` names so both tools run without a prompt.
+pub const TOOL_RULES: &str = "mcp__review__add_review_comment,mcp__review__suggest_review";
 
 /// The MCP versions this server speaks, newest first.
 const PROTOCOLS: [&str; 4] = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
@@ -53,7 +58,7 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 pub struct Limits {
     /// Bytes of one request body.
     pub request: usize,
-    /// Bytes of one comment's body.
+    /// Bytes of one comment's body, or of a suggested summary.
     pub body: usize,
     /// Comments one token may add.
     pub comments: u32,
@@ -91,9 +96,27 @@ pub struct CommentRequest {
     pub body: String,
 }
 
-/// Turns a checked call into a draft, or says why not. Called on the
-/// connection's thread; it may block while the app does the work.
-pub type Handler = Arc<dyn Fn(&PrKey, CommentRequest) -> Result<String, String> + Send + Sync>;
+/// One `suggest_review` call, its arguments checked. A later call replaces
+/// an earlier one.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SuggestRequest {
+    pub verdict: Verdict,
+    /// Markdown for the review's summary, without control characters other
+    /// than line breaks and tabs; may be empty.
+    pub body: String,
+}
+
+/// A checked tool call, for the handler.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum ToolRequest {
+    Comment(CommentRequest),
+    Suggest(SuggestRequest),
+}
+
+/// Turns a checked call into a draft or a suggestion, or says why not.
+/// Called on the connection's thread; it may block while the app does the
+/// work.
+pub type Handler = Arc<dyn Fn(&PrKey, ToolRequest) -> Result<String, String> + Send + Sync>;
 
 /// A per-launch secret: 128 random bits as 32 hex digits.
 #[derive(Clone, PartialEq, Eq)]
@@ -503,7 +526,7 @@ fn rpc(message: &Value, token: &Token, shared: &Shared) -> Option<Value> {
     Some(match method {
         "initialize" => rpc_result(id, initialize(params)),
         "ping" => rpc_result(id, json!({})),
-        "tools/list" => rpc_result(id, json!({ "tools": [tool()] })),
+        "tools/list" => rpc_result(id, json!({ "tools": [tool(), suggest_tool()] })),
         "tools/call" => rpc_result(id, call(params, token, shared)),
         _ => rpc_error(id, -32601, "unknown method"),
     })
@@ -520,8 +543,10 @@ fn initialize(params: Option<&Value>) -> Value {
         "protocolVersion": version,
         "capabilities": { "tools": {} },
         "serverInfo": { "name": SERVER_NAME, "version": env!("CARGO_PKG_VERSION") },
-        "instructions": "Add each review finding with add_review_comment. Every comment \
-            becomes a draft the user reads, edits or discards; nothing is posted by itself."
+        "instructions": "Add each review finding with add_review_comment, then finish with \
+            suggest_review: the verdict you recommend and a summary. Every comment becomes a \
+            draft the user reads, edits or discards, and the suggestion only fills in the \
+            Submit review form; the user decides, and nothing is posted by itself."
     })
 }
 
@@ -546,24 +571,64 @@ fn tool() -> Value {
     })
 }
 
+fn suggest_tool() -> Value {
+    json!({
+        "name": SUGGEST_TOOL,
+        "description": "Suggests the review's verdict and summary, once your comments are in. \
+            It fills in the user's Submit review form, marked as from Claude, and never submits \
+            anything: the user decides whether to keep, change or discard it, and whether to \
+            submit. Calling it again replaces the earlier suggestion.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "verdict": {
+                    "type": "string",
+                    "enum": ["comment", "approve", "request_changes"],
+                    "description": "comment: feedback without a decision; approve: the changes can merge; request_changes: something must change first."
+                },
+                "body": { "type": "string", "description": "The review's summary, in Markdown; an empty string for none." }
+            },
+            "required": ["verdict", "body"]
+        }
+    })
+}
+
 fn tool_text(text: &str, error: bool) -> Value {
     json!({ "content": [{ "type": "text", "text": text }], "isError": error })
+}
+
+/// Which tool a call names.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Tool {
+    Comment,
+    Suggest,
 }
 
 fn call(params: Option<&Value>, token: &Token, shared: &Shared) -> Value {
     let name = params
         .and_then(|params| params.get("name"))
         .and_then(Value::as_str);
-    if name != Some(TOOL) {
-        return tool_text(&format!("The only tool is {TOOL}."), true);
-    }
+    let tool = match name {
+        Some(TOOL) => Tool::Comment,
+        Some(SUGGEST_TOOL) => Tool::Suggest,
+        _ => return tool_text(&format!("The tools are {TOOL} and {SUGGEST_TOOL}."), true),
+    };
     let key = {
         let mut grants = lock(&shared.grants);
         let Some(grant) = grants.iter_mut().find(|grant| grant.token == *token) else {
             return tool_text("This review has ended.", true);
         };
         grant.calls += 1;
-        if grant.calls > shared.limits.calls || grant.added >= shared.limits.comments {
+        if grant.calls > shared.limits.calls {
+            return tool_text(
+                &format!(
+                    "No more calls: a review makes at most {} of them.",
+                    shared.limits.calls
+                ),
+                true,
+            );
+        }
+        if tool == Tool::Comment && grant.added >= shared.limits.comments {
             return tool_text(
                 &format!(
                     "No more comments: a review takes at most {} of them.",
@@ -575,15 +640,20 @@ fn call(params: Option<&Value>, token: &Token, shared: &Shared) -> Value {
         grant.key.clone()
     };
     let arguments = params.and_then(|params| params.get("arguments"));
-    let request = match parse_comment(arguments, shared.limits.body) {
+    let request = match tool {
+        Tool::Comment => parse_comment(arguments, shared.limits.body).map(ToolRequest::Comment),
+        Tool::Suggest => parse_suggestion(arguments, shared.limits.body).map(ToolRequest::Suggest),
+    };
+    let request = match request {
         Ok(request) => request,
         Err(why) => return tool_text(&why, true),
     };
     match (shared.handler)(&key, request) {
         Ok(text) => {
-            if let Some(grant) = lock(&shared.grants)
-                .iter_mut()
-                .find(|grant| grant.token == *token)
+            if tool == Tool::Comment
+                && let Some(grant) = lock(&shared.grants)
+                    .iter_mut()
+                    .find(|grant| grant.token == *token)
             {
                 grant.added += 1;
             }
@@ -593,13 +663,54 @@ fn call(params: Option<&Value>, token: &Token, shared: &Shared) -> Value {
     }
 }
 
+/// A call's arguments object; none is an empty one.
+fn arguments_of(arguments: Option<&Value>) -> Result<Option<&Map<String, Value>>, String> {
+    match arguments {
+        None => Ok(None),
+        Some(Value::Object(args)) => Ok(Some(args)),
+        Some(_) => Err("The arguments must be an object.".to_owned()),
+    }
+}
+
+/// `body` without control characters and trimmed, once it fits in `max`
+/// bytes.
+fn clean_body(body: &str, max: usize) -> Result<String, String> {
+    if body.len() > max {
+        return Err(format!(
+            "The body is longer than {} KiB; shorten it.",
+            max / 1024
+        ));
+    }
+    Ok(strip_controls(body).trim().to_owned())
+}
+
+fn parse_suggestion(arguments: Option<&Value>, max_body: usize) -> Result<SuggestRequest, String> {
+    let empty = Map::new();
+    let args = arguments_of(arguments)?.unwrap_or(&empty);
+    let verdict = match args.get("verdict").and_then(Value::as_str) {
+        Some("comment") => Verdict::Comment,
+        Some("approve") => Verdict::Approve,
+        Some("request_changes") => Verdict::RequestChanges,
+        _ => {
+            return Err(
+                "`verdict` is required: \"comment\", \"approve\" or \"request_changes\"."
+                    .to_owned(),
+            );
+        }
+    };
+    let body = args
+        .get("body")
+        .and_then(Value::as_str)
+        .ok_or("`body` is required: the review's summary, or an empty string for none.")?;
+    Ok(SuggestRequest {
+        verdict,
+        body: clean_body(body, max_body)?,
+    })
+}
+
 fn parse_comment(arguments: Option<&Value>, max_body: usize) -> Result<CommentRequest, String> {
     let empty = Map::new();
-    let args = match arguments {
-        None => &empty,
-        Some(Value::Object(args)) => args,
-        Some(_) => return Err("The arguments must be an object.".to_owned()),
-    };
+    let args = arguments_of(arguments)?.unwrap_or(&empty);
     let path = args
         .get("path")
         .and_then(Value::as_str)
@@ -637,13 +748,7 @@ fn parse_comment(arguments: Option<&Value>, max_body: usize) -> Result<CommentRe
         .get("body")
         .and_then(Value::as_str)
         .ok_or("`body` is required.")?;
-    if body.len() > max_body {
-        return Err(format!(
-            "The body is longer than {} KiB; shorten it.",
-            max_body / 1024
-        ));
-    }
-    let body = strip_controls(body).trim().to_owned();
+    let body = clean_body(body, max_body)?;
     if body.is_empty() {
         return Err("The body is empty.".to_owned());
     }
@@ -696,16 +801,23 @@ pub(crate) mod tests {
         read_response(stream).0
     }
 
-    type Calls = Arc<Mutex<Vec<(PrKey, CommentRequest)>>>;
+    type Calls = Arc<Mutex<Vec<(PrKey, ToolRequest)>>>;
 
     fn server(limits: Limits) -> (McpServer, Calls) {
         let calls: Calls = Arc::default();
         let seen = Arc::clone(&calls);
-        let handler: Handler = Arc::new(move |key: &PrKey, request: CommentRequest| {
-            if request.path != "src/a.rs" {
-                return Err(format!("{} is not in the diff", request.path));
-            }
-            let text = format!("added on {}:{}", request.path, request.line);
+        let handler: Handler = Arc::new(move |key: &PrKey, request: ToolRequest| {
+            let text = match &request {
+                ToolRequest::Comment(comment) if comment.path != "src/a.rs" => {
+                    return Err(format!("{} is not in the diff", comment.path));
+                }
+                ToolRequest::Comment(comment) => {
+                    format!("added on {}:{}", comment.path, comment.line)
+                }
+                ToolRequest::Suggest(suggestion) => {
+                    format!("suggested {}", suggestion.verdict.label())
+                }
+            };
             seen.lock().unwrap().push((key.clone(), request));
             Ok(text)
         });
@@ -713,8 +825,12 @@ pub(crate) mod tests {
     }
 
     fn call_body(arguments: &Value) -> String {
+        named_call(TOOL, arguments)
+    }
+
+    fn named_call(tool: &str, arguments: &Value) -> String {
         json!({ "jsonrpc": "2.0", "id": 7, "method": "tools/call",
-                "params": { "name": TOOL, "arguments": arguments } })
+                "params": { "name": tool, "arguments": arguments } })
         .to_string()
     }
 
@@ -772,14 +888,150 @@ pub(crate) mod tests {
         assert_eq!(calls[0].0, key());
         assert_eq!(
             calls[0].1,
-            CommentRequest {
+            ToolRequest::Comment(CommentRequest {
                 path: "src/a.rs".into(),
                 line: 31,
                 start_line: None,
                 side: Side::New,
                 body: "Off by one.[2J".into(),
-            }
+            })
         );
+    }
+
+    #[test]
+    fn suggest_review_is_listed_and_passes_a_checked_suggestion() {
+        let (server, calls) = server(Limits::default());
+        let token = server.issue(key()).unwrap();
+        let path = format!("/mcp/{}", token.as_str());
+        let port = server.port();
+        let list = json!({ "jsonrpc": "2.0", "id": "l", "method": "tools/list" });
+        let tools = post(port, &path, "", &list.to_string()).1.unwrap()["result"]["tools"].clone();
+        assert_eq!(tools[1]["name"], SUGGEST_TOOL);
+        assert_eq!(
+            tools[1]["inputSchema"]["required"],
+            json!(["verdict", "body"])
+        );
+        assert_eq!(
+            tools[1]["inputSchema"]["properties"]["verdict"]["enum"],
+            json!(["comment", "approve", "request_changes"])
+        );
+        let described = tools[1]["description"].as_str().unwrap();
+        assert!(described.contains("never submits"), "{described}");
+
+        for (args, verdict, body) in [
+            (
+                json!({ "verdict": "approve", "body": "  Looks good.\u{1b}[2J\n\nShip it.\u{202e} " }),
+                Verdict::Approve,
+                "Looks good.[2J\n\nShip it.",
+            ),
+            (
+                json!({ "verdict": "request_changes", "body": "Needs a test." }),
+                Verdict::RequestChanges,
+                "Needs a test.",
+            ),
+            (
+                json!({ "verdict": "comment", "body": "" }),
+                Verdict::Comment,
+                "",
+            ),
+        ] {
+            let (text, error) =
+                tool_result(post(port, &path, "", &named_call(SUGGEST_TOOL, &args)).1);
+            assert!(!error, "{args}: {text}");
+            assert_eq!(text, format!("suggested {}", verdict.label()));
+            let last = calls.lock().unwrap().last().cloned().unwrap();
+            assert_eq!(
+                last,
+                (
+                    key(),
+                    ToolRequest::Suggest(SuggestRequest {
+                        verdict,
+                        body: body.to_owned(),
+                    })
+                )
+            );
+        }
+    }
+
+    #[test]
+    fn bad_suggestions_are_tool_errors() {
+        let (server, calls) = server(Limits::default());
+        let token = server.issue(key()).unwrap();
+        let path = format!("/mcp/{}", token.as_str());
+        let long = "y".repeat(Limits::default().body + 1);
+        for (args, says) in [
+            (json!({ "body": "x" }), "`verdict` is required"),
+            (json!({ "verdict": "lgtm", "body": "x" }), "`verdict`"),
+            (json!({ "verdict": "Approve", "body": "x" }), "`verdict`"),
+            (
+                json!({ "verdict": "request-changes", "body": "x" }),
+                "`verdict`",
+            ),
+            (json!({ "verdict": 1, "body": "x" }), "`verdict`"),
+            (json!({ "verdict": "approve" }), "`body` is required"),
+            (
+                json!({ "verdict": "approve", "body": 3 }),
+                "`body` is required",
+            ),
+            (json!({ "verdict": "approve", "body": long }), "64 KiB"),
+            (json!(["approve", "x"]), "must be an object"),
+        ] {
+            let body = named_call(SUGGEST_TOOL, &args);
+            let (text, error) = tool_result(post(server.port(), &path, "", &body).1);
+            assert!(error, "{args}");
+            assert!(text.contains(says), "{args}: {text}");
+        }
+        assert!(calls.lock().unwrap().is_empty());
+    }
+
+    #[test]
+    fn a_suggestion_is_for_its_token_s_pull_request_only() {
+        let limits = Limits {
+            comments: 1,
+            ..Limits::default()
+        };
+        let (server, calls) = server(limits);
+        let other_key = PrKey::new(RepoRef::new("github.com", "o", "r"), PrNumber(5));
+        let mine = server.issue(key()).unwrap();
+        let theirs = server.issue(other_key.clone()).unwrap();
+        let args = json!({ "verdict": "approve", "body": "x" });
+        let send = |token: &str| {
+            let path = format!("/mcp/{token}");
+            post(server.port(), &path, "", &named_call(SUGGEST_TOOL, &args))
+        };
+
+        assert!(!tool_result(send(mine.as_str()).1).1);
+        assert!(!tool_result(send(theirs.as_str()).1).1);
+        let keys: Vec<PrKey> = calls
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|(key, _)| key.clone())
+            .collect();
+        assert_eq!(
+            keys,
+            [key(), other_key],
+            "each token names its own pull request"
+        );
+
+        // Suggestions do not use up the comment cap, and a spent cap does
+        // not stop a suggestion.
+        let comment = json!({ "path": "src/a.rs", "line": 3, "body": "x" });
+        let path = format!("/mcp/{}", mine.as_str());
+        assert!(!tool_result(post(server.port(), &path, "", &call_body(&comment)).1).1);
+        assert!(tool_result(post(server.port(), &path, "", &call_body(&comment)).1).1);
+        assert!(!tool_result(send(mine.as_str()).1).1);
+
+        let mut wrong = mine.as_str().to_owned();
+        wrong.replace_range(..1, if wrong.starts_with('0') { "1" } else { "0" });
+        assert_eq!(send(&wrong).0, 404);
+        server.revoke(&mine);
+        assert_eq!(
+            send(mine.as_str()).0,
+            404,
+            "a revoked token suggests nothing"
+        );
+        assert_eq!(calls.lock().unwrap().len(), 4);
     }
 
     #[test]
@@ -831,7 +1083,7 @@ pub(crate) mod tests {
         let other = json!({ "jsonrpc": "2.0", "id": 2, "method": "tools/call",
                             "params": { "name": "run_shell", "arguments": {} } });
         let (text, error) = tool_result(post(server.port(), &path, "", &other.to_string()).1);
-        assert!(error && text.contains(TOOL));
+        assert!(error && text.contains(TOOL) && text.contains(SUGGEST_TOOL));
         let unknown = json!({ "jsonrpc": "2.0", "id": 3, "method": "resources/list" });
         let reply = post(server.port(), &path, "", &unknown.to_string())
             .1

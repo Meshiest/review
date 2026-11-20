@@ -4,7 +4,9 @@
 //! line holds the safe flags, the review's MCP server and the prompt (never
 //! the pull request's text); a second click brings that terminal forward.
 //! A tool call through the MCP server becomes a draft from Claude, which the
-//! button's menu lists.
+//! button's menu lists; a suggested review fills in the Submit review form,
+//! or is offered beside the user's own summary, and nothing is sent until
+//! Submit.
 //!
 //! The button's menu lists the repository's workspaces and saves the one
 //! chosen as its preferred; the launch opens its tab at once with numbered
@@ -19,23 +21,28 @@
 use std::io::{Read as _, Write as _};
 use std::net::{Ipv4Addr, TcpStream};
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use app::agent::{ConfigCheck, SAFE_CLAUDE_FLAGS};
 use app::checklist::StepState;
 use app::claude_review::AgentReview;
 use app::claude_review::command::{ADDITIONAL_CLAUDE_MD, CONTEXT_FILE};
-use app::claude_review::mcp::TOOL_RULE;
+use app::claude_review::mcp::{SUGGEST_TOOL, TOOL, TOOL_RULES};
 use app::config::{Config, WorkspaceEntry};
 use app::model::PrKey;
 use app::panels::PanelKind;
+use app::pr_header::{Menu, PrActions};
 use app::session::OpenMode;
 use app::settings_panel::{DirField, RowState, SettingsPanel, row_status_text};
+use app::sink::{ReviewCommand, ReviewSink, SinkError, SinkOutcome, Verdict};
 use app::terminal_panel::TerminalPanel;
 use app::terminals::{Outcome, Prepared, TerminalSpec, Terminals, WorktreeJob, WorktreeState};
 use app::workspaces::{SaveState, Storage, Workspaces};
 use app::worktrees::{Step, WorktreeInfo};
-use app::writing::FROM_CLAUDE;
+use app::writing::{FROM_CLAUDE, Writing};
+use futures::FutureExt as _;
+use futures::future::BoxFuture;
 use gpui::{Entity, SharedString, TestAppContext};
 use gpui_kit::component::dock::{DockPlacement, PanelId};
 
@@ -153,17 +160,29 @@ fn start_review(shell: &mut ShellWindow, key: &PrKey) -> (Entity<TerminalPanel>,
     (panel, spec)
 }
 
-/// Sends one JSON-RPC message to the review's MCP server from another
-/// thread, as Claude does, and returns the reply.
+/// Sends one `add_review_comment` call to the review's MCP server from
+/// another thread, as Claude does, and returns the reply.
 fn call_tool(
     shell: &mut ShellWindow,
     port: u16,
     token: &str,
     arguments: serde_json::Value,
 ) -> serde_json::Value {
+    call_named(shell, port, token, TOOL, arguments)
+}
+
+/// Sends one call of `tool` to the review's MCP server from another thread,
+/// as Claude does, and returns the reply.
+fn call_named(
+    shell: &mut ShellWindow,
+    port: u16,
+    token: &str,
+    tool: &str,
+    arguments: serde_json::Value,
+) -> serde_json::Value {
     let body = serde_json::json!({
         "jsonrpc": "2.0", "id": 1, "method": "tools/call",
-        "params": { "name": "add_review_comment", "arguments": arguments }
+        "params": { "name": tool, "arguments": arguments }
     })
     .to_string();
     let request = format!(
@@ -275,7 +294,7 @@ fn with_a_workspace_claude_starts_in_a_terminal_and_a_second_click_focuses_it(
     for rule in ["Bash", "Edit", "Write", "WebFetch", "Read(~/.ssh/**)"] {
         assert!(denied.split(',').any(|r| r == rule), "{rule} denied");
     }
-    assert!(argv.windows(2).any(|w| w == ["--allowedTools", TOOL_RULE]));
+    assert!(argv.windows(2).any(|w| w == ["--allowedTools", TOOL_RULES]));
     let prompt = argv.last().expect("the prompt");
     assert_eq!(
         argv[argv.len() - 2],
@@ -841,4 +860,237 @@ fn the_editor_says_each_workspace_is_saved_and_never_keeps_one_for_a_run(cx: &mu
             .iter()
             .all(|line| !line.contains("this run"))
     );
+}
+
+/// A sink that keeps every command it is given and reports success.
+#[derive(Clone, Default)]
+struct Recorder(Arc<Mutex<Vec<ReviewCommand>>>);
+
+impl Recorder {
+    fn commands(&self) -> Vec<ReviewCommand> {
+        self.0.lock().expect("the recorder").clone()
+    }
+}
+
+impl ReviewSink for Recorder {
+    fn submit(
+        &self,
+        _: &PrKey,
+        command: ReviewCommand,
+    ) -> BoxFuture<'static, Result<SinkOutcome, SinkError>> {
+        self.0.lock().expect("the recorder").push(command);
+        async { Ok(SinkOutcome::Done) }.boxed()
+    }
+}
+
+/// Starts a review of `number` with the stand-in `claude` and returns the
+/// server's port and the launch's token. The window widens so the diff's
+/// header keeps its menus beside the terminal, which must keep running: its
+/// token ends with it.
+fn agent_on(shell: &mut ShellWindow, number: u64, scratch: &Scratch) -> (PrKey, u16, String) {
+    let claude = fake_claude(scratch);
+    let key = open_diff(shell, number);
+    install_workspace(shell, &key, scratch, &claude);
+    let _ = start_review(shell, &key);
+    shell.resize(2600.0, 1000.0);
+    let review = shell.update(|_, cx| AgentReview::global(cx).expect("installed"));
+    let (port, token) = shell.update(|_, cx| {
+        let review = review.read(cx);
+        (
+            review.port().expect("the server runs"),
+            review.token(&key).expect("a token").as_str().to_owned(),
+        )
+    });
+    (key, port, token)
+}
+
+/// The diff's compact action row.
+fn diff_actions(shell: &mut ShellWindow) -> Entity<PrActions> {
+    let panel = shell.diff_panel();
+    shell.update(|_, cx| panel.read(cx).actions().clone())
+}
+
+fn suggest(
+    shell: &mut ShellWindow,
+    port: u16,
+    token: &str,
+    verdict: &str,
+    body: &str,
+) -> (String, bool) {
+    let reply = call_named(
+        shell,
+        port,
+        token,
+        SUGGEST_TOOL,
+        serde_json::json!({ "verdict": verdict, "body": body }),
+    );
+    let result = &reply["result"];
+    (
+        result["content"][0]["text"]
+            .as_str()
+            .unwrap_or_default()
+            .to_owned(),
+        result["isError"].as_bool().unwrap_or(true),
+    )
+}
+
+fn form(shell: &mut ShellWindow, writing: &Entity<Writing>) -> (Verdict, String) {
+    shell.update(|_, cx| {
+        let writing = writing.read(cx);
+        (writing.verdict(), writing.review_body().to_owned())
+    })
+}
+
+#[gpui::test]
+fn a_suggested_review_fills_in_the_form_and_waits_for_submit(cx: &mut TestAppContext) {
+    let scratch = Scratch::new("agent-review-suggest");
+    let mut shell = open_shell(cx, Options::default());
+    let (_, port, token) = agent_on(&mut shell, 42, &scratch);
+    let writing = shell.writing();
+    let sink = Recorder::default();
+    let recording = sink.clone();
+    shell.update(|_, cx| writing.update(cx, |writing, _| writing.set_sink(Arc::new(recording))));
+
+    let (text, error) = suggest(
+        &mut shell,
+        port,
+        &token,
+        "approve",
+        "Looks solid.\nOne nit below.",
+    );
+    assert!(!error, "{text}");
+    assert!(
+        text.contains("Filled in") && text.contains("Approve"),
+        "{text}"
+    );
+    assert_eq!(
+        form(&mut shell, &writing),
+        (Verdict::Approve, "Looks solid.\nOne nit below.".to_owned())
+    );
+    let state = shell.update(|_, cx| writing.read(cx).suggestion_state());
+    assert!(state.verdict_from_claude && state.summary_from_claude && !state.offered);
+    assert!(sink.commands().is_empty(), "nothing is sent");
+
+    // A second call replaces the first while the form is still Claude's.
+    let (text, error) = suggest(&mut shell, port, &token, "request_changes", "Needs a test.");
+    assert!(!error, "{text}");
+    assert_eq!(
+        form(&mut shell, &writing),
+        (Verdict::RequestChanges, "Needs a test.".to_owned())
+    );
+
+    // The menu lists it; choosing it opens the form, filled in and marked.
+    assert!(shell.drawn("agent-pending-count"));
+    shell.click("review-with-agent-menu");
+    assert!(shell.drawn("agent-suggestion"));
+    assert!(!shell.drawn("agent-suggestion-blocked"));
+    shell.click("agent-suggestion");
+    let bar = diff_actions(&mut shell);
+    assert_eq!(
+        shell.update(|_, cx| bar.read(cx).menu()),
+        Some(Menu::Review)
+    );
+    assert_eq!(
+        shell.update(|_, cx| bar.read(cx).summary_text(cx)),
+        "Needs a test."
+    );
+    assert!(shell.drawn("review-from-claude"));
+    assert!(!shell.drawn("review-suggestion"), "the form holds it");
+
+    // The user's edit makes the summary theirs; the next suggestion is
+    // offered beside it, never typed over it.
+    shell.keys("ctrl-end");
+    shell.type_text(" Thanks.");
+    let state = shell.update(|_, cx| writing.read(cx).suggestion_state());
+    assert!(!state.summary_from_claude && state.verdict_from_claude);
+    let (text, error) = suggest(&mut shell, port, &token, "approve", "LGTM");
+    assert!(!error && text.contains("offered"), "{text}");
+    assert_eq!(
+        form(&mut shell, &writing),
+        (Verdict::RequestChanges, "Needs a test. Thanks.".to_owned()),
+        "the user's summary is kept"
+    );
+    assert!(shell.drawn("review-suggestion"));
+    shell.click_element(SharedString::from("review-use-suggestion"));
+    assert_eq!(
+        form(&mut shell, &writing),
+        (Verdict::Approve, "LGTM".to_owned())
+    );
+    assert_eq!(shell.update(|_, cx| bar.read(cx).summary_text(cx)), "LGTM");
+    assert!(sink.commands().is_empty(), "still nothing sent");
+
+    shell.click_element(SharedString::from("review-menu-submit"));
+    shell.settle();
+    assert_eq!(
+        sink.commands(),
+        [ReviewCommand::SubmitReview {
+            verdict: Verdict::Approve,
+            body: "LGTM".into(),
+        }]
+    );
+    let state = shell.update(|_, cx| writing.read(cx).suggestion_state());
+    assert_eq!(state.suggestion, None, "the submitted review used it up");
+    close_terminals(&mut shell);
+}
+
+#[gpui::test]
+fn a_suggestion_keeps_the_users_summary_and_shows_a_verdict_it_cannot_use(cx: &mut TestAppContext) {
+    // #41 is the fixture user's own, on Forgejo, which refuses approvals.
+    let scratch = Scratch::new("agent-review-suggest-own");
+    let mut shell = open_shell(cx, Options::default());
+    let (_, port, token) = agent_on(&mut shell, 41, &scratch);
+    let writing = shell.writing();
+    let sink = Recorder::default();
+    let recording = sink.clone();
+    shell.update(|_, cx| writing.update(cx, |writing, _| writing.set_sink(Arc::new(recording))));
+    shell.click("review-button");
+    shell.type_text("My own notes");
+
+    let (text, error) = suggest(&mut shell, port, &token, "approve", "Ship it.");
+    assert!(!error, "{text}");
+    assert!(text.contains("offered"), "{text}");
+    assert!(
+        text.contains("does not let you approve your own pull request"),
+        "{text}"
+    );
+    assert_eq!(
+        form(&mut shell, &writing),
+        (Verdict::Comment, "My own notes".to_owned())
+    );
+    assert!(shell.drawn("review-suggestion"), "offered in the form");
+    assert!(shell.drawn("review-suggestion-blocked"), "with the reason");
+    assert!(
+        !shell.drawn("review-from-claude"),
+        "nothing in it is Claude's"
+    );
+
+    shell.click("review-with-agent-menu");
+    assert!(shell.drawn("agent-suggestion"));
+    assert!(shell.drawn("agent-suggestion-blocked"));
+    shell.click("agent-suggestion");
+    assert!(shell.drawn("review-suggestion"));
+
+    // Taken anyway, the verdict shows as one this forge refuses, and Submit
+    // sends nothing.
+    shell.click_element(SharedString::from("review-use-suggestion"));
+    assert_eq!(
+        form(&mut shell, &writing),
+        (Verdict::Approve, "Ship it.".to_owned())
+    );
+    assert!(shell.drawn("review-from-claude"));
+    assert!(shell.drawn("review-suggestion-blocked"));
+    shell.click_element(SharedString::from("review-menu-submit"));
+    shell.settle();
+    assert!(sink.commands().is_empty(), "a refused verdict is not sent");
+
+    // Discarding drops the suggestion and what of it the form still holds.
+    let key = shell.key(41);
+    shell.update(|_, cx| app::claude_review::discard_all(&key, cx));
+    assert_eq!(
+        form(&mut shell, &writing),
+        (Verdict::Comment, String::new())
+    );
+    let state = shell.update(|_, cx| writing.read(cx).suggestion_state());
+    assert_eq!(state.suggestion, None);
+    close_terminals(&mut shell);
 }

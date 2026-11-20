@@ -8,7 +8,8 @@
 //! checkout ([`prompt`]), never on the command line, which holds only fixed
 //! text, the user's config and the forge's names for the pull request
 //! ([`command`]). Claude's findings come back through a local MCP server
-//! ([`mcp`]) as draft comments marked "from Claude": nothing is posted, the
+//! ([`mcp`]) as draft comments marked "from Claude", and its suggested
+//! verdict and summary fill in the Submit review form: nothing is posted, the
 //! user reads, edits, adds to the review or discards each.
 
 pub mod command;
@@ -33,17 +34,19 @@ use crate::config::WorkspaceEntry;
 use crate::machines::{Machine, Place};
 use crate::model::PrKey;
 use crate::panels::PanelKind;
+use crate::pr_header::{Facts, verdict_blocked};
 use crate::session::{OpenMode, Session};
+use crate::sink::Verdict;
 use crate::terminal_panel::{Retry, RunState, TerminalPanel};
 use crate::terminals::{
     AgentCommand, Forward, LaunchTab, Prepared, TerminalSpec, Terminals, Where,
 };
 use crate::untrusted::strip_controls;
 use crate::workspaces::{self, Pick, WorkspaceId, Workspaces};
-use crate::writing::Writing;
+use crate::writing::{ReviewSuggestion, Suggested, Writing};
 use command::{ADDITIONAL_CLAUDE_MD, Platform, Start, Values};
 use findings::{Dropped, Finding};
-use mcp::{CommentRequest, Handler, Limits, McpServer, Token};
+use mcp::{CommentRequest, Handler, Limits, McpServer, SuggestRequest, Token, ToolRequest};
 use repo::SshHost;
 
 /// How long a tool call waits for the app to make its draft.
@@ -124,7 +127,7 @@ fn file_name(token: &Token) -> String {
 /// A tool call waiting for the app.
 struct Call {
     key: PrKey,
-    request: CommentRequest,
+    request: ToolRequest,
     reply: std::sync::mpsc::Sender<Result<String, String>>,
 }
 
@@ -175,7 +178,10 @@ impl AgentReview {
             config_dir: None,
             _calls: cx.spawn(async move |_, cx| {
                 while let Some(call) = rx.next().await {
-                    let reply = cx.update(|cx| add_comment(&call.key, call.request, cx));
+                    let reply = cx.update(|cx| match call.request {
+                        ToolRequest::Comment(request) => add_comment(&call.key, request, cx),
+                        ToolRequest::Suggest(request) => suggest_review(&call.key, request, cx),
+                    });
                     let _ = call.reply.send(reply);
                 }
             }),
@@ -244,7 +250,7 @@ impl AgentReview {
     fn server(&mut self) -> Result<&McpServer, String> {
         if self.server.is_none() {
             let calls = self.calls.clone();
-            let handler: Handler = Arc::new(move |key: &PrKey, request: CommentRequest| {
+            let handler: Handler = Arc::new(move |key: &PrKey, request: ToolRequest| {
                 let (reply, answer) = std::sync::mpsc::channel();
                 calls
                     .unbounded_send(Call {
@@ -665,6 +671,46 @@ fn add_comment(key: &PrKey, request: CommentRequest, cx: &mut App) -> Result<Str
     ))
 }
 
+/// Puts the suggested verdict and summary in `key`'s Submit review form, or
+/// beside the user's own, and says what it did.
+fn suggest_review(key: &PrKey, request: SuggestRequest, cx: &mut App) -> Result<String, String> {
+    let session = Session::global(cx);
+    let Some(writing) = session.read(cx).writing_for(key) else {
+        return Err(
+            "Not saved: the pull request is not open in the app; ask the user to open it."
+                .to_owned(),
+        );
+    };
+    let verdict = request.verdict;
+    let blocked = Facts::read(session.read(cx), key, Some(writing.read(cx)))
+        .and_then(|facts| verdict_blocked(verdict, &facts.caps, facts.own, facts.forge));
+    let suggestion = ReviewSuggestion {
+        verdict,
+        body: request.body,
+    };
+    let done = writing.update(cx, |writing, cx| writing.suggest_review(suggestion, cx));
+    let mut text = match done {
+        Suggested::Filled => format!(
+            "Filled in the Submit review form with {} and your summary.",
+            verdict.label()
+        ),
+        Suggested::Offered => "The user already wrote a summary or picked a verdict, so your \
+            suggestion is offered beside theirs in the Submit review form."
+            .to_owned(),
+    };
+    if let Some(why) = blocked {
+        text.push_str(&format!(
+            " {} cannot be used on this pull request ({why}); the user picks another verdict.",
+            verdict.label()
+        ));
+    }
+    text.push_str(
+        " Nothing is submitted until the user does. Calling suggest_review again replaces \
+         this suggestion.",
+    );
+    Ok(text)
+}
+
 /// What a click on "Review with agent" did.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Started {
@@ -863,6 +909,42 @@ pub struct PendingComment {
     pub first_line: String,
 }
 
+/// Claude's suggested review, as the menu lists it.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PendingSuggestion {
+    pub verdict: Verdict,
+    /// The summary's first line, shortened, without control characters;
+    /// empty for no summary.
+    pub first_line: String,
+}
+
+/// Claude's suggested review in `writing`, until it is submitted or
+/// discarded.
+#[must_use]
+pub fn pending_suggestion(writing: &Writing) -> Option<PendingSuggestion> {
+    let suggestion = writing.suggestion()?;
+    Some(PendingSuggestion {
+        verdict: suggestion.verdict,
+        first_line: first_line(&suggestion.body),
+    })
+}
+
+/// How many things from Claude wait for the user: drafts and a suggestion.
+#[must_use]
+pub fn pending_count(writing: &Writing) -> usize {
+    pending(writing).len() + usize::from(writing.suggestion().is_some())
+}
+
+/// `body`'s first line with text, shortened for the menu.
+pub(crate) fn first_line(body: &str) -> String {
+    let first = body.lines().find(|line| !line.trim().is_empty());
+    let first = strip_controls(first.unwrap_or_default().trim()).into_owned();
+    match first.char_indices().nth(MENU_TEXT) {
+        Some((at, _)) => format!("{}\u{2026}", &first[..at]),
+        None => first,
+    }
+}
+
 /// Claude's drafts in `writing`, in the order they came.
 #[must_use]
 pub fn pending(writing: &Writing) -> Vec<PendingComment> {
@@ -876,16 +958,10 @@ pub fn pending(writing: &Writing) -> Vec<PendingComment> {
                 DraftAnchor::File { path } => path.clone(),
                 _ => "the pull request".to_owned(),
             };
-            let first = slot.body.lines().find(|line| !line.trim().is_empty());
-            let first = strip_controls(first.unwrap_or_default().trim()).into_owned();
-            let first_line = match first.char_indices().nth(MENU_TEXT) {
-                Some((at, _)) => format!("{}\u{2026}", &first[..at]),
-                None => first,
-            };
             PendingComment {
                 anchor: slot.anchor.clone(),
                 place,
-                first_line,
+                first_line: first_line(&slot.body),
             }
         })
         .collect()
@@ -914,7 +990,8 @@ pub fn add_all(key: &PrKey, cx: &mut App) {
     });
 }
 
-/// Discards each of Claude's drafts on `key`.
+/// Discards each of Claude's drafts on `key`, and its suggested review
+/// with what of it the form still holds unchanged.
 pub fn discard_all(key: &PrKey, cx: &mut App) {
     let Some(writing) = Session::global(cx).read(cx).writing_for(key) else {
         return;
@@ -923,6 +1000,7 @@ pub fn discard_all(key: &PrKey, cx: &mut App) {
         for comment in pending(writing) {
             writing.discard(&comment.anchor, cx);
         }
+        writing.discard_suggestion(cx);
     });
 }
 

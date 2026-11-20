@@ -711,9 +711,17 @@ web routes and in status `target_url`s is `index_in_repo`, not the run id)
     swept at startup. It configures a local MCP server (127.0.0.1 only,
     a 128-bit token per launch in the URL,
     compared in constant time, capped bodies and comments, revoked when the
-    terminal ends; over SSH reached through `ssh -R`) whose one tool,
-    `add_review_comment`, is allowed without a prompt and turns a finding on
-    a line the diff shows into a draft marked "from Claude". Every launch
+    terminal ends; over SSH reached through `ssh -R`) whose two tools are
+    allowed without a prompt: `add_review_comment` turns a finding on a line
+    the diff shows into a draft marked "from Claude", and `suggest_review`
+    (a `verdict` of `comment`, `approve` or `request_changes`, and a
+    Markdown `body` capped like a comment's) fills in the Submit review
+    form's verdict and summary, marked "from Claude" until the user changes
+    them. A second call replaces the suggestion; a summary the user wrote or
+    a verdict they picked is kept and the suggestion offered beside it ("Use
+    Claude's suggestion"); a verdict the forge refuses on this pull request
+    is shown with the reason. It never submits: the Review with agent menu
+    lists it ("Claude suggests: Approve") and opens the form. Every launch
     passes `--disallowedTools`: WebFetch and WebSearch; Bash, PowerShell,
     Edit, Write and NotebookEdit unless the workspace sets `allow_commands`;
     and Read, Grep and Glob on the platform's credential paths (`~/.ssh`,

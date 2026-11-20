@@ -108,13 +108,58 @@ pub struct Writing {
     /// Text a new conversation composer starts with, for screenshots.
     seed_conversation: Option<String>,
     /// Drafts Claude wrote, labeled "from Claude" on their cards until they
-    /// are sent or discarded.
+    /// are sent or discarded; [`DraftAnchor::Review`] while the summary is
+    /// Claude's, unedited.
     from_claude: HashSet<DraftAnchor>,
+    /// Claude's newest suggested verdict and summary, until the review is
+    /// submitted or the suggestion discarded.
+    suggestion: Option<ReviewSuggestion>,
+    verdict_by: VerdictBy,
     _load: Option<Task<()>>,
 }
 
 /// What a draft Claude wrote says on its card, after its place.
 pub const FROM_CLAUDE: &str = "from Claude";
+
+/// A verdict and summary Claude suggested for the review. The summary is
+/// Markdown from an agent that read the pull request: it is only ever text
+/// in the summary box, never acted on.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ReviewSuggestion {
+    pub verdict: Verdict,
+    pub body: String,
+}
+
+/// Who chose the review's verdict.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+enum VerdictBy {
+    #[default]
+    Nobody,
+    User,
+    Claude,
+}
+
+/// What a suggestion did to the Submit review form.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Suggested {
+    /// The form held nothing of the user's: it now holds the suggestion.
+    Filled,
+    /// The user's own summary or verdict is kept; the suggestion is offered
+    /// beside it.
+    Offered,
+}
+
+/// Where Claude's suggestion stands in the Submit review form.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct SuggestionState {
+    pub suggestion: Option<ReviewSuggestion>,
+    /// The form's verdict is Claude's and unchanged since.
+    pub verdict_from_claude: bool,
+    /// The form's summary is Claude's and unedited since.
+    pub summary_from_claude: bool,
+    /// The form does not hold the suggestion, which waits to be used.
+    pub offered: bool,
+}
 
 impl Writing {
     pub fn new(sink: Arc<dyn ReviewSink>) -> Self {
@@ -139,6 +184,8 @@ impl Writing {
             next_local_id: 0,
             seed_conversation: None,
             from_claude: HashSet::new(),
+            suggestion: None,
+            verdict_by: VerdictBy::Nobody,
             _load: None,
         }
     }
@@ -202,6 +249,8 @@ impl Writing {
         self.threads.clear();
         self.queued_actions.clear();
         self.from_claude.clear();
+        self.suggestion = None;
+        self.verdict_by = VerdictBy::Nobody;
         self.load_started = false;
         self._load = None;
         self.start_load(cx);
@@ -978,18 +1027,103 @@ impl Writing {
 
     // ---- the review
 
-    /// The summary box changed.
+    /// The summary box changed. A summary the user edits is theirs.
     pub fn set_review_body(&mut self, body: String) {
+        if body == self.review_body {
+            return;
+        }
         if let (Some(saver), Some(pr)) = (&self.saver, &self.pr) {
             saver.edit(pr, &DraftAnchor::Review, body.clone(), None);
         }
         self.review_body = body;
+        self.from_claude.remove(&DraftAnchor::Review);
     }
 
+    /// The user's choice of verdict.
     pub fn set_verdict(&mut self, verdict: Verdict, cx: &mut Context<Self>) {
         if self.verdict != verdict {
             self.verdict = verdict;
+            self.verdict_by = VerdictBy::User;
             cx.notify();
+        }
+    }
+
+    /// Takes Claude's suggested verdict and summary, replacing an earlier
+    /// suggestion. It fills in the form unless the user already wrote a
+    /// summary or picked a verdict; then theirs stays and the suggestion
+    /// waits for [`use_suggestion`](Self::use_suggestion). Nothing is sent.
+    pub fn suggest_review(
+        &mut self,
+        suggestion: ReviewSuggestion,
+        cx: &mut Context<Self>,
+    ) -> Suggested {
+        let users = self.verdict_by == VerdictBy::User
+            || (!self.review_body.trim().is_empty()
+                && !self.from_claude.contains(&DraftAnchor::Review));
+        self.suggestion = Some(suggestion);
+        if users {
+            cx.notify();
+            return Suggested::Offered;
+        }
+        self.use_suggestion(cx);
+        Suggested::Filled
+    }
+
+    /// Puts the suggestion in the form: its verdict, and its summary in
+    /// place of the one there.
+    pub fn use_suggestion(&mut self, cx: &mut Context<Self>) {
+        let Some(suggestion) = self.suggestion.clone() else {
+            return;
+        };
+        self.replace_review_body(suggestion.body);
+        if !self.review_body.is_empty() {
+            self.from_claude.insert(DraftAnchor::Review);
+        }
+        self.verdict = suggestion.verdict;
+        self.verdict_by = VerdictBy::Claude;
+        cx.notify();
+    }
+
+    /// Drops the suggestion, and the verdict and summary it put in the form
+    /// that the user has not changed since.
+    pub fn discard_suggestion(&mut self, cx: &mut Context<Self>) {
+        if self.suggestion.take().is_none() {
+            return;
+        }
+        if self.from_claude.contains(&DraftAnchor::Review) {
+            self.replace_review_body(String::new());
+        }
+        if self.verdict_by == VerdictBy::Claude {
+            self.verdict = Verdict::default();
+            self.verdict_by = VerdictBy::Nobody;
+        }
+        cx.notify();
+    }
+
+    /// Sets the summary from outside the summary box, which shows it next.
+    fn replace_review_body(&mut self, body: String) {
+        self.set_review_body(body);
+        self.review_epoch += 1;
+    }
+
+    /// Claude's newest suggested review, until it is submitted or discarded.
+    pub fn suggestion(&self) -> Option<&ReviewSuggestion> {
+        self.suggestion.as_ref()
+    }
+
+    /// Claude's suggestion, if any, and what of it the form holds.
+    pub fn suggestion_state(&self) -> SuggestionState {
+        let verdict_from_claude = self.verdict_by == VerdictBy::Claude;
+        let offered = self.suggestion.as_ref().is_some_and(|suggestion| {
+            !verdict_from_claude
+                || self.verdict != suggestion.verdict
+                || self.review_body != suggestion.body
+        });
+        SuggestionState {
+            suggestion: self.suggestion.clone(),
+            verdict_from_claude,
+            summary_from_claude: self.from_claude.contains(&DraftAnchor::Review),
+            offered,
         }
     }
 
@@ -1055,6 +1189,9 @@ impl Writing {
                 self.review_body.clear();
                 self.review_epoch += 1;
                 self.verdict = Verdict::default();
+                self.verdict_by = VerdictBy::Nobody;
+                self.suggestion = None;
+                self.from_claude.remove(&DraftAnchor::Review);
                 cx.emit(WritingEvent::ReviewSubmitted);
             }
             Err(error) => {

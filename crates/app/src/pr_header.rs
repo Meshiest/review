@@ -14,8 +14,8 @@ use forge::model::{ForgeKind, MergeMethod, PrState, ReviewState, Sha, User};
 use gpui::{
     Anchor, AnyElement, App, AppContext as _, ClipboardItem, Context, Entity, FontWeight,
     InteractiveElement as _, IntoElement, ParentElement, Render, SharedString,
-    StatefulInteractiveElement as _, Styled, Subscription, Window, anchored, deferred, div,
-    prelude::FluentBuilder as _, px,
+    StatefulInteractiveElement as _, Styled, Subscription, WeakEntity, Window, anchored, deferred,
+    div, prelude::FluentBuilder as _, px,
 };
 use gpui_kit::assets::IconName;
 use gpui_kit::component::input::{InputEvent, Textarea, TextareaState};
@@ -34,7 +34,7 @@ use crate::terminals::{Purpose, Terminals};
 use crate::threads::thread_menu::entry_item;
 use crate::ui::{self, Button, ButtonKind, TextExt as _};
 use crate::workspaces::{self, Pick, SaveState, Workspaces};
-use crate::writing::Writing;
+use crate::writing::{FROM_CLAUDE, SuggestionState, Writing};
 use gpui_kit::TestSupportExt as _;
 
 /// Why `verdict` cannot be sent on this pull request, if it cannot.
@@ -337,6 +337,11 @@ impl PrActions {
         self.menu
     }
 
+    /// The text in the review's summary box, for tests.
+    pub fn summary_text(&self, cx: &App) -> String {
+        self.summary.read(cx).value().to_string()
+    }
+
     /// Whether the bar leaves the pending confirmation to another place
     /// that draws it.
     pub fn set_confirm_elsewhere(&mut self, elsewhere: bool, cx: &mut Context<Self>) {
@@ -393,6 +398,14 @@ impl PrActions {
         });
     }
 
+    /// Opens the Submit review form with its summary box focused.
+    fn open_review(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.menu = Some(Menu::Review);
+        self.summary
+            .update(cx, |summary, cx| summary.focus(window, cx));
+        cx.notify();
+    }
+
     /// "Review with agent": the agent's tab, started in the repository's
     /// workspace, or brought forward while it starts or runs.
     fn review_with_agent(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -430,10 +443,11 @@ impl PrActions {
         let asks = Workspaces::global(cx)
             .is_some_and(|w| matches!(w.read(cx).pick(&key.repo), Pick::Choose(_)));
         let writing = self.writing.clone();
+        let actions = cx.entity().downgrade();
         let menu = move |asking: bool| {
-            let (key, writing) = (key.clone(), writing.clone());
+            let (key, writing, actions) = (key.clone(), writing.clone(), actions.clone());
             move |popup: PopupMenu, _: &mut Window, cx: &mut Context<PopupMenu>| {
-                agent_popup(popup, &key, writing.as_ref(), asking, cx)
+                agent_popup(popup, &key, writing.as_ref(), &actions, asking, cx)
             }
         };
         if asks {
@@ -486,6 +500,8 @@ pub(crate) struct Facts {
     pub verdict: Verdict,
     pub submitting: bool,
     pub review_error: Option<SharedString>,
+    /// Claude's suggested verdict and summary, and what of it the form holds.
+    pub claude: SuggestionState,
     pub method: Option<MergeMethod>,
     pub allowed: Vec<MergeMethod>,
     pub delete_branch: bool,
@@ -530,6 +546,7 @@ impl Facts {
             verdict: writing.map_or(Verdict::Comment, Writing::verdict),
             submitting: writing.is_some_and(Writing::submitting),
             review_error: writing.and_then(|w| w.review_error().cloned()),
+            claude: writing.map(Writing::suggestion_state).unwrap_or_default(),
             method: life.chosen_method(),
             allowed: life
                 .settings
@@ -823,6 +840,7 @@ impl PrActions {
                     .text_color(t.colors.text)
                     .child("Finish your review"),
             )
+            .children(self.claude_notes(facts, cx))
             .child(
                 div()
                     .rounded(t.radius.md)
@@ -852,6 +870,86 @@ impl PrActions {
                 ),
             )
             .into_any_element()
+    }
+
+    /// What of the form came from Claude, its suggestion when the form does
+    /// not hold it, and why its verdict cannot be used here.
+    fn claude_notes(&self, facts: &Facts, cx: &mut Context<Self>) -> Vec<AnyElement> {
+        let t = ui::theme(cx);
+        let c = &t.colors;
+        let claude = &facts.claude;
+        let Some(suggestion) = &claude.suggestion else {
+            return Vec::new();
+        };
+        let mut notes = Vec::new();
+        let marked = match (claude.verdict_from_claude, claude.summary_from_claude) {
+            (true, true) => Some("Verdict and summary"),
+            (true, false) => Some("Verdict"),
+            (false, true) => Some("Summary"),
+            (false, false) => None,
+        };
+        if let Some(what) = marked {
+            notes.push(
+                div()
+                    .debug_selector(|| "review-from-claude".into())
+                    .tiny(&t)
+                    .text_color(c.text_muted)
+                    .child(format!("{what} {FROM_CLAUDE}"))
+                    .into_any_element(),
+            );
+        }
+        if claude.offered {
+            let first = Some(crate::claude_review::first_line(&suggestion.body))
+                .filter(|line| !line.is_empty());
+            let writing = self.writing.clone();
+            notes.push(
+                ui::card(cx)
+                    .debug_selector(|| "review-suggestion".into())
+                    .flex()
+                    .flex_col()
+                    .gap(px(4.0))
+                    .p(px(8.0))
+                    .child(
+                        div()
+                            .text_color(c.text)
+                            .child(format!("Claude suggests: {}", suggestion.verdict.label())),
+                    )
+                    .children(first.map(|line| {
+                        div()
+                            .tiny(&t)
+                            .truncate()
+                            .text_color(c.text_muted)
+                            .child(line)
+                    }))
+                    .child(
+                        h_flex().justify_end().child(
+                            Button::new(
+                                "review-use-suggestion",
+                                "Use Claude's suggestion",
+                                ButtonKind::Secondary,
+                            )
+                            .on_click(move |_, _, cx| {
+                                if let Some(writing) = &writing {
+                                    writing.update(cx, |writing, cx| writing.use_suggestion(cx));
+                                }
+                            }),
+                        ),
+                    )
+                    .into_any_element(),
+            );
+        }
+        if let Some(why) = verdict_blocked(suggestion.verdict, &facts.caps, facts.own, facts.forge)
+        {
+            notes.push(
+                div()
+                    .debug_selector(|| "review-suggestion-blocked".into())
+                    .tiny(&t)
+                    .text_color(c.warn)
+                    .child(suggestion_blocked_text(suggestion.verdict, &why))
+                    .into_any_element(),
+            );
+        }
+        notes
     }
 
     fn merge_menu(&self, facts: &Facts, cx: &mut Context<Self>) -> AnyElement {
@@ -1125,15 +1223,24 @@ pub(crate) fn palette_items(session: &Entity<Session>, key: &PrKey, cx: &App) ->
         .collect()
 }
 
+/// Why Claude's suggested `verdict` cannot be used here.
+fn suggestion_blocked_text(verdict: Verdict, why: &str) -> String {
+    format!(
+        "Claude suggests {}, which cannot be used here: {why}",
+        verdict.label()
+    )
+}
+
 /// The "Review with agent" menu: the workspaces of the pull request's
 /// repository (the one a launch uses checked; picking one makes it the
 /// repository's preferred workspace, and with `asking` starts the agent
-/// there), Claude's drafts not yet in the review, and the workspace
-/// settings.
+/// there), Claude's drafts not yet in the review and its suggested review,
+/// which opens `actions`' Submit review form, and the workspace settings.
 fn agent_popup(
     menu: PopupMenu,
     key: &PrKey,
     writing: Option<&Entity<Writing>>,
+    actions: &WeakEntity<PrActions>,
     asking: bool,
     cx: &App,
 ) -> PopupMenu {
@@ -1141,10 +1248,12 @@ fn agent_popup(
     let pending = writing
         .map(|writing| crate::claude_review::pending(writing.read(cx)))
         .unwrap_or_default();
-    let mut menu = menu.separator().label(if pending.is_empty() {
-        "No comments from Claude waiting".to_owned()
-    } else {
-        format!("Comments from Claude ({})", pending.len())
+    let suggestion =
+        writing.and_then(|writing| crate::claude_review::pending_suggestion(writing.read(cx)));
+    let mut menu = menu.separator().label(match (pending.len(), &suggestion) {
+        (0, None) => "Nothing from Claude waiting".to_owned(),
+        (0, Some(_)) => "From Claude".to_owned(),
+        (n, _) => format!("Comments from Claude ({n})"),
     });
     for (ix, comment) in pending.iter().enumerate() {
         let (place, first_line) = (comment.place.clone(), comment.first_line.clone());
@@ -1167,6 +1276,9 @@ fn agent_popup(
             .on_click(move |_, _, cx| crate::claude_review::jump_to(&jump_key, &anchor, cx)),
         );
     }
+    if let Some(suggestion) = suggestion {
+        menu = menu.item(suggestion_item(key, writing, actions, suggestion, cx));
+    }
     if !pending.is_empty() {
         let (add_key, discard_key) = (key.clone(), key.clone());
         menu = menu
@@ -1182,6 +1294,14 @@ fn agent_popup(
                 None,
                 move |cx| crate::claude_review::discard_all(&discard_key, cx),
             ));
+    } else if writing.is_some_and(|writing| writing.read(cx).suggestion().is_some()) {
+        let discard_key = key.clone();
+        menu = menu.item(entry_item(
+            "agent-discard-all".to_owned(),
+            "Discard the suggestion",
+            None,
+            move |cx| crate::claude_review::discard_all(&discard_key, cx),
+        ));
     }
     menu.separator().item(
         PopupMenuItem::element(|_, _| {
@@ -1191,6 +1311,57 @@ fn agent_popup(
         })
         .on_click(|_, window, cx| crate::claude_review::open_workspace_settings(None, window, cx)),
     )
+}
+
+/// The menu's row for Claude's suggested review: the verdict, the summary's
+/// first line and, when the verdict cannot be used here, why. Choosing it
+/// opens the Submit review form, which holds the suggestion or offers it.
+fn suggestion_item(
+    key: &PrKey,
+    writing: Option<&Entity<Writing>>,
+    actions: &WeakEntity<PrActions>,
+    suggestion: crate::claude_review::PendingSuggestion,
+    cx: &App,
+) -> PopupMenuItem {
+    let blocked = Facts::read(
+        Session::global(cx).read(cx),
+        key,
+        writing.map(|w| w.read(cx)),
+    )
+    .and_then(|facts| verdict_blocked(suggestion.verdict, &facts.caps, facts.own, facts.forge))
+    .map(|why| suggestion_blocked_text(suggestion.verdict, &why));
+    let title = format!("Claude suggests: {}", suggestion.verdict.label());
+    let first_line = suggestion.first_line;
+    let (key, actions) = (key.clone(), actions.clone());
+    PopupMenuItem::element(move |_, cx| {
+        let t = ui::theme(cx);
+        v_flex()
+            .debug_selector(|| "agent-suggestion".into())
+            .max_w(px(MENU_TEXT_WIDTH))
+            .child(div().truncate().child(title.clone()))
+            .when(!first_line.is_empty(), |el| {
+                el.child(
+                    div()
+                        .truncate()
+                        .tiny(&t)
+                        .text_color(t.colors.text_muted)
+                        .child(first_line.clone()),
+                )
+            })
+            .children(blocked.clone().map(|why| {
+                div()
+                    .debug_selector(|| "agent-suggestion-blocked".into())
+                    .tiny(&t)
+                    .text_color(t.colors.warn)
+                    .child(why)
+            }))
+    })
+    .on_click(move |_, window, cx| {
+        Session::global(cx).update(cx, |session, cx| session.focus(&key, cx));
+        if let Some(actions) = actions.upgrade() {
+            actions.update(cx, |actions, cx| actions.open_review(window, cx));
+        }
+    })
 }
 
 /// The widest a line of text in the agent menu gets.
@@ -1453,7 +1624,7 @@ impl Render for PrActions {
         let open_on = Button::toolbar("open-on-machine", "Open on…")
             .on_click(cx.listener(|this, _, window, cx| this.open_on(window, cx)));
         let pending = self.writing.as_ref().map_or(0, |writing| {
-            crate::claude_review::pending(writing.read(cx)).len()
+            crate::claude_review::pending_count(writing.read(cx))
         });
         let with_agent = self.agent_split(pending, cx);
         let bar = h_flex()

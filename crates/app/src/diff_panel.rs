@@ -380,6 +380,11 @@ impl DiffPanel {
         &self.drafts_focus
     }
 
+    /// The compact review, merge and "..." row above the diff.
+    pub fn actions(&self) -> &Entity<PrActions> {
+        &self.actions
+    }
+
     /// Scrolls to `path` once the diff is up.
     pub fn reveal_file(&mut self, path: SharedString, cx: &mut Context<Self>) {
         self.pending_jump = Some(path);
