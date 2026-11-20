@@ -201,8 +201,10 @@ const COMMAND_TOOLS: [&str; 5] = ["Bash", "PowerShell", "Edit", "Write", "Notebo
 /// what the agent read anywhere.
 const NETWORK_TOOLS: [&str; 2] = ["WebFetch", "WebSearch"];
 
-/// The tools that reach files, each denied every credential path.
-const FILE_TOOLS: [&str; 3] = ["Read", "Grep", "Glob"];
+/// The tools that reach files, each denied every credential path. Claude
+/// Code applies a `Read` rule to Glob too and ignores `Glob(...)` rules,
+/// warning that they never match.
+const FILE_TOOLS: [&str; 2] = ["Read", "Grep"];
 
 /// Where credentials live on every machine, in Claude Code's rule syntax
 /// (`~/` the home directory, `//` the file system root).
@@ -577,7 +579,13 @@ mod tests {
         assert!(has(Platform::Windows, "Read(~/_netrc)"));
         assert!(!has(Platform::Windows, "Read(//etc/**)"));
         assert!(has(Platform::Mac, "Read(~/Library/Keychains/**)"));
-        assert!(has(Platform::Mac, "Glob(~/Library/Application Support/**)"));
+        assert!(has(Platform::Mac, "Grep(~/Library/Application Support/**)"));
+        assert!(
+            !rules(&denied(false, Platform::Mac, &[], &[]).unwrap())
+                .iter()
+                .any(|rule| rule.starts_with("Glob(")),
+            "Claude Code ignores Glob rules; Read covers it"
+        );
         assert!(has(Platform::Linux, "Read(//etc/**)"));
         assert!(!has(Platform::Linux, "Read(~/AppData/Local/**)"));
         assert!(has(Platform::Remote, "Read(~/Library/Keychains/**)"));
