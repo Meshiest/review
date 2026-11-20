@@ -132,6 +132,9 @@ pub struct Shell {
     history: History<Place>,
     /// Where to put a closed tab that Back or Forward is opening again.
     reopening: Option<Spot>,
+    /// The shell's own focus, taken when nothing else has it (every tab
+    /// closed), so the window's keys still reach the shell's bindings.
+    focus: FocusHandle,
 }
 
 /// The open `?` overlay: its focus, and where focus goes back on close.
@@ -240,6 +243,7 @@ impl Shell {
         .detach();
         let sidebar_tree = dock.read(cx).layout(DockPlacement::Left).cloned();
         Self {
+            focus: cx.focus_handle(),
             probe: None,
             session,
             sidebar,
@@ -1567,6 +1571,14 @@ impl Render for Shell {
             probe.frame(window, cx);
         }
         let end_marker = self.probe.as_ref().map(|probe| probe.clock().end_marker());
+        if window.focused(cx).is_none() {
+            let focus = self.focus.clone();
+            window.defer(cx, move |window, cx| {
+                if window.focused(cx).is_none() {
+                    window.focus(&focus, cx);
+                }
+            });
+        }
         let t = ui::theme(cx);
         let dock = self.dock.read(cx);
         let zoomed = dock.is_zoomed();
@@ -1614,6 +1626,7 @@ impl Render for Shell {
 
         v_flex()
             .id("shell")
+            .track_focus(&self.focus)
             .key_context(context)
             .on_action(cx.listener(Self::toggle_sidebar))
             .on_action(cx.listener(Self::toggle_diff_layout))

@@ -4,6 +4,7 @@
 //! the keys back to the diff.
 
 use gpui::TestAppContext;
+use gpui_kit::component::dock::DockPlacement;
 
 use crate::harness::{Options, ShellWindow, open_shell};
 
@@ -101,4 +102,29 @@ fn keys_move_through_hunks_files_and_threads(cx: &mut TestAppContext) {
         scroll_y(&mut shell) > at,
         "Esc gave the keys back to the diff"
     );
+}
+
+#[gpui::test]
+fn question_mark_opens_the_key_list_with_every_tab_closed(cx: &mut TestAppContext) {
+    let mut shell = open_shell(cx, Options::default());
+    let dock = shell.dock();
+    let panels: Vec<_> = shell.update(|_, cx| {
+        dock.read(cx)
+            .layout(DockPlacement::Center)
+            .map(|tree| tree.panels().collect())
+            .unwrap_or_default()
+    });
+    for id in panels {
+        let entity = shell.shell.clone();
+        shell.update(|window, cx| entity.update(cx, |shell, cx| shell.close_panel(id, window, cx)));
+    }
+    shell.update(|window, cx| window.blur(cx));
+    shell.settle();
+    shell.keys("?");
+    assert!(
+        shell.read_shell(|shell, _| shell.is_key_help_open()),
+        "? reaches the shell with nothing focused"
+    );
+    shell.keys("escape");
+    assert!(!shell.read_shell(|shell, _| shell.is_key_help_open()));
 }

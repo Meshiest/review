@@ -177,6 +177,9 @@ const SIDEBAR_KEYS: &str = "Sidebar && !Input";
 /// Window keys a terminal program also uses (Ctrl+B, Ctrl+W): they reach
 /// the program while a terminal has focus.
 const SHELL_KEYS: &str = "Shell && !Terminal";
+/// Single keys anywhere in the window: not while a text box or a terminal
+/// takes the typing.
+const SHELL_TEXT_KEYS: &str = "Shell && !Terminal && !Input";
 /// `Esc` puts a zoomed dock back, unless something inside takes it first
 /// (a picker, a comment box) or a terminal program has the keys.
 const ZOOMED_KEYS: &str = "Zoomed && !Terminal";
@@ -214,8 +217,9 @@ fn bind_keys(cx: &mut App) {
             composer::SubmitNow,
             Some(composer::KEY_CONTEXT),
         ),
-        KeyBinding::new("?", ToggleKeyHelp, diff),
-        KeyBinding::new("?", ToggleKeyHelp, sidebar),
+        // Anywhere but a text box or a terminal, even with nothing focused
+        // (every tab closed): the keys then go to the shell itself.
+        KeyBinding::new("?", ToggleKeyHelp, Some(SHELL_TEXT_KEYS)),
         KeyBinding::new("?", ToggleKeyHelp, Some(shell::KEY_HELP_CONTEXT)),
         KeyBinding::new("escape", CloseKeyHelp, Some(shell::KEY_HELP_CONTEXT)),
         KeyBinding::new("escape", inbox::ClearFilter, Some(inbox::FILTER_CONTEXT)),
