@@ -1294,7 +1294,6 @@ impl Shell {
     }
 
     fn app_title(&self, cx: &mut Context<Self>) -> impl IntoElement {
-        let t = ui::theme(cx);
         let settings = ui::icon_button(
             cx,
             "open-settings",
@@ -1307,18 +1306,7 @@ impl Shell {
             .justify_between()
             .pr(px(12.0))
             .child(ui::wordmark(cx, "review"))
-            .child(
-                h_flex()
-                    .gap(px(12.0))
-                    .items_center()
-                    .child(
-                        div()
-                            .small(&t)
-                            .text_color(t.colors.text_muted)
-                            .child("Ctrl+B sidebar  Ctrl+, settings"),
-                    )
-                    .child(settings),
-            )
+            .child(settings)
     }
 
     fn empty_main(&self, cx: &App) -> impl IntoElement {
@@ -1567,7 +1555,7 @@ impl Shell {
                     .items_center()
                     .children(bell)
                     .child(div().child(queue))
-                    .child(div().child("j/k move  Enter open  ? keys")),
+                    .child(div().child("? keys")),
             )
     }
 }
