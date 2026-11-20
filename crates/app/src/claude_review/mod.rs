@@ -694,6 +694,10 @@ fn suggest_review(key: &PrKey, request: SuggestRequest, cx: &mut App) -> Result<
             "Filled in the Submit review form with {} and your summary.",
             verdict.label()
         ),
+        Suggested::Offered if verdict == Verdict::Approve => "An approval is never filled in \
+            for the user: your suggestion is offered in the Submit review form, for them to \
+            take with a click."
+            .to_owned(),
         Suggested::Offered => "The user already wrote a summary or picked a verdict, so your \
             suggestion is offered beside theirs in the Submit review form."
             .to_owned(),

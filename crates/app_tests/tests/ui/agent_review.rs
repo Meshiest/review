@@ -959,21 +959,24 @@ fn a_suggested_review_fills_in_the_form_and_waits_for_submit(cx: &mut TestAppCon
         "Looks solid.\nOne nit below.",
     );
     assert!(!error, "{text}");
+    // An approval is never put in the form for the user: it is offered.
     assert!(
-        text.contains("Filled in") && text.contains("Approve"),
+        text.contains("never filled in") && text.contains("offered"),
         "{text}"
     );
     assert_eq!(
         form(&mut shell, &writing),
-        (Verdict::Approve, "Looks solid.\nOne nit below.".to_owned())
+        (Verdict::Comment, String::new()),
+        "the form is as it was"
     );
     let state = shell.update(|_, cx| writing.read(cx).suggestion_state());
-    assert!(state.verdict_from_claude && state.summary_from_claude && !state.offered);
+    assert!(!state.verdict_from_claude && !state.summary_from_claude && state.offered);
     assert!(sink.commands().is_empty(), "nothing is sent");
 
-    // A second call replaces the first while the form is still Claude's.
+    // Another verdict fills the form in, replacing the offer.
     let (text, error) = suggest(&mut shell, port, &token, "request_changes", "Needs a test.");
     assert!(!error, "{text}");
+    assert!(text.contains("Filled in"), "{text}");
     assert_eq!(
         form(&mut shell, &writing),
         (Verdict::RequestChanges, "Needs a test.".to_owned())

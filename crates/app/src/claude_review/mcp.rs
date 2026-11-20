@@ -575,8 +575,8 @@ fn suggest_tool() -> Value {
     json!({
         "name": SUGGEST_TOOL,
         "description": "Suggests the review's verdict and summary, once your comments are in. \
-            It fills in the user's Submit review form, marked as from Claude, and never submits \
-            anything: the user decides whether to keep, change or discard it, and whether to \
+            It fills in the user's Submit review form, marked as from Claude (an approval is \
+            only offered there, for the user to take), and never submits anything: the user decides whether to keep, change or discard it, and whether to \
             submit. Calling it again replaces the earlier suggestion.",
         "inputSchema": {
             "type": "object",

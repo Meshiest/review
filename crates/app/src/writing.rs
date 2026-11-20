@@ -1050,8 +1050,13 @@ impl Writing {
 
     /// Takes Claude's suggested verdict and summary, replacing an earlier
     /// suggestion. It fills in the form unless the user already wrote a
-    /// summary or picked a verdict; then theirs stays and the suggestion
-    /// waits for [`use_suggestion`](Self::use_suggestion). Nothing is sent.
+    /// summary or picked a verdict, or it suggests approving; then the form
+    /// stays as it is and the suggestion waits for
+    /// [`use_suggestion`](Self::use_suggestion). Nothing is sent.
+    ///
+    /// An approval is never put in the form for the user: the agent read the
+    /// pull request, whose text may have steered it, and an approval is the
+    /// verdict that grants something. It takes the user's own click.
     pub fn suggest_review(
         &mut self,
         suggestion: ReviewSuggestion,
@@ -1060,8 +1065,9 @@ impl Writing {
         let users = self.verdict_by == VerdictBy::User
             || (!self.review_body.trim().is_empty()
                 && !self.from_claude.contains(&DraftAnchor::Review));
+        let approves = suggestion.verdict == Verdict::Approve;
         self.suggestion = Some(suggestion);
-        if users {
+        if users || approves {
             cx.notify();
             return Suggested::Offered;
         }

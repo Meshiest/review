@@ -717,7 +717,10 @@ web routes and in status `target_url`s is `index_in_repo`, not the run id)
     (a `verdict` of `comment`, `approve` or `request_changes`, and a
     Markdown `body` capped like a comment's) fills in the Submit review
     form's verdict and summary, marked "from Claude" until the user changes
-    them. A second call replaces the suggestion; a summary the user wrote or
+    them. An `approve` suggestion is never filled in: the agent read the
+    pull request, whose text may have steered it, so an approval is only
+    offered ("Use Claude's suggestion") and takes the user's click.
+    A second call replaces the suggestion; a summary the user wrote or
     a verdict they picked is kept and the suggestion offered beside it ("Use
     Claude's suggestion"); a verdict the forge refuses on this pull request
     is shown with the reason. It never submits: the Review with agent menu
