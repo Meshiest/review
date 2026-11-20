@@ -314,7 +314,11 @@ pub fn init(cx: &mut App, setup: &Setup) {
     };
     subscriptions::Subscriptions::install(session.clone(), cx);
     terminals::Terminals::install(setup.fixtures, cx);
-    workspaces::Workspaces::install(workspaces::config_file(setup.fixtures), cx);
+    let storage = workspaces::storage(setup.fixtures, setup.settings_path.as_deref());
+    let workspaces = workspaces::Workspaces::install(storage, cx);
+    if setup.fixtures {
+        workspaces.update(cx, workspaces::Workspaces::load_file_in_background);
+    }
     claude_review::AgentReview::install(setup.fixtures, cx);
     if setup.demo_composer {
         session.update(cx, |session, cx| {

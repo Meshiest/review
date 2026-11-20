@@ -970,12 +970,11 @@ impl Render for ConversationPanel {
                 footer.comment_box(&composer, &t, cx),
             )
         };
-        let style_toggle = ui::segmented(
+        let style_toggle = ui::toggle_group(
             cx,
-            "thread-style",
-            vec![
-                (ThreadStyle::Expanded, "Expanded".into()),
-                (ThreadStyle::Compact, "Compact".into()),
+            [
+                (ThreadStyle::Expanded, "thread-style-0", "Expanded"),
+                (ThreadStyle::Compact, "thread-style-1", "Compact"),
             ],
             move |option| *option == style,
             |option, _, cx| Self::set_thread_style(*option, cx),

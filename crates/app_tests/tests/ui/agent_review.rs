@@ -33,7 +33,7 @@ use app::session::OpenMode;
 use app::settings_panel::{DirField, RowState, SettingsPanel, row_status_text};
 use app::terminal_panel::TerminalPanel;
 use app::terminals::{Outcome, Prepared, TerminalSpec, Terminals, WorktreeJob, WorktreeState};
-use app::workspaces::{SaveState, Workspaces};
+use app::workspaces::{SaveState, Storage, Workspaces};
 use app::worktrees::{Step, WorktreeInfo};
 use app::writing::FROM_CLAUDE;
 use gpui::{Entity, SharedString, TestAppContext};
@@ -125,7 +125,7 @@ fn install_workspace(shell: &mut ShellWindow, key: &PrKey, scratch: &Scratch, co
     shell.update(|_, cx| {
         let workspaces = Workspaces::global(cx).expect("workspaces are installed");
         workspaces.update(cx, |workspaces, cx| {
-            workspaces.set_file(Ok(file), cx);
+            workspaces.set_storage(Storage::File(file), cx);
             workspaces.loaded(vec![entry], cx);
         });
         let terminals = Terminals::global(cx).expect("terminals are installed");
@@ -447,7 +447,7 @@ fn install_two_workspaces(shell: &mut ShellWindow, key: &PrKey, scratch: &Scratc
     shell.update(|_, cx| {
         let workspaces = Workspaces::global(cx).expect("workspaces are installed");
         workspaces.update(cx, |workspaces, cx| {
-            workspaces.set_file(Ok(saved), cx);
+            workspaces.set_storage(Storage::File(saved), cx);
             workspaces.loaded(vec![local, remote, other], cx);
         });
     });
@@ -802,7 +802,9 @@ fn the_editor_says_each_workspace_is_saved_and_never_keeps_one_for_a_run(cx: &mu
     std::fs::write(&blocker, "a file, not a folder").expect("write");
     let unwritable = blocker.join("config.toml");
     shell.update(|_, cx| {
-        workspaces.update(cx, |workspaces, cx| workspaces.set_file(Ok(unwritable), cx));
+        workspaces.update(cx, |workspaces, cx| {
+            workspaces.set_storage(Storage::File(unwritable), cx)
+        });
     });
     shell.click(String::leak(format!(
         "{}-input-1",

@@ -25,9 +25,7 @@ pub use chrome::{
     Button, ButtonKind, CONTROL_HEIGHT, CONTROL_ICON, bar, card, checkbox, chip, divider,
     empty_note, empty_state, panel, secondary_style, status_bar, title_bar, vdivider, wordmark,
 };
-pub use controls::{
-    TOGGLE_HEIGHT, Toggle, icon_button, search_input, segmented, stepper, toggle_group,
-};
+pub use controls::{TOGGLE_HEIGHT, icon_button, search_input, stepper, toggle_group};
 pub use label::label_chip;
 pub use link::web_link;
 pub use menu_button::{MenuTrigger, SplitButton};

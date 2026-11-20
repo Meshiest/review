@@ -215,6 +215,18 @@ fn the_compact_toggle_keeps_one_row_per_thread_and_is_saved(cx: &mut TestAppCont
         .find(|t| t.anchor.is_some())
         .expect("an inline thread");
     let id = thread.id.to_string();
+    // The shared toggle group: one strip of joined choices, the diff's
+    // Unified / Split height.
+    let (expanded, compact) = (
+        shell.bounds_of("thread-style-0"),
+        shell.bounds_of("thread-style-1"),
+    );
+    assert_eq!(expanded.right(), compact.left(), "the choices are joined");
+    assert_eq!(
+        f32::from(compact.size.height),
+        app::ui::TOGGLE_HEIGHT - 2.0,
+        "inside the group's border"
+    );
     shell.click("thread-style-1");
     let style = |shell: &mut ShellWindow| {
         shell.update(|_, cx| cx.global::<Appearance>().settings.conversation.threads)

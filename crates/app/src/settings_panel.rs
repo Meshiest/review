@@ -6,7 +6,6 @@
 //! saved workspaces are used.
 
 use std::cell::Cell;
-use std::path::Path;
 use std::rc::Rc;
 
 use forge::model::RepoRef;
@@ -38,7 +37,7 @@ use crate::settings::{
 };
 use crate::terminals::{self, Terminals};
 use crate::ui::{self, Button, ButtonKind, TextExt as _};
-use crate::workspaces::{self, SaveState, WorkspaceId, Workspaces};
+use crate::workspaces::{self, SaveState, Storage, WorkspaceId, Workspaces};
 
 pub const SETTINGS: &str = "Settings";
 /// The font list's key context; its search box holds focus while it is open.
@@ -335,22 +334,22 @@ impl SettingsPanel {
             .iter()
             .find(|family| family.name.eq_ignore_ascii_case(&settings.theme))
             .map(|family| family.name.clone());
-        let options = families
-            .iter()
-            .map(|family| (family.name.clone(), SharedString::from(family.name.clone())))
-            .collect();
+        let options = families.iter().enumerate().map(|(ix, family)| {
+            (
+                family.name.clone(),
+                format!("theme-family-{ix}"),
+                family.name.clone(),
+            )
+        });
         let modes = [
-            (ModeSetting::System, "System"),
-            (ModeSetting::Dark, "Dark"),
-            (ModeSetting::Light, "Light"),
-        ]
-        .map(|(mode, label)| (mode, SharedString::from(label)))
-        .to_vec();
+            (ModeSetting::System, "theme-mode-0", "System"),
+            (ModeSetting::Dark, "theme-mode-1", "Dark"),
+            (ModeSetting::Light, "theme-mode-2", "Light"),
+        ];
         let mode = settings.mode;
         self.section(cx, "Theme", "Built-in and from the themes folder")
-            .child(ui::segmented(
+            .child(ui::toggle_group(
                 cx,
-                "theme-family",
                 options,
                 move |name| current.as_deref() == Some(name.as_str()),
                 |name, _, cx| appearance::update(cx, |s| s.theme.clone_from(name)),
@@ -366,9 +365,8 @@ impl SettingsPanel {
                             .text_color(t.colors.text_secondary)
                             .child("Mode"),
                     )
-                    .child(ui::segmented(
+                    .child(ui::toggle_group(
                         cx,
-                        "theme-mode",
                         modes,
                         move |m| *m == mode,
                         |m, _, cx| appearance::update(cx, |s| s.mode = *m),
@@ -1615,28 +1613,17 @@ impl SettingsPanel {
         };
         let panel = cx.weak_entity();
         let states = self.workspace_states(cx);
-        let (failure, file) = Workspaces::global(cx).map_or((None, None), |workspaces| {
+        let (failure, note) = Workspaces::global(cx).map_or((None, None), |workspaces| {
             let workspaces = workspaces.read(cx);
             let failure = match workspaces.state() {
                 SaveState::Failed(error) => Some(error.clone()),
                 _ => None,
             };
-            let file = workspaces
-                .file()
-                .map(Path::to_path_buf)
-                .map_err(str::to_owned);
-            (failure, Some(file))
+            (failure, Some(storage_note(workspaces.storage())))
         });
-        // Where the workspaces are saved, or why they cannot be.
-        let (file_line, file_color) = match file {
-            Some(Ok(path)) => (
-                format!(
-                    "Saved in {}; a saved workspace is used for every run.",
-                    path.display()
-                ),
-                c.text_muted,
-            ),
-            Some(Err(why)) => (format!("Workspaces cannot be saved: {why}."), c.danger),
+        let (file_line, file_color) = match note {
+            Some(Ok(line)) => (line, c.text_muted),
+            Some(Err(line)) => (line, c.danger),
             None => (String::new(), c.text_muted),
         };
         let rows = self.workspace_rows.iter().enumerate().map(|(ix, row)| {
@@ -1650,9 +1637,14 @@ impl SettingsPanel {
             }
             let chosen = row.machine.clone();
             let pick = panel.clone();
-            let machine = ui::segmented(
+            let options = options
+                .into_iter()
+                .enumerate()
+                .map(|(choice, (name, label))| {
+                    (name, format!("workspace-{ix}-machine-{choice}"), label)
+                });
+            let machine = ui::toggle_group(
                 cx,
-                "workspace-machine",
                 options,
                 move |name| *name == chosen,
                 move |name, _, cx| {
@@ -1821,6 +1813,21 @@ pub fn row_status_text(state: &RowState, failure: Option<&str>) -> String {
         (RowState::Unsaved, Some(error)) => error.to_owned(),
         (RowState::Unsaved, None) => "Unsaved changes".to_owned(),
         (RowState::Invalid(why), _) => format!("Cannot save: {why}"),
+    }
+}
+
+/// Where the workspaces are saved, or (as the error) why they cannot be.
+fn storage_note(storage: &Storage) -> Result<String, String> {
+    match storage {
+        Storage::File(path) => Ok(format!(
+            "Saved in {}; a saved workspace is used for every run.",
+            path.display()
+        )),
+        Storage::Memory => Ok(
+            "Saved in memory only, with no settings file given: nothing is written to disk,              and the workspaces are gone when the app closes."
+                .to_owned(),
+        ),
+        Storage::Unavailable(why) => Err(format!("Workspaces cannot be saved: {why}.")),
     }
 }
 

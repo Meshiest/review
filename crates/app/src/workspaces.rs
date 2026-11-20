@@ -7,7 +7,8 @@
 //! Every change is written to the config file, off the main thread, and
 //! only what the file holds is used: a change that cannot be written is
 //! undone and says why. A save rewrites only those tables (the rest of the
-//! config still loads at startup only).
+//! config still loads at startup only). A fixtures run without a settings
+//! file keeps its workspaces in memory and writes nothing.
 
 use std::path::{Path, PathBuf};
 
@@ -59,8 +60,8 @@ pub struct Workspaces {
     saved: Vec<Stored>,
     /// `saved` with the changes on their way to the file.
     wanted: Vec<Stored>,
-    /// The config file, or why there is none to write.
-    file: Result<PathBuf, String>,
+    /// Where saves go.
+    storage: Storage,
     state: SaveState,
     /// A write runs.
     writing: bool,
@@ -78,34 +79,63 @@ struct WorkspacesHandle(Entity<Workspaces>);
 
 impl Global for WorkspacesHandle {}
 
-/// The config file a run writes its workspaces to: the user's, or for a
-/// fixtures run one of its own under `.scratch`, never the user's.
+/// Where a run saves its workspaces.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Storage {
+    /// This config file.
+    File(PathBuf),
+    /// Nowhere but this process: a save is done at once.
+    Memory,
+    /// No file can be written, and why.
+    Unavailable(String),
+}
+
+/// Where a run saves its workspaces: a live run in the user's config file;
+/// a fixtures run in `config.toml` beside its `settings` file, or with none
+/// in memory, never in the user's file.
+#[must_use]
+pub fn storage(fixtures: bool, settings: Option<&Path>) -> Storage {
+    match (fixtures, settings) {
+        (true, Some(settings)) => Storage::File(settings.with_file_name("config.toml")),
+        (true, None) => Storage::Memory,
+        (false, _) => config::Config::default_path().map_or_else(
+            || Storage::Unavailable("this platform has no config directory".to_owned()),
+            Storage::File,
+        ),
+    }
+}
+
+/// The workspaces of the config at `path`: none when it does not exist.
 ///
 /// # Errors
-/// When the platform has no config directory.
-pub fn config_file(fixtures: bool) -> Result<PathBuf, String> {
-    if fixtures {
-        let stamp = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_nanos();
-        return Ok(std::env::current_dir()
-            .unwrap_or_default()
-            .join(".scratch")
-            .join("fixture-config")
-            .join(format!("{}-{stamp}", std::process::id()))
-            .join("config.toml"));
-    }
-    config::Config::default_path().ok_or_else(|| "this platform has no config directory".to_owned())
+/// If the file cannot be read or parsed.
+pub fn read_file(path: &Path) -> Result<Vec<WorkspaceEntry>, config::ConfigError> {
+    let text = match std::fs::read_to_string(path) {
+        Ok(text) => text,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(source) => {
+            return Err(config::ConfigError::Io {
+                path: path.to_owned(),
+                source,
+            });
+        }
+    };
+    config::Config::parse(&text)
+        .map(|config| config.workspaces)
+        .map_err(|source| config::ConfigError::Parse {
+            path: path.to_owned(),
+            source: Box::new(source),
+        })
 }
 
 impl Workspaces {
-    /// Installs the global, empty until [`Self::loaded`], writing to `file`.
-    pub fn install(file: Result<PathBuf, String>, cx: &mut App) -> Entity<Self> {
+    /// Installs the global, empty until [`Self::loaded`], saving to
+    /// `storage`.
+    pub fn install(storage: Storage, cx: &mut App) -> Entity<Self> {
         let workspaces = cx.new(|_| Self {
             saved: Vec::new(),
             wanted: Vec::new(),
-            file,
+            storage,
             state: SaveState::Idle,
             writing: false,
             again: false,
@@ -138,10 +168,30 @@ impl Workspaces {
         cx.notify();
     }
 
-    /// Writes to `file` from now on.
-    pub fn set_file(&mut self, file: Result<PathBuf, String>, cx: &mut Context<Self>) {
-        self.file = file;
+    /// Saves to `storage` from now on.
+    pub fn set_storage(&mut self, storage: Storage, cx: &mut Context<Self>) {
+        self.storage = storage;
         cx.notify();
+    }
+
+    /// Loads the workspaces of the config file saves go to, off the main
+    /// thread, for a fixtures run whose config is its own: the live start
+    /// loads the user's with the rest of the config.
+    pub fn load_file_in_background(&mut self, cx: &mut Context<Self>) {
+        let Storage::File(path) = self.storage.clone() else {
+            return;
+        };
+        let read = cx
+            .background_executor()
+            .spawn(async move { read_file(&path) });
+        cx.spawn(async move |this, cx| match read.await {
+            Ok(entries) if entries.is_empty() => {}
+            Ok(entries) => {
+                this.update(cx, |this, cx| this.loaded(entries, cx)).ok();
+            }
+            Err(error) => eprintln!("review: {error}"),
+        })
+        .detach();
     }
 
     fn new_id(&mut self) -> WorkspaceId {
@@ -192,9 +242,10 @@ impl Workspaces {
         self.writing
     }
 
-    /// The file changes go to, or why there is none.
-    pub fn file(&self) -> Result<&Path, &str> {
-        self.file.as_deref().map_err(String::as_str)
+    /// Where changes go.
+    #[must_use]
+    pub fn storage(&self) -> &Storage {
+        &self.storage
     }
 
     /// The saved workspaces that match `repo`.
@@ -280,9 +331,15 @@ impl Workspaces {
     /// Writes `wanted` to the file in the background; a change made while
     /// one write runs is written after it.
     fn write(&mut self, cx: &mut Context<Self>) {
-        let path = match &self.file {
-            Ok(path) => path.clone(),
-            Err(why) => {
+        let path = match &self.storage {
+            Storage::File(path) => path.clone(),
+            Storage::Memory => {
+                self.saved.clone_from(&self.wanted);
+                self.state = SaveState::Saved;
+                cx.notify();
+                return;
+            }
+            Storage::Unavailable(why) => {
                 self.state = SaveState::Failed(format!("Not saved: {why}."));
                 self.wanted.clone_from(&self.saved);
                 cx.notify();
@@ -441,6 +498,25 @@ mod tests {
             path: path.into(),
             ..WorkspaceEntry::default()
         }
+    }
+
+    #[test]
+    fn a_fixtures_run_saves_beside_its_settings_or_in_memory() {
+        let settings = Path::new("run").join("settings.toml");
+        assert_eq!(
+            storage(true, Some(&settings)),
+            Storage::File(Path::new("run").join("config.toml"))
+        );
+        assert_eq!(storage(true, None), Storage::Memory);
+        assert_ne!(
+            storage(false, Some(&settings)),
+            Storage::File(Path::new("run").join("config.toml")),
+            "a live run uses the user's config"
+        );
+        assert_eq!(
+            read_file(Path::new("no-such-dir/config.toml")).ok(),
+            Some(Vec::new())
+        );
     }
 
     #[test]

@@ -474,6 +474,22 @@ impl Writing {
         cx.notify();
     }
 
+    /// Shows every kept draft again. The conversation's comment box is
+    /// always shown, so it is left as it is.
+    pub fn reopen_all(&mut self, cx: &mut Context<Self>) {
+        let mut first = None;
+        for slot in &mut self.slots {
+            if !slot.open && !matches!(slot.anchor, DraftAnchor::Conversation) {
+                slot.open = true;
+                first.get_or_insert_with(|| slot.anchor.clone());
+            }
+        }
+        if let Some(anchor) = first {
+            cx.emit(WritingEvent::Opened(anchor));
+            cx.notify();
+        }
+    }
+
     /// The composer of `anchor`, built on first use. A composer is made here
     /// (a view with a window) because restoring drafts has none.
     pub fn composer(

@@ -1,5 +1,6 @@
-//! The header's "N drafts" chip and its menu: one entry per draft comment
-//! not yet in the review, each jumping to where it is written.
+//! The header's "N drafts" chip and its menu: "Show all drafts", then one
+//! entry per draft comment not yet in the review, each jumping to where it
+//! is written.
 
 use forge::model::Thread;
 use gpui::{
@@ -90,7 +91,8 @@ fn excerpt(body: &str) -> SharedString {
 }
 
 /// The "N drafts" chip. A click, or Enter or Space while it has the focus,
-/// opens the menu of drafts; picking one jumps to it and Back returns.
+/// opens the menu of drafts; picking one jumps to it and Back returns, and
+/// "Show all drafts" opens every kept one where it is written.
 pub(super) fn chip(
     count: usize,
     focus: &FocusHandle,
@@ -123,7 +125,21 @@ pub(super) fn chip(
                 .map(|open| open.threads.clone())
                 .unwrap_or_default();
             let entries = entries(writing.read(cx), &threads);
-            let menu = menu.min_w(px(240.0)).max_w(px(420.0));
+            let all = writing.clone();
+            let menu = menu
+                .min_w(px(240.0))
+                .max_w(px(420.0))
+                .item(
+                    PopupMenuItem::element(|_, _| {
+                        div()
+                            .debug_selector(|| "drafts-show-all".into())
+                            .child("Show all drafts")
+                    })
+                    .on_click(move |_, _, cx| {
+                        all.update(cx, Writing::reopen_all);
+                    }),
+                )
+                .separator();
             entries
                 .into_iter()
                 .enumerate()

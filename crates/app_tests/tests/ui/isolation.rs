@@ -7,10 +7,12 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use app::appearance;
+use app::config::WorkspaceEntry;
 use app::startup::{RunFiles, RunFlags, UserDirs};
-use gpui::TestAppContext;
+use app::workspaces::{SaveState, Storage, Workspaces};
+use gpui::{Entity, TestAppContext};
 
-use crate::harness::{Options, Scratch, open_shell};
+use crate::harness::{Options, Scratch, ShellWindow, open_shell};
 
 /// Every file under `root` with its bytes.
 fn snapshot(root: &Path) -> BTreeMap<PathBuf, Vec<u8>> {
@@ -90,4 +92,72 @@ fn a_fixtures_run_leaves_the_user_files_alone(cx: &mut TestAppContext) {
     });
 
     assert_eq!(snapshot(&root), before, "the user's files are as they were");
+}
+
+fn workspace() -> WorkspaceEntry {
+    WorkspaceEntry {
+        repo: "octo/widgets".into(),
+        machine: "local".into(),
+        path: "C:/src/widgets".into(),
+        ..WorkspaceEntry::default()
+    }
+}
+
+fn save_workspace(shell: &mut ShellWindow) -> Entity<Workspaces> {
+    let workspaces =
+        shell.update(|_, cx| Workspaces::global(cx).expect("workspaces are installed"));
+    shell.update(|_, cx| {
+        workspaces.update(cx, |workspaces, cx| {
+            workspaces.save_entry(None, workspace(), cx);
+        });
+    });
+    shell.settle_until("the workspace is saved", |cx| {
+        *workspaces.read(cx).state() == SaveState::Saved
+    });
+    workspaces
+}
+
+#[gpui::test]
+fn a_fixtures_run_with_a_settings_file_saves_workspaces_beside_it(cx: &mut TestAppContext) {
+    let scratch = Scratch::new("workspaces-file");
+    let config = scratch.join("config.toml");
+    let mut shell = open_shell(
+        cx,
+        Options {
+            settings: Some(scratch.join("settings.toml")),
+            ..Options::default()
+        },
+    );
+    let workspaces = save_workspace(&mut shell);
+    let storage = shell.update(|_, cx| workspaces.read(cx).storage().clone());
+    assert_eq!(storage, Storage::File(config.clone()));
+    let text = std::fs::read_to_string(&config).expect("written beside the settings");
+    assert!(text.contains("octo/widgets"), "{text}");
+}
+
+/// The names in the directory a run starts from, and in its `.scratch`.
+fn start_dir_names() -> Vec<PathBuf> {
+    let dir = std::env::current_dir().expect("a current directory");
+    [dir.clone(), dir.join(".scratch")]
+        .iter()
+        .filter_map(|dir| std::fs::read_dir(dir).ok())
+        .flat_map(|entries| entries.flatten().map(|entry| entry.path()))
+        .collect()
+}
+
+#[gpui::test]
+fn a_fixtures_run_without_a_settings_file_keeps_workspaces_in_memory(cx: &mut TestAppContext) {
+    let before = start_dir_names();
+    let mut shell = open_shell(cx, Options::default());
+    let workspaces = save_workspace(&mut shell);
+    shell.update(|_, cx| {
+        let workspaces = workspaces.read(cx);
+        assert_eq!(*workspaces.storage(), Storage::Memory);
+        assert_eq!(
+            workspaces.entries().cloned().collect::<Vec<_>>(),
+            [workspace()],
+            "saved, and used"
+        );
+    });
+    assert_eq!(start_dir_names(), before, "no file or folder is created");
 }

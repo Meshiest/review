@@ -119,11 +119,41 @@ fn enter_or_space_on_the_focused_chip_opens_the_menu(cx: &mut TestAppContext) {
     focus_chip(&mut shell);
     shell.keys("space");
     assert!(menu_open(&mut shell), "Space opens the menu");
-    shell.keys("down enter");
+    // Past "Show all drafts" and its separator to the draft.
+    shell.keys("down down enter");
     assert!(
         shell.update(|_, cx| is_open(&writing, &draft, cx)),
         "the keys pick the draft"
     );
+}
+
+#[gpui::test]
+fn show_all_drafts_reopens_every_draft(cx: &mut TestAppContext) {
+    let mut shell = open_shell(
+        cx,
+        Options {
+            open_pr: Some(41),
+            ..Options::default()
+        },
+    );
+    let writing = shell.writing();
+    let drafts = [
+        line_draft(&mut shell, 2, "Off by one?"),
+        line_draft(&mut shell, 5, "Rename this"),
+    ];
+    let open = |shell: &mut ShellWindow| {
+        shell.update(|_, cx| drafts.each_ref().map(|draft| is_open(&writing, draft, cx)))
+    };
+    assert_eq!(open(&mut shell), [false, false], "Esc kept them closed");
+
+    shell.click("drafts-chip");
+    assert!(shell.drawn("drafts-show-all") && shell.drawn("draft-entry-1"));
+    let all = shell.bounds_of("drafts-show-all");
+    let first = shell.bounds_of("draft-entry-0");
+    assert!(all.bottom() < first.top(), "it is the menu's first entry");
+    shell.click("drafts-show-all");
+    assert!(!menu_open(&mut shell), "picking it closes the menu");
+    assert_eq!(open(&mut shell), [true, true], "every draft is open again");
 }
 
 #[gpui::test]
@@ -232,8 +262,10 @@ fn every_composer_draws_the_shared_controls(cx: &mut TestAppContext) {
     let writing = shell.writing();
     let want = reference_heights(&mut shell);
     assert_eq!(f32::from(want.button), app::ui::CONTROL_HEIGHT);
-    // A toggle's choices sit inside its 1px border.
-    assert_eq!(f32::from(want.toggle), app::ui::TOGGLE_HEIGHT - 2.0);
+    assert_eq!(app::ui::TOGGLE_HEIGHT, app::ui::CONTROL_HEIGHT);
+    // A toggle's choices sit inside its 1px border, so the group is as tall
+    // as the toolbar buttons beside it.
+    assert_eq!(want.toggle + gpui::px(2.0), want.button);
 
     let (path, line) = shell.update(|_, cx| app::scenario::first_line(cx).expect("a diff line"));
     let comment = DraftAnchor::Line {

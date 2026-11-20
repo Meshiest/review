@@ -33,59 +33,23 @@ pub fn search_input(state: &Entity<InputState>, cx: &App) -> Input {
 
 type Pick<T> = Rc<dyn Fn(&T, &mut Window, &mut App)>;
 
-/// A row of choices, one selected. Wraps when there are many.
-pub fn segmented<T: Clone + 'static>(
+/// How tall a [`toggle_group`] is: as tall as the toolbar buttons beside it.
+pub const TOGGLE_HEIGHT: f32 = CONTROL_HEIGHT;
+
+/// Choices joined in one bordered strip, the selected one filled: the
+/// diff's Unified / Split, a composer's Write / Preview, the theme. Each
+/// choice is its value, its element id and `debug_selector`, and its label.
+pub fn toggle_group<T, I, L>(
     cx: &App,
-    id: &'static str,
-    options: Vec<(T, SharedString)>,
+    options: impl IntoIterator<Item = (T, I, L)>,
     selected: impl Fn(&T) -> bool,
     on_pick: impl Fn(&T, &mut Window, &mut App) + 'static,
-) -> Div {
-    let t = theme(cx);
-    let c = &t.colors;
-    let on_pick: Pick<T> = Rc::new(on_pick);
-    let (hover, active, border) = (c.hover, c.selected, c.control_border);
-    h_flex()
-        .flex_wrap()
-        .gap(px(6.0))
-        .children(options.into_iter().enumerate().map(|(ix, (value, label))| {
-            let on = selected(&value);
-            let on_pick = on_pick.clone();
-            div()
-                .id(ElementId::from((id, ix)))
-                .debug_selector(move || format!("{id}-{ix}"))
-                .h(px(26.0))
-                .px(px(10.0))
-                .flex()
-                .items_center()
-                .rounded(t.radius.md)
-                .border_1()
-                .border_color(if on { border } else { c.border })
-                .bg(if on { active } else { c.field })
-                .text_color(if on { c.text } else { c.text_secondary })
-                .small(&t)
-                .cursor_pointer()
-                .when(!on, move |s| s.hover(move |s| s.bg(hover)))
-                .on_click(move |_, window, cx| on_pick(&value, window, cx))
-                .child(label)
-        }))
-}
-
-/// How tall a [`toggle_group`] is.
-pub const TOGGLE_HEIGHT: f32 = 22.0;
-
-/// One choice of a [`toggle_group`]: its value, its element id and
-/// `debug_selector`, and its label.
-pub type Toggle<T> = (T, &'static str, &'static str);
-
-/// Two or three choices joined in one bordered strip, the selected one
-/// filled: the diff's Unified / Split, a composer's Write / Preview.
-pub fn toggle_group<T: Clone + 'static>(
-    cx: &App,
-    options: Vec<Toggle<T>>,
-    selected: impl Fn(&T) -> bool,
-    on_pick: impl Fn(&T, &mut Window, &mut App) + 'static,
-) -> Div {
+) -> Div
+where
+    T: Clone + 'static,
+    I: Into<SharedString>,
+    L: Into<SharedString>,
+{
     let t = theme(cx);
     let c = &t.colors;
     let on_pick: Pick<T> = Rc::new(on_pick);
@@ -98,11 +62,12 @@ pub fn toggle_group<T: Clone + 'static>(
         .rounded(t.radius.md)
         .overflow_hidden()
         .children(options.into_iter().map(|(value, id, label)| {
+            let (id, label): (SharedString, SharedString) = (id.into(), label.into());
             let on = selected(&value);
             let on_pick = on_pick.clone();
             div()
-                .id(id)
-                .debug_selector(move || id.into())
+                .id(ElementId::Name(id.clone()))
+                .debug_selector(move || id.to_string())
                 .h_full()
                 .px(px(9.0))
                 .flex()
