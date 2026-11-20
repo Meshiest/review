@@ -4,8 +4,8 @@
 //! cargo run -p app --release --example open_bench -- --unthrottled [--rows 50000] [--opens 20] [--frames 1200]
 //!     [--no-threads]
 //!
-//! The shell runs on fixtures with the default dock (Diff, Conversation and
-//! Checks tabbed, Log beside them). The big pull request is #41, whose
+//! The shell runs on fixtures with the default dock (Diff and Conversation
+//! tabbed, Log beside them). The big pull request is #41, whose
 //! synthetic diff has `--rows` rows and a review thread every few hunks, so
 //! its cards are real block elements in the list.
 //!
@@ -28,7 +28,7 @@
 use std::time::{Duration, Instant};
 
 use app::model::PrKey;
-use app::panels::{ChecksPanel, ConversationPanel, DiffPanel, LogPanel};
+use app::panels::{ConversationPanel, DiffPanel, LogPanel};
 use app::session::Session;
 use app::shell::{Probe, Shell};
 use app::{Setup, assets, new_dock, window_options};
@@ -397,14 +397,12 @@ fn main() {
                 let dock = new_dock(window, cx);
                 let diff = DiffPanel::new(window, cx);
                 let conversation = ConversationPanel::new(window, cx);
-                let checks = ChecksPanel::new(window, cx);
                 let log = LogPanel::new(window, cx);
                 let layout = DockLayout::h_split()
                     .child(
                         DockLayout::tabs()
                             .panel_view(panel_handle(diff.clone()), cx)
-                            .panel_view(panel_handle(conversation), cx)
-                            .panel_view(panel_handle(checks), cx),
+                            .panel_view(panel_handle(conversation), cx),
                         Some(px(820.0)),
                     )
                     .child(

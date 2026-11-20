@@ -11,9 +11,9 @@ use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use app::layout::{self, VERSION};
-use app::panels::{CHECKS, CONVERSATION, DIFF, LOG};
+use app::panels::{CONVERSATION, DIFF, LOG};
 use gpui::{Axis, px};
-use gpui_kit::component::dock::{DockAreaState, PanelInfo, PanelState};
+use gpui_kit::component::dock::{DockAreaState, DockPlacement, DockState, PanelInfo, PanelState};
 
 fn panel(name: &str) -> PanelState {
     PanelState::new(name)
@@ -35,21 +35,21 @@ fn stack(axis: Axis, sizes: &[f32], children: Vec<PanelState>) -> PanelState {
     }
 }
 
-/// The default layout: Diff, Conversation and Checks tabbed, Log beside.
+/// The default layout: Diff and Conversation tabbed, Log beside.
 fn default_layout() -> DockAreaState {
     DockAreaState {
         version: Some(VERSION),
         center: stack(
             Axis::Horizontal,
             &[820.0, 340.0],
-            vec![tabs(0, &[DIFF, CONVERSATION, CHECKS]), tabs(0, &[LOG])],
+            vec![tabs(0, &[DIFF, CONVERSATION]), tabs(0, &[LOG])],
         ),
         ..DockAreaState::default()
     }
 }
 
-/// The user split the main group vertically and moved Checks out of it into
-/// the Log group, where it is the shown tab; the splits were dragged.
+/// The user split the main group vertically and moved Conversation out of it
+/// into the Log group, where it is the shown tab; the splits were dragged.
 fn changed_layout() -> DockAreaState {
     DockAreaState {
         version: Some(VERSION),
@@ -60,9 +60,9 @@ fn changed_layout() -> DockAreaState {
                 stack(
                     Axis::Vertical,
                     &[512.0, 248.0],
-                    vec![tabs(0, &[DIFF]), tabs(0, &[CONVERSATION])],
+                    vec![tabs(0, &[DIFF]), tabs(0, &[DIFF])],
                 ),
-                tabs(1, &[LOG, CHECKS]),
+                tabs(1, &[LOG, CONVERSATION]),
             ],
         ),
         ..DockAreaState::default()
@@ -125,5 +125,64 @@ fn an_older_or_broken_layout_starts_from_the_default() {
     assert_eq!(layout::load_from(&path), None, "a broken file is ignored");
 
     assert_eq!(layout::load_from(&dir.join("missing.json")), None);
+    fs::remove_dir_all(&dir).expect("remove the scratch directory");
+}
+
+#[test]
+fn a_layout_with_the_removed_checks_panels_loads_without_them() {
+    let dir = scratch_dir();
+    let path = dir.join("layout.json");
+    let sidebar = |sections: &[&str]| {
+        DockState::new(
+            stack(
+                Axis::Vertical,
+                &[420.0, 64.0, 100.0],
+                sections.iter().map(|s| tabs(0, &[*s])).collect(),
+            ),
+            DockPlacement::Left,
+            layout::SIDEBAR_WIDTH,
+            true,
+        )
+    };
+    let old = DockAreaState {
+        version: Some(VERSION),
+        center: stack(
+            Axis::Horizontal,
+            &[600.0, 300.0, 260.0],
+            vec![
+                tabs(2, &[DIFF, CONVERSATION, "Checks"]),
+                tabs(0, &["Checks"]),
+                tabs(1, &["Checks", LOG]),
+            ],
+        ),
+        left_dock: Some(sidebar(&["Inbox", "Rollup", "Threads"])),
+        ..DockAreaState::default()
+    };
+    layout::write_to(&path, &old).expect("the layout is written");
+
+    let restored = layout::load_from(&path).expect("the old layout loads");
+    let without = DockAreaState {
+        version: Some(VERSION),
+        center: stack(
+            Axis::Horizontal,
+            &[600.0, 260.0],
+            vec![tabs(1, &[DIFF, CONVERSATION]), tabs(0, &[LOG])],
+        ),
+        left_dock: Some(DockState::new(
+            stack(
+                Axis::Vertical,
+                &[420.0, 100.0],
+                vec![tabs(0, &["Inbox"]), tabs(0, &["Threads"])],
+            ),
+            DockPlacement::Left,
+            layout::SIDEBAR_WIDTH,
+            true,
+        )),
+        ..DockAreaState::default()
+    };
+    assert_eq!(
+        restored, without,
+        "the Checks tabs and the checks section are gone, the rest as it was"
+    );
     fs::remove_dir_all(&dir).expect("remove the scratch directory");
 }

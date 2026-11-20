@@ -175,7 +175,8 @@ impl NoticeKind {
 /// Where a toast or an activity entry opens the pull request.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Place {
-    Checks,
+    /// The Conversation with its pipelines card open.
+    Pipelines,
     Conversation(Option<ThreadId>),
     Overview,
 }
@@ -318,7 +319,6 @@ pub struct Watching {
     activity: VecDeque<ActivityEntry>,
     unread: usize,
     badges: HashSet<PrKey>,
-    checks_badge: bool,
 }
 
 impl Watching {
@@ -539,9 +539,6 @@ impl Watching {
                     });
                 }
                 effects.push(Effect::RefreshCi(key.clone()));
-                if self.open.as_ref() == Some(&key) {
-                    self.checks_badge = true;
-                }
                 if let Some(kind) = NoticeKind::of_ci(from, to, last) {
                     let what = match &target {
                         SubscriptionTarget::Run { .. } => "run",
@@ -552,7 +549,7 @@ impl Watching {
                         NoticeKind::CiRecovered => format!("{what} pass again"),
                         _ => format!("{what} passed"),
                     };
-                    told = Some((kind, Place::Checks, text));
+                    told = Some((kind, Place::Pipelines, text));
                 }
             }
             WatchEvent::JobStateChanged { .. } => effects.push(Effect::RefreshCi(key.clone())),
@@ -688,15 +685,6 @@ impl Watching {
 
     pub fn clear_badge(&mut self, key: &PrKey) -> bool {
         self.badges.remove(key)
-    }
-
-    #[must_use]
-    pub fn checks_badge(&self) -> bool {
-        self.checks_badge
-    }
-
-    pub fn clear_checks_badge(&mut self) -> bool {
-        std::mem::take(&mut self.checks_badge)
     }
 }
 

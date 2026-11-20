@@ -130,7 +130,7 @@ fn files_drags_into_the_main_area_and_back_and_the_layout_keeps_it(
         .iter()
         .map(|&section| restored.section(section))
         .collect();
-    assert_eq!(all.len(), 6, "one of each section, none added twice");
+    assert_eq!(all.len(), 5, "one of each section, none added twice");
 
     // And back: onto the Inbox's tab.
     let inbox = restored.section(Section::Inbox);

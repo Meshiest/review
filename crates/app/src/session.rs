@@ -217,10 +217,13 @@ pub struct LogTarget {
     pub step: Option<(u32, u64)>,
 }
 
-/// The Checks panel's state for an open pull request.
+/// An open pull request's CI, as the Conversation's pipelines card and the
+/// Log panel show it.
 #[derive(Default)]
 pub struct CiPanel {
     pub runs: Vec<CiRun>,
+    /// The pipelines card lists the runs and their jobs.
+    pub listed: bool,
     pub load: CiLoad,
     /// The head the runs were read for.
     head: Option<Sha>,
@@ -2107,6 +2110,23 @@ impl Session {
             replace: None,
             beside: false,
         }));
+        cx.notify();
+    }
+
+    /// Opens or folds `key`'s list of runs in its pipelines card.
+    pub fn toggle_pipelines(&mut self, key: &PrKey, cx: &mut Context<Self>) {
+        if let Some(open) = self.pr_mut(key) {
+            open.ci.listed = !open.ci.listed;
+        }
+        cx.notify();
+    }
+
+    /// Brings `key`'s Conversation forward with its pipelines card open.
+    pub fn show_pipelines(&mut self, key: &PrKey, mode: OpenMode, cx: &mut Context<Self>) {
+        self.show(key, PanelKind::Conversation, mode, cx);
+        if let Some(open) = self.pr_mut(key) {
+            open.ci.listed = true;
+        }
         cx.notify();
     }
 

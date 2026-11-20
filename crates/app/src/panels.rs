@@ -1,4 +1,4 @@
-//! The dock panels: diff, conversation, checks and log.
+//! The dock panels: diff, conversation and log.
 //!
 //! Panel content is a flat, opaque `surface` because text scrolls there; only
 //! the header strip uses the `bar` material.
@@ -7,13 +7,12 @@ use forge::model::ForgeKind;
 use gpui::prelude::FluentBuilder as _;
 use gpui::{
     AnyElement, App, Context, Div, Entity, EntityId, InteractiveElement as _, IntoElement,
-    ParentElement, StatefulInteractiveElement as _, Styled, div, px,
+    ParentElement, SharedString, StatefulInteractiveElement as _, Styled, div, px,
 };
 use gpui_kit::assets::IconName;
 use gpui_kit::component::dock::{PanelInfo, PanelState, register_panel};
 use gpui_kit::component::{Icon, h_flex};
 
-pub use crate::checks_panel::ChecksPanel;
 pub use crate::conversation::ConversationPanel;
 pub use crate::diff_panel::{DIFF_KEY_CONTEXT, DiffPanel};
 pub use crate::log_panel::LogPanel;
@@ -27,20 +26,18 @@ use crate::ui::{self, TextExt as _};
 
 pub const DIFF: &str = "Diff";
 pub const CONVERSATION: &str = "Conversation";
-pub const CHECKS: &str = "Checks";
 pub const LOG: &str = "Log";
 
 /// Widest a tab's label grows; a longer one ellipsizes past it. The skin's
 /// tab sizes to what it holds, so the cap lives on the label.
 pub const TAB_TITLE_MAX: f32 = 240.0;
 
-/// The dock panels the session knows by kind: one Diff, Conversation and
-/// Checks per open pull request, and one Log that follows the focused one.
+/// The dock panels the session knows by kind: one Diff and Conversation per
+/// open pull request, and one Log that follows the focused one.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum PanelKind {
     Diff,
     Conversation,
-    Checks,
     Log,
 }
 
@@ -51,7 +48,6 @@ impl PanelKind {
         match self {
             Self::Diff => DIFF,
             Self::Conversation => CONVERSATION,
-            Self::Checks => CHECKS,
             Self::Log => LOG,
         }
     }
@@ -76,10 +72,6 @@ pub fn register(cx: &mut App) {
     register_panel(cx, CONVERSATION, |build, window, cx| {
         let pr = restore(build.info(), cx);
         tab_handle(ConversationPanel::for_pr(pr, window, cx))
-    });
-    register_panel(cx, CHECKS, |build, window, cx| {
-        let pr = restore(build.info(), cx);
-        tab_handle(ChecksPanel::for_pr(pr, window, cx))
     });
     register_panel(cx, LOG, |_, window, cx| {
         tab_handle(LogPanel::new(window, cx))
@@ -200,7 +192,12 @@ impl Binding {
     /// the pull request is in the preview tab, then `extra` and the close
     /// button. A double click keeps it.
     pub fn title(&self, extra: Option<AnyElement>, cx: &App) -> AnyElement {
-        let label = self.label(cx);
+        self.title_as(self.kind.name().into(), extra, cx)
+    }
+
+    /// [`Self::title`] with `name` in place of the panel kind's.
+    pub fn title_as(&self, name: SharedString, extra: Option<AnyElement>, cx: &App) -> AnyElement {
+        let label = self.label(name, cx);
         let close = close_button(self.id, close_selector(self.pr.as_ref(), self.kind), cx);
         // The dock's tab draws the arrow; a tab is pressed like a button.
         h_flex()
@@ -213,20 +210,15 @@ impl Binding {
             .into_any_element()
     }
 
-    fn label(&self, cx: &App) -> AnyElement {
+    fn label(&self, name: SharedString, cx: &App) -> AnyElement {
         let session = self.session.read(cx);
         let Some(key) = self.pr.clone() else {
-            return tab_label(div()).child(self.kind.name()).into_any_element();
+            return tab_label(div()).child(name).into_any_element();
         };
         let sigil = session
             .pr(&key)
             .map_or_else(|| ForgeKind::GitHub.sigil(), |open| open.pr.forge.sigil());
-        let label = format!(
-            "{}{sigil}{} {}",
-            key.repo.name,
-            key.number,
-            self.kind.name()
-        );
+        let label = format!("{}{sigil}{} {name}", key.repo.name, key.number);
         let preview = session.is_preview(&key);
         let selector = tab_selector(&key, self.kind);
         let target = self.session.clone();

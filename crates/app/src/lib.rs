@@ -8,7 +8,6 @@ pub mod agent;
 pub mod appearance;
 pub mod assets;
 pub mod avatars;
-pub mod checks_panel;
 pub mod ci;
 pub mod ci_settle;
 pub mod claude_review;
@@ -333,8 +332,9 @@ pub fn init(cx: &mut App, setup: &Setup) {
 pub const CI_DEMO_STEPS: &[&str] = &["checks", "retry", "log", "fold", "watch"];
 
 /// Puts the open pull request's CI into states worth a screenshot, one
-/// step every half second after the window settles: the Checks panel,
-/// the re-run confirmation, the first failed job's log, a watch event.
+/// step every half second after the window settles: the Conversation's
+/// pipelines card open, the re-run confirmation, the first failed job's
+/// log, a watch event.
 pub fn ci_demo(steps: Vec<String>, cx: &mut App) {
     cx.spawn(async move |cx| {
         cx.background_executor()
@@ -375,7 +375,10 @@ fn ci_demo_step(step: &str, cx: &mut App) {
             .find(|job| job.state == CiState::Fail)
             .map(|job| job.id.clone());
         match step {
-            "checks" => session.show_panel(panels::PanelKind::Checks, cx),
+            "checks" => {
+                let key = open.key.clone();
+                session.show_pipelines(&key, session::OpenMode::Permanent, cx);
+            }
             "retry" => {
                 if let Some(run) = runs.iter().max_by_key(|run| ci::failed_jobs(run).count()) {
                     let retry = ci::Retry::FailedJobs {

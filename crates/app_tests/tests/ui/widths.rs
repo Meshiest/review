@@ -84,7 +84,7 @@ fn a_long_tab_title_stops_at_the_cap(cx: &mut TestAppContext) {
 }
 
 #[gpui::test]
-fn thread_rows_and_the_checks_tree_use_the_whole_width(cx: &mut TestAppContext) {
+fn thread_rows_and_the_job_rows_use_the_whole_width(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
     shell.open_pr(41);
     let threads = shell.bounds_of("section-Threads");
@@ -118,8 +118,14 @@ fn thread_rows_and_the_checks_tree_use_the_whole_width(cx: &mut TestAppContext) 
     );
     shell.click("thread-style-0");
 
-    shell.show(41, PanelKind::Checks, OpenMode::Permanent);
-    let tree = shell.bounds_of("checks-scroll");
+    let key = shell.key(41);
+    shell.update(|_, cx| {
+        session.update(cx, |session, cx| {
+            session.show_pipelines(&key, OpenMode::Permanent, cx);
+        });
+    });
+    shell.settle();
+    let tree = shell.bounds_of("merge-box-jobs");
     let job = shell.update(|_, cx| {
         let open = session.read(cx).open_pr().expect("open");
         open.ci
@@ -130,8 +136,17 @@ fn thread_rows_and_the_checks_tree_use_the_whole_width(cx: &mut TestAppContext) 
             .map(|job| job.id.to_string())
             .expect("a job")
     });
-    let job = shell.bounds_of(String::leak(format!("job-{job}")));
-    assert_eq!(job.size.width, tree.size.width, "a job row spans the tree");
+    let job = shell.bounds_of(String::leak(format!("ci-job-{job}")));
+    // The list's left padding is the jobs' indent under the card's header.
+    assert_eq!(
+        job.right(),
+        tree.right(),
+        "a job row reaches the card's right edge"
+    );
+    assert!(
+        job.size.width > tree.size.width * 0.9,
+        "and spans the list: {job:?} in {tree:?}"
+    );
 }
 
 #[gpui::test]

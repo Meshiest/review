@@ -1,5 +1,5 @@
 //! What the sidebar's dock panels draw: the inbox (see [`crate::inbox`]), and
-//! the focused pull request's title, stack, checks, threads and files.
+//! the focused pull request's title, stack, threads and files.
 //!
 //! One [`Sidebar`] entity holds the state they share (the inbox cursor, the
 //! thread cursor, the inbox layout) and builds each section's content; the
@@ -11,7 +11,7 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 use std::time::Duration;
 
-use forge::model::{JobId, Thread, ThreadId, Timestamp};
+use forge::model::{Thread, ThreadId};
 
 use gpui::{
     AnyElement, App, AppContext as _, Context, Entity, EventEmitter, FocusHandle, Focusable,
@@ -28,12 +28,10 @@ use gpui_kit::component::{
 };
 use theme::{ActiveTheme, Theme};
 
-use crate::checks_panel::job_menu::JobMenu;
 use crate::diff_panel::{NextInStack, PrevInStack};
 use crate::inbox::InboxState;
 use crate::inbox::marks::Marks;
 use crate::model::{ChangedFile, CiState, Coverage, PrKey, Viewed};
-use crate::opener::OpenStatus;
 use crate::panels::PanelKind;
 use crate::session::{OpenMode, OpenPr, Session, StackStep};
 use crate::sidebar_panels::FoldedStack;
@@ -41,7 +39,7 @@ use crate::subscriptions::Subscriptions;
 use crate::threads;
 use crate::threads::thread_menu::{self, Origin, ThreadMenu};
 use crate::ui::spinner::SpinnerSlots;
-use crate::ui::{self, CI_ROW, TextExt as _, ci_color, status_color, status_letter};
+use crate::ui::{self, CI_ROW, TextExt as _, status_color, status_letter};
 
 actions!(
     sidebar,
@@ -102,9 +100,6 @@ pub struct Sidebar {
     dock: Option<WeakEntity<DockArea>>,
     /// The folded sections' headers under the dock, made on first use.
     folded: Option<Entity<FoldedStack>>,
-    /// Redraws the Checks section each second while a job it lists runs, so
-    /// the elapsed time ticks.
-    tick: Option<Task<()>>,
     /// What a click on an inbox row last brought forward, so a further click
     /// toggles from it.
     last_view: Option<(PrKey, PanelKind)>,
@@ -123,39 +118,6 @@ struct GlobalSidebar(Entity<Sidebar>);
 impl Global for GlobalSidebar {}
 
 impl Sidebar {
-    fn has_running_job(&self, cx: &App) -> bool {
-        self.session.read(cx).open_pr().is_some_and(|open| {
-            check_rows(open)
-                .iter()
-                .any(|job| job.state == CiState::Running && job.started.is_some())
-        })
-    }
-
-    fn sync_tick(&mut self, cx: &mut Context<Self>) {
-        if self.tick.is_some() || !self.has_running_job(cx) {
-            return;
-        }
-        self.tick = Some(cx.spawn(async move |this, cx| {
-            loop {
-                cx.background_executor().timer(Duration::from_secs(1)).await;
-                let again = this
-                    .update(cx, |this, cx| {
-                        let running = this.has_running_job(cx);
-                        if running {
-                            cx.notify();
-                        } else {
-                            this.tick = None;
-                        }
-                        running
-                    })
-                    .unwrap_or(false);
-                if !again {
-                    break;
-                }
-            }
-        }));
-    }
-
     /// The folded sections' headers, drawn under the sidebar's dock.
     pub fn folded_stack(&mut self, cx: &mut Context<Self>) -> Entity<FoldedStack> {
         if let Some(stack) = &self.folded {
@@ -182,7 +144,6 @@ impl Sidebar {
         let session = Session::global(cx);
         cx.observe(&session, |this, _, cx| {
             this.sync_sections(cx);
-            this.sync_tick(cx);
             this.advance_row_action(cx);
             this.release_idle(cx);
             cx.notify();
@@ -209,7 +170,6 @@ impl Sidebar {
             on_threads: false,
             dock: None,
             folded: None,
-            tick: None,
             last_view: None,
         };
         sidebar.inbox.refresh_slots = SpinnerSlots::for_dock(cx);
@@ -250,6 +210,14 @@ impl Sidebar {
         if self.intent.as_ref().is_some_and(|(k, _)| k == key) {
             self.intent = None;
         }
+    }
+
+    /// Brings `key`'s Conversation forward with its pipelines card open.
+    pub(crate) fn show_pipelines(&mut self, key: &PrKey, cx: &mut Context<Self>) {
+        self.intent = None;
+        self.session.update(cx, |session, cx| {
+            session.show_pipelines(key, OpenMode::Permanent, cx);
+        });
     }
 
     /// Opens `key`'s `kind` panel and brings it forward.
@@ -602,135 +570,6 @@ impl Sidebar {
         )
     }
 
-    /// The checks: failing and canceled jobs first, then running and queued
-    /// ones, each a row that opens the job's log; one line for the rest. A
-    /// click on the line or the overflow row shows the Checks tab.
-    pub(crate) fn checks_section(&self, t: &Theme, cx: &mut Context<Self>) -> Option<AnyElement> {
-        let open = self.detail(cx)?;
-        let c = &t.colors;
-        let hover = c.hover;
-        if open.jobs.is_empty() {
-            return Some(self.checks_note(&open, t, cx));
-        }
-        let (mut shown, rest): (Vec<&CheckRow>, Vec<&CheckRow>) =
-            open.jobs.iter().partition(|job| job.is_listed());
-        shown.sort_by_key(|job| job.rank());
-        let overflow = shown.len().saturating_sub(CHECK_ROWS);
-        shown.truncate(CHECK_ROWS);
-        let rows = shown.into_iter().enumerate().map(|(ix, job)| {
-            let job_id = job.job.clone();
-            let menu = JobMenu::new(open.key.clone(), job.job.clone());
-            let selector = format!("sidebar-check-{ix}");
-            h_flex()
-                .id(("sidebar-check", ix))
-                .debug_selector(move || selector)
-                .w_full()
-                .h(px(ROW))
-                .flex_none()
-                .px(px(10.0))
-                .gap(px(8.0))
-                .items_center()
-                .cursor_pointer()
-                .hover(move |s| s.bg(hover))
-                .on_click(cx.listener(move |this, _, _, cx| {
-                    this.session.update(cx, |session, cx| {
-                        session.show_panel(PanelKind::Checks, cx);
-                        if let Some(job) = &job_id {
-                            session.open_log(job, None, cx);
-                        }
-                    });
-                }))
-                .child(self.ci(t, job.state, CI_ROW))
-                .child(
-                    div()
-                        .flex_1()
-                        .min_w_0()
-                        .truncate()
-                        .text_color(c.text)
-                        .child(job.name.clone()),
-                )
-                .children(job.context.clone().map(|context| {
-                    div()
-                        .flex_shrink(1.0)
-                        .min_w_0()
-                        .max_w(relative(0.4))
-                        .truncate()
-                        .tiny(t)
-                        .text_color(c.text_faint)
-                        .child(context)
-                }))
-                .child(
-                    div()
-                        .flex_none()
-                        .mono(t)
-                        .tiny(t)
-                        .text_color(ci_color(t, job.state))
-                        .child(job.duration_label()),
-                )
-                .context_menu(move |popup, _, cx| menu.popup(popup, cx))
-                .into_any_element()
-        });
-        let link = |id: &'static str, label: String, icon: Option<CiState>| {
-            h_flex()
-                .id(id)
-                .debug_selector(move || id.to_owned())
-                .w_full()
-                .h(px(ROW))
-                .flex_none()
-                .px(px(10.0))
-                .gap(px(8.0))
-                .items_center()
-                .cursor_pointer()
-                .text_color(c.text_muted)
-                .hover(move |s| s.bg(hover))
-                .on_click(cx.listener(|this, _, _, cx| {
-                    this.session
-                        .update(cx, |session, cx| session.show_panel(PanelKind::Checks, cx));
-                }))
-                .children(icon.map(|state| self.ci(t, state, CI_ROW)))
-                .child(div().min_w_0().truncate().small(t).child(label))
-                .into_any_element()
-        };
-        let more =
-            (overflow > 0).then(|| link("sidebar-checks-more", format!("+{overflow} more"), None));
-        let summary = rest_summary(&rest)
-            .map(|(label, state)| link("sidebar-checks-summary", label, Some(state)));
-        Some(
-            v_flex()
-                .w_full()
-                .children(rows)
-                .children(more)
-                .children(summary)
-                .into_any_element(),
-        )
-    }
-
-    /// What the section says when no job is known: the forge has not
-    /// answered, or reports no checks. A click shows the Checks tab.
-    fn checks_note(&self, open: &Detail, t: &Theme, cx: &mut Context<Self>) -> AnyElement {
-        let hover = t.colors.hover;
-        let note = match open.status {
-            OpenStatus::Loading if open.pr.source.is_some() => "Loading checks",
-            _ => "No checks reported",
-        };
-        div()
-            .id("sidebar-checks")
-            .w_full()
-            .h(px(ROW))
-            .px(px(10.0))
-            .flex()
-            .items_center()
-            .cursor_pointer()
-            .text_color(t.colors.text_muted)
-            .hover(move |s| s.bg(hover))
-            .on_click(cx.listener(|this, _, _, cx| {
-                this.session
-                    .update(cx, |session, cx| session.show_panel(PanelKind::Checks, cx));
-            }))
-            .child(note)
-            .into_any_element()
-    }
-
     /// The open pull request's inline threads, by file and line. A click
     /// shows one in the Conversation; a double click or Enter at its line in
     /// the diff. The path gives way in its middle and the message takes the
@@ -854,18 +693,6 @@ impl Sidebar {
                 0 | 1 => String::new(),
                 n => format!("{n} pull requests"),
             },
-            Section::Checks => {
-                let failing = open
-                    .checks
-                    .iter()
-                    .filter(|c| c.state == CiState::Fail)
-                    .count();
-                match (open.checks.len(), failing) {
-                    (0, _) => String::new(),
-                    (n, 0) => n.to_string(),
-                    (n, f) => format!("{f} of {n} failing"),
-                }
-            }
             Section::Threads => {
                 let anchored = open.threads.iter().filter(|t| t.anchor.is_some());
                 let total = anchored.clone().count();
@@ -886,10 +713,8 @@ struct Detail {
     key: PrKey,
     pr: crate::model::PullRequest,
     stack: crate::model::Stack,
-    jobs: Vec<CheckRow>,
     files: Vec<ChangedFile>,
     viewed: Viewed,
-    status: OpenStatus,
     threads: Arc<[Thread]>,
 }
 
@@ -905,10 +730,8 @@ impl Detail {
             key: open.key.clone(),
             pr: open.pr.clone(),
             stack,
-            jobs: check_rows(open),
             files: open.files.clone(),
             viewed: open.viewed.clone(),
-            status: open.status.clone(),
             threads: open.threads.clone(),
         }
     }
@@ -1354,116 +1177,4 @@ mod tests {
         assert_eq!(selected_parent(&rows, Some(&selected)), Some(4));
         assert_eq!(selected_parent(&rows, None), None);
     }
-}
-
-/// Most failing and running jobs the Checks section lists before "+N more".
-pub const CHECK_ROWS: usize = 8;
-
-/// One job in the Checks section.
-#[derive(Clone, Debug, PartialEq)]
-pub struct CheckRow {
-    pub name: String,
-    /// The workflow or stage, when it tells jobs apart.
-    pub context: Option<String>,
-    pub state: CiState,
-    pub started: Option<Timestamp>,
-    pub completed: Option<Timestamp>,
-    /// What to show when there are no times (a rollup entry's own text).
-    pub detail: Option<String>,
-    /// What the log panel opens; `None` for a rollup entry.
-    pub job: Option<JobId>,
-}
-
-impl CheckRow {
-    /// Failing, canceled, running and queued jobs get a row of their own.
-    #[must_use]
-    pub fn is_listed(&self) -> bool {
-        matches!(
-            self.state,
-            CiState::Fail | CiState::Canceled | CiState::Running | CiState::Queued
-        )
-    }
-
-    /// Failing and canceled before running and queued.
-    fn rank(&self) -> u8 {
-        match self.state {
-            CiState::Fail => 0,
-            CiState::Canceled => 1,
-            CiState::Running => 2,
-            _ => 3,
-        }
-    }
-
-    /// The right-hand text: how long it took, how long it has been running,
-    /// or its state.
-    #[must_use]
-    pub fn duration_label(&self) -> String {
-        match self.state {
-            CiState::Queued => ui::ci_label(self.state).to_owned(),
-            _ => crate::ci::duration(self.started, self.completed)
-                .or_else(|| self.detail.clone())
-                .unwrap_or_else(|| ui::ci_label(self.state).to_owned()),
-        }
-    }
-}
-
-/// The open pull request's jobs as the Checks section lists them: the runs'
-/// jobs when the forge gave them, else the rollup's checks.
-#[must_use]
-pub fn check_rows(open: &OpenPr) -> Vec<CheckRow> {
-    let several = open.ci.runs.len() > 1;
-    let from_runs: Vec<CheckRow> = open
-        .ci
-        .runs
-        .iter()
-        .flat_map(|run| {
-            run.jobs.iter().map(move |job| CheckRow {
-                name: job.name.clone(),
-                context: job
-                    .stage
-                    .clone()
-                    .or_else(|| several.then(|| run.name.clone())),
-                state: job.state,
-                started: job.started_at,
-                completed: job.completed_at,
-                detail: None,
-                job: Some(job.id.clone()),
-            })
-        })
-        .collect();
-    if !from_runs.is_empty() {
-        return from_runs;
-    }
-    open.checks
-        .iter()
-        .map(|check| CheckRow {
-            name: check.name.to_string(),
-            context: None,
-            state: check.state,
-            started: None,
-            completed: None,
-            detail: Some(check.detail.to_string()),
-            job: None,
-        })
-        .collect()
-}
-
-/// "4 passed · 2 skipped" for the jobs that get no row, with the state
-/// whose icon leads the line.
-fn rest_summary(rest: &[&CheckRow]) -> Option<(String, CiState)> {
-    let count = |state: CiState| rest.iter().filter(|job| job.state == state).count();
-    let (passed, skipped) = (count(CiState::Pass), count(CiState::Skipped));
-    let parts: Vec<String> = [(passed, "passed"), (skipped, "skipped")]
-        .into_iter()
-        .filter(|(n, _)| *n > 0)
-        .map(|(n, word)| format!("{n} {word}"))
-        .collect();
-    (!parts.is_empty()).then(|| {
-        let lead = if passed > 0 {
-            CiState::Pass
-        } else {
-            CiState::Skipped
-        };
-        (parts.join(" · "), lead)
-    })
 }

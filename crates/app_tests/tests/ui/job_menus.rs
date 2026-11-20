@@ -1,22 +1,21 @@
-//! A CI job's right-click menu, the same in the sidebar's Checks section,
-//! the Checks panel, the Conversation's CI box and its merge box: the log,
-//! the Checks tab, re-runs through the forge (several jobs only after the
-//! confirmation), watching the job's run, its link; what the forge cannot
-//! do is disabled with the reason. A click on the rollup line opens the
-//! Checks tab.
+//! A CI job's right-click menu in the Conversation's pipelines card: the
+//! log, re-runs through the forge (several jobs only after the confirmation
+//! in the card), watching the job's run, its link; what the forge cannot do
+//! is disabled with the reason.
 
 use std::sync::Arc;
 
-use app::checks_panel::job_menu::{JobAction, JobEntry, JobMenu};
 use app::ci::{CiActions, failed_jobs};
+use app::conversation::job_menu::{JobAction, JobEntry, JobMenu};
 use app::fixtures::Fixtures;
 use app::model::PrKey;
-use app::panels::{CHECKS, LOG, PanelKind};
-use app::session::OpenMode;
+use app::panels::LOG;
 use app::subscriptions::Subscriptions;
 use forge::Capabilities;
 use forge::model::{CiJob, CiRun, CiState, ForgeKind, JobId, PullRequest};
 use gpui::{Modifiers, MouseButton, SharedString, TestAppContext};
+
+use crate::pipelines::{open_card, reveal};
 
 use crate::harness::{
     FakeForge, Options, Scratch, ShellWindow, fake_services, go_live, open_shell,
@@ -43,6 +42,7 @@ fn with_failed_jobs() -> (PullRequest, ForgeKind, CiRun) {
 }
 
 fn right_click(shell: &mut ShellWindow, selector: &str) {
+    reveal(shell, selector);
     let at = shell.bounds_of(String::leak(selector.to_owned())).center();
     let none = Modifiers::none();
     shell.cx.simulate_mouse_move(at, None, none);
@@ -99,13 +99,22 @@ fn failed(run: &CiRun) -> CiJob {
     failed_jobs(run).next().expect("a failed job").clone()
 }
 
+fn job_row(job: &CiJob) -> String {
+    format!("ci-job-{}", job.id.as_str())
+}
+
 #[gpui::test]
-fn the_sidebar_job_menu_reruns_one_job_at_the_forge(cx: &mut TestAppContext) {
-    let scratch = Scratch::new("job-menu-sidebar");
-    let (mut shell, fake, _, run) = live(cx, &scratch);
+fn the_job_menu_reruns_one_job_at_the_forge(cx: &mut TestAppContext) {
+    let scratch = Scratch::new("job-menu-one");
+    let (mut shell, fake, key, run) = live(cx, &scratch);
     let job = failed(&run);
-    right_click(&mut shell, "sidebar-check-0");
+    open_card(&mut shell, key.number.0);
+    right_click(&mut shell, &job_row(&job));
     assert!(shell.drawn("job-menu-view-log"), "the job's menu");
+    assert!(
+        !shell.drawn("job-menu-show-in-checks"),
+        "no way to a Checks tab"
+    );
     shell.click("job-menu-rerun-job");
     shell.settle_until("the re-run at the forge", |_| !fake.retries().is_empty());
     assert_eq!(fake.retries(), [format!("job {}", job.id.as_str())]);
@@ -117,18 +126,18 @@ fn the_sidebar_job_menu_reruns_one_job_at_the_forge(cx: &mut TestAppContext) {
 }
 
 #[gpui::test]
-fn rerun_failed_jobs_asks_first_from_the_checks_panel(cx: &mut TestAppContext) {
-    let scratch = Scratch::new("job-menu-checks");
+fn rerun_failed_jobs_asks_first_in_the_card(cx: &mut TestAppContext) {
+    let scratch = Scratch::new("job-menu-failed");
     let (mut shell, fake, key, run) = live(cx, &scratch);
     let job = failed(&run);
-    shell.show(key.number.0, PanelKind::Checks, OpenMode::Permanent);
-    right_click(&mut shell, &format!("job-{}", job.id.as_str()));
+    open_card(&mut shell, key.number.0);
+    right_click(&mut shell, &job_row(&job));
     shell.click("job-menu-rerun-failed");
     assert!(
         confirm_jobs(&mut shell).is_some_and(|jobs| jobs >= 2),
         "it asks first"
     );
-    assert!(shell.shown_tabs().iter().any(|tab| tab == CHECKS));
+    reveal(&mut shell, "ci-retry-confirm");
     assert!(
         fake.retries().is_empty(),
         "nothing is sent before the confirm"
@@ -139,11 +148,11 @@ fn rerun_failed_jobs_asks_first_from_the_checks_panel(cx: &mut TestAppContext) {
 }
 
 #[gpui::test]
-fn the_ci_box_job_menu_watches_the_run(cx: &mut TestAppContext) {
-    let scratch = Scratch::new("job-menu-ci-box");
+fn the_job_menu_watches_the_run(cx: &mut TestAppContext) {
+    let scratch = Scratch::new("job-menu-watch");
     let (mut shell, _, key, run) = live(cx, &scratch);
     let job = failed(&run);
-    shell.show(key.number.0, PanelKind::Conversation, OpenMode::Permanent);
+    open_card(&mut shell, key.number.0);
     let watched = |shell: &mut ShellWindow| {
         shell.update(|_, cx| {
             Subscriptions::global(cx)
@@ -153,7 +162,7 @@ fn the_ci_box_job_menu_watches_the_run(cx: &mut TestAppContext) {
         })
     };
     assert!(!watched(&mut shell));
-    right_click(&mut shell, "ci-failing-0");
+    right_click(&mut shell, &job_row(&job));
     shell.click("job-menu-watch");
     assert!(watched(&mut shell), "the job's run is watched");
     let menu = JobMenu::new(key.clone(), Some(job.id.clone()));
@@ -164,13 +173,6 @@ fn the_ci_box_job_menu_watches_the_run(cx: &mut TestAppContext) {
     );
     act(&mut shell, &menu, JobAction::Watch(false));
     assert!(!watched(&mut shell));
-
-    // The merge box's job list has the same menu.
-    shell.click_element(SharedString::from("merge-box-checks"));
-    right_click(&mut shell, "merge-box-job-0");
-    assert!(shell.drawn("job-menu-show-in-checks"));
-    shell.click("job-menu-show-in-checks");
-    assert!(shell.shown_tabs().iter().any(|tab| tab == CHECKS));
 }
 
 #[gpui::test]
@@ -220,9 +222,6 @@ fn the_menu_views_logs_and_copies_links_on_fixtures(cx: &mut TestAppContext) {
     );
     act(&mut shell, &menu, JobAction::OpenOnForge);
     assert_eq!(shell.cx.opened_url(), Some(url));
-
-    act(&mut shell, &menu, JobAction::ShowInChecks);
-    assert!(shell.shown_tabs().iter().any(|tab| tab == CHECKS));
 }
 
 #[gpui::test]
@@ -265,8 +264,6 @@ fn what_the_forge_cannot_do_is_disabled_with_the_reason(cx: &mut TestAppContext)
         log.blocked.as_deref(),
         Some("Forgejo has no job logs here: open it on the forge")
     );
-    let checks = entry(&mut shell, &menu, |a| a == JobAction::ShowInChecks);
-    assert_eq!(checks.blocked, None);
 
     // A running job on a forge that re-runs cannot be re-run yet.
     let running = fixtures.inbox.prs.iter().find_map(|row| {
@@ -296,36 +293,4 @@ fn what_the_forge_cannot_do_is_disabled_with_the_reason(cx: &mut TestAppContext)
             .blocked
             .is_some_and(|why| why.starts_with("No job behind"))
     );
-}
-
-#[gpui::test]
-fn the_rollup_line_opens_the_checks_tab(cx: &mut TestAppContext) {
-    let fixtures = Fixtures::load();
-    // A pull request with passing jobs: they roll up into one line.
-    let number = fixtures
-        .inbox
-        .prs
-        .iter()
-        .find(|row| {
-            let detail = fixtures.detail(&row.key);
-            detail
-                .runs
-                .iter()
-                .flat_map(|run| &run.jobs)
-                .any(|job| job.state == CiState::Pass)
-        })
-        .expect("a fixture with a passing job")
-        .key
-        .number
-        .0;
-    let mut shell = open_shell(
-        cx,
-        Options {
-            open_pr: Some(number),
-            ..Options::default()
-        },
-    );
-    assert!(!shell.shown_tabs().iter().any(|tab| tab == CHECKS));
-    shell.click("sidebar-checks-summary");
-    assert!(shell.shown_tabs().iter().any(|tab| tab == CHECKS));
 }

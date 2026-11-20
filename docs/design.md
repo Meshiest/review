@@ -42,9 +42,9 @@ These are the constraints every part is designed around. The benchmarks
 ## Window layout and docking
 
 - **Sidebar**: the inbox sections, each collapsible with a count, and under
-  the open pull request its files and CI rollup. Sections are saved queries
-  (author is me, reviewer is me, repo is X and state is open), so more can be
-  added in config without code.
+  the open pull request its stack, threads and files. Sections are saved
+  queries (author is me, reviewer is me, repo is X and state is open), so more
+  can be added in config without code.
 - **Main area** is a dock: every view (diff, conversation, CI job log,
   terminal) is a panel that can be a tab, be split left / right / up / down,
   or be dragged to another split. Typical use: diff on the left, the failing
@@ -635,9 +635,10 @@ web routes and in status `target_url`s is `index_in_repo`, not the run id)
 
 ## CI and notifications
 
-- Sidebar shows the rollup per pull request; the detail pane shows run, job
-  and step state, and a virtualized log viewer with ANSI colors that tails a
-  running job.
+- The inbox row shows the rollup per pull request. The pipelines card at the
+  end of the Conversation shows run, job and step state, with re-runs and the
+  failed jobs' log tails; the Log tab is a virtualized log viewer with ANSI
+  colors that tails a running job.
 - **Subscriptions** poll with an adaptive interval: fast while a run is
   active, slow when idle, using conditional requests.
 - A row or stack member showing queued or running CI is read again every

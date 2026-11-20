@@ -25,11 +25,12 @@ use gpui_kit::component::{Icon, dock::Panel, h_flex, scroll::ScrollableElement a
 use scroll::HandleAutoscroll;
 use theme::Theme;
 
-pub mod ci_box;
 mod footer;
+pub mod job_menu;
+pub mod pipelines;
 
-use self::ci_box::CiBoxes;
 use self::footer::{Footer, FooterState};
+use self::pipelines::LogTails;
 use crate::appearance::{self, Appearance};
 use crate::commits;
 use crate::model::{CiState, PrKey};
@@ -73,7 +74,8 @@ struct CodeCache {
 
 pub struct ConversationPanel {
     focus: FocusHandle,
-    boxes: Entity<CiBoxes>,
+    /// The failed jobs' log tails the pipelines card shows.
+    tails: Entity<LogTails>,
     session: Entity<Session>,
     binding: Binding,
     /// Review, merge and the rest, under the title.
@@ -160,8 +162,8 @@ impl ConversationPanel {
             cx.observe_global::<Appearance>(|_: &mut Self, cx| cx.notify())
                 .detach();
             let binding = Binding::new(pr, PanelKind::Conversation, cx);
-            let boxes = CiBoxes::global(cx);
-            cx.observe(&boxes, |_: &mut Self, _, cx| cx.notify())
+            let tails = LogTails::global(cx);
+            cx.observe(&tails, |_: &mut Self, _, cx| cx.notify())
                 .detach();
             let nav = ThreadNav::global(cx);
             let scroll = gpui::ScrollHandle::new();
@@ -170,7 +172,7 @@ impl ConversationPanel {
                 focus: cx.focus_handle(),
                 session,
                 binding,
-                boxes,
+                tails,
                 actions: cx.new(|cx| PrActions::new(false, window, cx)),
                 side: cx.new(|cx| SideColumn::new(window, cx)),
                 writing: cx.new(|_| Writing::with_log_sink()),
@@ -844,7 +846,6 @@ impl Render for ConversationPanel {
             .filter(|_| commits_open)
             .map(|list| commits::list(&self.session, &key, list, open.shown_commit(), cx));
         let meta = pr_header::meta_row(open, session.account(&key.repo.host), chip, cx);
-        let ci_summary = ci_box::render(open, &self.boxes, &self.session, &self.spinners, cx);
         let preview = session.is_preview(&key);
         let refs = crate::references::context_for(session, &key);
         self.sync_writing(&key, cx);
@@ -902,8 +903,7 @@ impl Render for ConversationPanel {
                     .child(pr.title.clone()),
             )
             .children(commit_list)
-            .child(self.actions.clone())
-            .child(ci_summary);
+            .child(self.actions.clone());
 
         let description = if pr.description.trim().is_empty() {
             div()
@@ -934,6 +934,7 @@ impl Render for ConversationPanel {
                 confirm_here,
                 panel: me,
                 session: &self.session,
+                tails: &self.tails,
                 spinners: &self.spinners,
             };
             (

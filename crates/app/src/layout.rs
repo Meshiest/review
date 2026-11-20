@@ -12,7 +12,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use gpui::{Pixels, px};
-use gpui_kit::component::dock::{DockAreaState, DockPlacement, DockState};
+use gpui_kit::component::dock::{DockAreaState, DockPlacement, DockState, PanelInfo, PanelState};
 
 /// Bump when a panel's persisted shape changes; an older file is then ignored.
 pub const VERSION: usize = 2;
@@ -20,6 +20,10 @@ pub const VERSION: usize = 2;
 pub const SIDEBAR_VERSION: usize = 1;
 /// How wide the sidebar starts.
 pub const SIDEBAR_WIDTH: Pixels = px(320.0);
+/// Panels an older build saved that this one no longer has: the Checks tab
+/// and the sidebar's checks section. A layout drops them as it is read, so
+/// the rest restores as it was instead of as "unknown panel" tabs.
+pub const REMOVED_PANELS: &[&str] = &["Checks", "Rollup"];
 
 pub fn layout_path() -> Option<PathBuf> {
     dirs::data_dir().map(|dir| dir.join("review").join("layout.json"))
@@ -72,8 +76,64 @@ pub fn merge_sidebar(main: &mut DockAreaState, sidebar: DockAreaState) {
 
 fn read(path: &Path, version: usize) -> Option<DockAreaState> {
     let text = fs::read_to_string(path).ok()?;
-    let state: DockAreaState = serde_json::from_str(&text).ok()?;
-    (state.version == Some(version)).then_some(state)
+    let mut state: DockAreaState = serde_json::from_str(&text).ok()?;
+    if state.version != Some(version) {
+        return None;
+    }
+    drop_removed(&mut state);
+    Some(state)
+}
+
+/// Takes the [`REMOVED_PANELS`] out of every region of `state`.
+pub fn drop_removed(state: &mut DockAreaState) {
+    prune(&mut state.center);
+    for dock in [
+        &mut state.left_dock,
+        &mut state.right_dock,
+        &mut state.bottom_dock,
+    ]
+    .into_iter()
+    .flatten()
+    {
+        let mut panel = dock.panel().clone();
+        prune(&mut panel);
+        *dock = DockState::new(panel, dock.placement(), dock.size(), dock.open());
+    }
+}
+
+/// Removes the removed panels under `node`, and the tab groups and splits
+/// that held nothing else. Whether `node` itself is to go.
+fn prune(node: &mut PanelState) -> bool {
+    let PanelState {
+        panel_name,
+        children,
+        info,
+    } = node;
+    if let PanelInfo::Panel(_) = info {
+        return REMOVED_PANELS.contains(&panel_name.as_str());
+    }
+    if children.is_empty() {
+        return false;
+    }
+    let keep: Vec<bool> = children.iter_mut().map(|child| !prune(child)).collect();
+    match info {
+        PanelInfo::Tabs { active_index } => {
+            // The active tab stays active; if it went, the one before it.
+            let active = (*active_index).min(keep.len() - 1);
+            *active_index = keep[..active].iter().filter(|kept| **kept).count();
+            if !keep[active] {
+                *active_index = active_index.saturating_sub(1);
+            }
+        }
+        PanelInfo::Stack { sizes, .. } if sizes.len() == keep.len() => {
+            let mut kept = keep.iter();
+            sizes.retain(|_| kept.next().copied().unwrap_or(true));
+        }
+        PanelInfo::Stack { .. } | PanelInfo::Panel(_) => {}
+    }
+    let mut kept = keep.iter();
+    children.retain(|_| kept.next().copied().unwrap_or(true));
+    children.is_empty()
 }
 
 /// Saves the layout where [`load_saved`] reads it.
@@ -96,6 +156,6 @@ pub fn write_to(path: &Path, state: &DockAreaState) -> io::Result<()> {
 
 /// `--layout` names: a fresh, empty layout that the run neither reads from
 /// nor saves to the user's file. Pull requests open into it as they would
-/// into a saved one. `columns` puts the sidebar's Checks section in a second
+/// into a saved one. `columns` puts the sidebar's Threads section in a second
 /// column beside the inbox.
 pub const PRESETS: &[&str] = &["default", "columns"];

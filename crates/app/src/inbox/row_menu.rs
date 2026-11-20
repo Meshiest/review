@@ -136,11 +136,6 @@ pub fn entries(key: &PrKey, cx: &App) -> Vec<Vec<RowEntry>> {
             "Open diff",
             None,
         ),
-        RowEntry::new(
-            RowAction::Open(PanelKind::Checks, OpenMode::Permanent),
-            "Open checks",
-            None,
-        ),
     ];
     let reviews = [Verdict::Approve, Verdict::RequestChanges, Verdict::Comment]
         .into_iter()

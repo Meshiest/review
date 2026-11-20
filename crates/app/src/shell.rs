@@ -31,7 +31,7 @@ use crate::layout;
 use crate::machines::Machine;
 use crate::model::{ForgeKind, PrKey};
 use crate::palette::{Closed, Item, Mode, Palette};
-use crate::panels::{ChecksPanel, ConversationPanel, DiffPanel, LogPanel, PanelKind};
+use crate::panels::{ConversationPanel, DiffPanel, LogPanel, PanelKind};
 use crate::session::{ForgeState, OpenMode, Session, SessionEvent, ShowPanel};
 use crate::settings_panel::SettingsPanel;
 use crate::sidebar::{Sidebar, SidebarEvent};
@@ -386,7 +386,6 @@ impl Shell {
             PanelKind::Conversation => {
                 tab_handle(ConversationPanel::for_pr(pr.clone(), window, cx))
             }
-            PanelKind::Checks => tab_handle(ChecksPanel::for_pr(pr.clone(), window, cx)),
             PanelKind::Log => tab_handle(LogPanel::new(window, cx)),
         };
         let id = handle.panel_id(cx);
@@ -491,8 +490,6 @@ impl Shell {
             if let Ok(panel) = view.clone().downcast::<DiffPanel>() {
                 dock.remove_panel(panel, window, cx);
             } else if let Ok(panel) = view.clone().downcast::<ConversationPanel>() {
-                dock.remove_panel(panel, window, cx);
-            } else if let Ok(panel) = view.clone().downcast::<ChecksPanel>() {
                 dock.remove_panel(panel, window, cx);
             } else if let Ok(panel) = view.clone().downcast::<LogPanel>() {
                 dock.remove_panel(panel, window, cx);
@@ -1166,10 +1163,10 @@ impl Shell {
         self.sidebar_restored = true;
     }
 
-    /// `--layout columns`: the Checks section in a second column of the
+    /// `--layout columns`: the Threads section in a second column of the
     /// sidebar, which widens to hold both.
     pub fn columns_preset(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        sidebar_panels::checks_beside_inbox(&self.dock, window, cx);
+        sidebar_panels::beside_inbox(&self.dock, sidebar_panels::Section::Threads, window, cx);
         self.dock.update(cx, |dock, cx| {
             dock.set_dock_size(DockPlacement::Left, layout::SIDEBAR_WIDTH * 2.0, window, cx);
         });
@@ -1317,7 +1314,7 @@ impl Shell {
         ui::empty_state(
             cx,
             "No pull request open",
-            "Pick one from the inbox. The diff, conversation and checks open here.",
+            "Pick one from the inbox. The diff, conversation and job logs open here.",
             &[("j / k", "move"), ("Enter", "open"), ("?", "all keys")],
         )
     }

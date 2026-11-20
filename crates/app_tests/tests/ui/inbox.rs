@@ -520,10 +520,10 @@ fn opening_another_pull_request_leaves_every_section_its_height(cx: &mut TestApp
         shell.bounds_of(String::leak(format!("section-{}", Section::Inbox.name())))
     };
     // 42, in "Review requested", has no stack; 38, in "Created by me", is
-    // stacked. With Checks, Threads and Files folded the Stack slot is the
-    // only one under the inbox that a pull request's content could decide.
+    // stacked. With Threads and Files folded the Stack slot is the only one
+    // under the inbox that a pull request's content could decide.
     shell.click("inbox-row-42");
-    for section in ["Rollup", "Threads", "Files"] {
+    for section in ["Threads", "Files"] {
         shell.click(String::leak(format!("section-toggle-{section}")));
     }
     let start = heights(&mut shell);

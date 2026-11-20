@@ -4,8 +4,8 @@
 //!
 //! cargo run -p app --release --example theme_bench -- --unthrottled [--switches 40] [--font-rounds 4]
 //!
-//! The shell runs on fixtures with the default dock (Diff, Conversation and
-//! Checks tabbed, Log beside them). Pull request #41 is opened and scrolled to
+//! The shell runs on fixtures with the default dock (Diff and Conversation
+//! tabbed, Log beside them). Pull request #41 is opened and scrolled to
 //! its first thread, then each switch is issued through `appearance::update`,
 //! the call the settings panel makes, from a deferred callback so it never
 //! runs inside a draw (a notify from inside a draw reaches no observers in
@@ -31,7 +31,7 @@ use std::rc::Rc;
 use std::time::{Duration, Instant};
 
 use app::appearance::{self, ThemeFlags};
-use app::panels::{ChecksPanel, ConversationPanel, DiffPanel, LogPanel};
+use app::panels::{ConversationPanel, DiffPanel, LogPanel};
 use app::session::Session;
 use app::shell::{Probe, Shell};
 use app::{Setup, assets, new_dock, window_options};
@@ -411,14 +411,12 @@ fn main() {
                 let dock = new_dock(window, cx);
                 let diff = DiffPanel::new(window, cx);
                 let conversation = ConversationPanel::new(window, cx);
-                let checks = ChecksPanel::new(window, cx);
                 let log = LogPanel::new(window, cx);
                 let layout = DockLayout::h_split()
                     .child(
                         DockLayout::tabs()
                             .panel_view(panel_handle(diff.clone()), cx)
-                            .panel_view(panel_handle(conversation), cx)
-                            .panel_view(panel_handle(checks), cx),
+                            .panel_view(panel_handle(conversation), cx),
                         Some(px(820.0)),
                     )
                     .child(

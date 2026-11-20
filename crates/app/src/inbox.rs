@@ -46,9 +46,7 @@ use crate::config::SectionKind;
 use crate::model::{
     Inbox, PullRequest, RepoRef, ReviewStatus, RowReview, SectionState, relative_time,
 };
-use crate::panels::PanelKind;
 use crate::references;
-use crate::session::OpenMode;
 use crate::settings::InboxSettings;
 use crate::sidebar::{Cursor, ROW, Sidebar, SidebarEvent};
 use crate::subscriptions::Subscriptions;
@@ -1523,7 +1521,7 @@ impl Sidebar {
                             section,
                             key: checks_key.clone(),
                         });
-                        this.show(&checks_key, PanelKind::Checks, OpenMode::Permanent, cx);
+                        this.show_pipelines(&checks_key, cx);
                         window.focus(&this.focus, cx);
                     }))
                     .child(self.ci(t, pr.ci, CI_ROW)),

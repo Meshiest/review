@@ -134,7 +134,6 @@ impl Subscriptions {
             if let Some(key) = &open {
                 self.core.clear_badge(key);
             }
-            self.core.clear_checks_badge();
             self.open = open;
         }
         self.resync(cx);
@@ -305,11 +304,12 @@ impl Subscriptions {
 
     pub fn open_place(&mut self, key: &PrKey, place: &Place, cx: &mut Context<Self>) {
         self.session.update(cx, |session, cx| {
-            let panel = match place {
-                Place::Checks => PanelKind::Checks,
-                Place::Conversation(_) | Place::Overview => PanelKind::Conversation,
-            };
-            session.show(key, panel, OpenMode::Permanent, cx);
+            match place {
+                Place::Pipelines => session.show_pipelines(key, OpenMode::Permanent, cx),
+                Place::Conversation(_) | Place::Overview => {
+                    session.show(key, PanelKind::Conversation, OpenMode::Permanent, cx);
+                }
+            }
             if let Place::Conversation(Some(thread)) = place
                 && session
                     .open_pr()
@@ -393,17 +393,6 @@ impl Subscriptions {
     #[must_use]
     pub fn has_badge(&self, key: &PrKey) -> bool {
         self.core.has_badge(key)
-    }
-
-    #[must_use]
-    pub fn checks_badge(&self) -> bool {
-        self.core.checks_badge()
-    }
-
-    pub fn clear_checks_badge(&mut self, cx: &mut Context<Self>) {
-        if self.core.clear_checks_badge() {
-            cx.notify();
-        }
     }
 
     pub fn activity(&self) -> impl Iterator<Item = &ActivityEntry> {

@@ -1,4 +1,4 @@
-//! The sidebar's sections: Inbox, Stack, Checks, Threads, Files and Repos
+//! The sidebar's sections: Inbox, Stack, Threads, Files and Repos
 //! are dock panels in one column that can split into two, follow the
 //! focused pull request, keep a fold in the saved layout, and pin the pull
 //! request's title above them.
@@ -6,7 +6,7 @@
 use std::time::Duration;
 
 use app::layout;
-use app::sidebar_panels::{Section, SectionPanel, checks_beside_inbox};
+use app::sidebar_panels::{Section, SectionPanel, beside_inbox};
 use gpui::{Bounds, Entity, Modifiers, MouseButton, Pixels, TestAppContext, px};
 use gpui_kit::component::dock::{DockPlacement, DockState, InsertTarget, PanelInfo, PanelState};
 
@@ -63,42 +63,40 @@ fn the_sections_start_in_one_column_and_split_into_two(cx: &mut TestAppContext) 
     shell.open_pr(41);
     assert_eq!(
         columns(&mut shell),
-        [vec![
-            "Inbox", "Stack", "Rollup", "Threads", "Files", "Repos"
-        ]],
+        [vec!["Inbox", "Stack", "Threads", "Files", "Repos"]],
         "one column, the inbox on top"
     );
-    let (inbox, checks) = (
+    let (inbox, threads) = (
         bounds(&mut shell, Section::Inbox),
-        bounds(&mut shell, Section::Checks),
+        bounds(&mut shell, Section::Threads),
     );
     assert!(
-        checks.top() >= inbox.bottom(),
-        "the checks sit under the inbox"
+        threads.top() >= inbox.bottom(),
+        "the threads sit under the inbox"
     );
 
-    // What dropping the Checks tab right of the inbox does.
+    // What dropping the Threads tab right of the inbox does.
     let dock = shell.sidebar_dock();
-    shell.update(|window, cx| checks_beside_inbox(&dock, window, cx));
+    shell.update(|window, cx| beside_inbox(&dock, Section::Threads, window, cx));
     shell.settle();
     let layout = columns(&mut shell);
     assert_eq!(layout.len(), 2, "two columns: {layout:?}");
-    assert!(layout[1].contains(&"Rollup".to_owned()));
-    let (inbox, checks) = (
+    assert!(layout[1].contains(&"Threads".to_owned()));
+    let (inbox, threads) = (
         bounds(&mut shell, Section::Inbox),
-        bounds(&mut shell, Section::Checks),
+        bounds(&mut shell, Section::Threads),
     );
     assert!(
-        checks.left() >= inbox.right() - gpui::px(1.0),
-        "the checks show beside the inbox: {inbox:?} {checks:?}"
+        threads.left() >= inbox.right() - gpui::px(1.0),
+        "the threads show beside the inbox: {inbox:?} {threads:?}"
     );
     assert!(
-        checks.top() < inbox.bottom() && inbox.top() < checks.bottom(),
+        threads.top() < inbox.bottom() && inbox.top() < threads.bottom(),
         "side by side, not stacked"
     );
     assert!(
         shell.drawn("pinned-title-41"),
-        "the checks' column pins the title too"
+        "the threads' column pins the title too"
     );
 }
 
@@ -266,15 +264,15 @@ fn a_folded_section_gives_its_space_to_the_open_ones(cx: &mut TestAppContext) {
     shell.click("section-toggle-Files");
     let back = heights(&mut shell);
     eprintln!("BACK {back:?}");
-    assert!(back[4] > 150.0, "{back:?}");
+    assert!(back[3] > 150.0, "{back:?}");
 }
 
-/// Puts the Checks section in the Files section's tab group, Checks shown:
-/// what dropping its tab on Files' tab bar does.
-fn checks_with_files(shell: &mut ShellWindow) {
-    let (files, checks) = (
+/// Puts the Threads section in the Files section's tab group, Threads
+/// shown: what dropping its tab on Files' tab bar does.
+fn threads_with_files(shell: &mut ShellWindow) {
+    let (files, threads) = (
         shell.section(Section::Files),
-        shell.section(Section::Checks),
+        shell.section(Section::Threads),
     );
     let dock = shell.sidebar_dock();
     shell.update(|window, cx| {
@@ -288,7 +286,7 @@ fn checks_with_files(shell: &mut ShellWindow) {
                 ix: None,
                 activate: true,
             };
-            dock.move_panel(checks, target, window, cx);
+            dock.move_panel(threads, target, window, cx);
         });
     });
     shell.settle();
@@ -303,66 +301,64 @@ fn folded(shell: &mut ShellWindow, section: Section) -> bool {
 fn folding_one_tab_of_a_group_folds_the_whole_group(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
     shell.open_pr(41);
-    checks_with_files(&mut shell);
-    assert!(shell.drawn("section-Rollup") && !shell.drawn("section-Files"));
+    threads_with_files(&mut shell);
+    assert!(shell.drawn("section-Threads") && !shell.drawn("section-Files"));
 
     // Files is the shown tab; the group's fold button folds both.
     shell.click("section-title-Files");
     assert!(shell.drawn("section-Files"));
     assert!(
-        !shell.drawn("section-toggle-Rollup"),
+        !shell.drawn("section-toggle-Threads"),
         "one fold button per group, the shown tab's"
     );
     shell.click("section-toggle-Files");
-    assert!(folded(&mut shell, Section::Files) && folded(&mut shell, Section::Checks));
-    assert!(!shell.drawn("section-Files") && !shell.drawn("section-Rollup"));
+    assert!(folded(&mut shell, Section::Files) && folded(&mut shell, Section::Threads));
+    assert!(!shell.drawn("section-Files") && !shell.drawn("section-Threads"));
     assert_eq!(
         columns(&mut shell),
-        [vec![
-            "Inbox", "Stack", "Threads", "Files", "Rollup", "Repos"
-        ]],
+        [vec!["Inbox", "Stack", "Files", "Threads", "Repos"]],
         "the group keeps its tabs"
     );
 
     // One strip row holds both names.
-    let (files, checks) = (
+    let (files, threads) = (
         shell.bounds_of("section-toggle-Files"),
-        shell.bounds_of("section-toggle-Rollup"),
+        shell.bounds_of("section-toggle-Threads"),
     );
-    assert_eq!(files.top(), checks.top(), "both names in one row");
-    assert!(files.right() <= checks.left(), "in tab order");
+    assert_eq!(files.top(), threads.top(), "both names in one row");
+    assert!(files.right() <= threads.left(), "in tab order");
     let row = shell.bounds_of("section-folded-group-Files");
-    assert!(row.contains(&files.center()) && row.contains(&checks.center()));
+    assert!(row.contains(&files.center()) && row.contains(&threads.center()));
     assert!(
-        !shell.drawn("section-folded-group-Rollup"),
-        "no second row for Checks"
+        !shell.drawn("section-folded-group-Threads"),
+        "no second row for Threads"
     );
 
     // The second name unfolds the group with that tab shown.
-    shell.click("section-toggle-Rollup");
-    assert!(!folded(&mut shell, Section::Files) && !folded(&mut shell, Section::Checks));
-    assert!(shell.drawn("section-Rollup"), "Checks is the shown tab");
+    shell.click("section-toggle-Threads");
+    assert!(!folded(&mut shell, Section::Files) && !folded(&mut shell, Section::Threads));
+    assert!(shell.drawn("section-Threads"), "Threads is the shown tab");
     assert!(!shell.drawn("section-Files"));
     assert!(!shell.drawn("section-folded-group-Files"));
 
     // Folded again and unfolded by the first name: Files is shown.
-    shell.click("section-toggle-Rollup");
-    assert!(folded(&mut shell, Section::Checks) && folded(&mut shell, Section::Files));
+    shell.click("section-toggle-Threads");
+    assert!(folded(&mut shell, Section::Threads) && folded(&mut shell, Section::Files));
     shell.click("section-toggle-Files");
-    assert!(shell.drawn("section-Files") && !shell.drawn("section-Rollup"));
+    assert!(shell.drawn("section-Files") && !shell.drawn("section-Threads"));
 }
 
 #[gpui::test]
 fn a_tab_click_only_selects_and_the_fold_button_leads_the_tabs(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
     shell.open_pr(41);
-    checks_with_files(&mut shell);
+    threads_with_files(&mut shell);
 
     shell.click("section-title-Files");
-    assert!(shell.drawn("section-Files") && !shell.drawn("section-Rollup"));
+    assert!(shell.drawn("section-Files") && !shell.drawn("section-Threads"));
     shell.click("section-title-Files");
     assert!(
-        !folded(&mut shell, Section::Files) && !folded(&mut shell, Section::Checks),
+        !folded(&mut shell, Section::Files) && !folded(&mut shell, Section::Threads),
         "a click on the shown tab does not fold it either"
     );
     assert!(shell.drawn("section-Files"));
@@ -370,18 +366,18 @@ fn a_tab_click_only_selects_and_the_fold_button_leads_the_tabs(cx: &mut TestAppC
     // The button leads the tab bar at the sidebar's edge, not in a tab; the
     // tabs scroll beside it when they do not fit.
     let button = shell.bounds_of("section-toggle-Files");
-    let (files, checks) = (
+    let (files, threads) = (
         shell.bounds_of("section-title-Files"),
-        shell.bounds_of("section-title-Rollup"),
+        shell.bounds_of("section-title-Threads"),
     );
     assert!(
-        button.left() < px(12.0) && button.right() <= checks.left(),
-        "{button:?} before {files:?} and {checks:?}"
+        button.left() < px(12.0) && button.right() <= threads.left(),
+        "{button:?} before {files:?} and {threads:?}"
     );
     assert!(button.top() < files.bottom() && files.top() < button.bottom());
     shell.click("section-toggle-Files");
     assert!(
-        folded(&mut shell, Section::Files) && folded(&mut shell, Section::Checks),
+        folded(&mut shell, Section::Files) && folded(&mut shell, Section::Threads),
         "the button folds the group"
     );
 }
@@ -400,7 +396,7 @@ fn a_saved_group_with_mixed_folds_opens_unfolded(
 ) {
     let mut first = open_shell(first, Options::default());
     first.open_pr(41);
-    checks_with_files(&mut first);
+    threads_with_files(&mut first);
     let dock = first.sidebar_dock();
     let mut state = first.update(|_, cx| dock.read(cx).dump(cx));
     let left = state.left_dock.take().expect("a sidebar");
@@ -420,7 +416,7 @@ fn a_saved_group_with_mixed_folds_opens_unfolded(
         },
     );
     assert!(!folded(&mut restored, Section::Files));
-    assert!(!folded(&mut restored, Section::Checks));
+    assert!(!folded(&mut restored, Section::Threads));
 }
 
 /// The open sections of the sidebar's one column, top to bottom, checked to
@@ -501,10 +497,8 @@ fn every_boundary_between_open_groups_drags(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
     shell.resize(1440.0, 1000.0);
     // Stack folded hides the slot under the inbox; Threads folded hides the
-    // slot over the Files and Checks group too.
+    // slot over Files too.
     shell.open_pr(42);
-    checks_with_files(&mut shell);
-    shell.click("section-title-Files");
     shell.click("section-toggle-Stack");
     shell.click("section-toggle-Threads");
     let start = open_column(&mut shell);
@@ -571,7 +565,7 @@ fn the_open_sections_fill_the_column_folded_or_not(cx: &mut TestAppContext) {
     shell.click("section-toggle-Threads");
     shell.click("section-toggle-Files");
     let open = sections(&open_column(&mut shell));
-    assert_eq!(open, [Section::Inbox, Section::Stack, Section::Checks]);
+    assert_eq!(open, [Section::Inbox, Section::Stack]);
     assert!(
         shell.drawn("section-folded-group-Threads") && shell.drawn("section-folded-group-Files"),
         "a header row each"
@@ -583,7 +577,6 @@ fn the_open_sections_fill_the_column_folded_or_not(cx: &mut TestAppContext) {
         [
             Section::Inbox,
             Section::Stack,
-            Section::Checks,
             Section::Threads,
             Section::Files
         ]

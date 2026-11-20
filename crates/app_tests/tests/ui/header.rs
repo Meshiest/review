@@ -1,6 +1,5 @@
-//! The pull request header: where the pull request lives, its CI with ways
-//! into the Checks tab and the failing jobs' logs, and the actions on it
-//! (review verdicts, merge, draft, close), on fixtures and on a fake forge.
+//! The pull request header: where the pull request lives and the actions on
+//! it (review verdicts, merge, draft, close), on fixtures and on a fake forge.
 //! The action tests run under the Vercel theme.
 
 use std::sync::Arc;
@@ -12,7 +11,7 @@ use app::panels::PanelKind;
 use app::pr_header::{Menu, PrActions};
 use app::session::OpenMode;
 use app::sink::Verdict;
-use forge::model::{CiState, ForgeKind, MergeMethod, PrState};
+use forge::model::{ForgeKind, MergeMethod, PrState};
 use gpui::{Entity, SharedString, TestAppContext};
 
 use crate::harness::{
@@ -81,47 +80,18 @@ fn conversation(theme: ThemeFlags, number: u64, cx: &mut TestAppContext) -> Shel
 }
 
 #[gpui::test]
-fn the_header_names_the_pull_request_and_leads_to_its_checks(cx: &mut TestAppContext) {
+fn the_header_names_the_pull_request_without_a_ci_box(cx: &mut TestAppContext) {
     let mut shell = conversation(flat(), 1288, cx);
     assert!(
         shell.drawn("pr-meta"),
         "host, repo, number, branches and author"
     );
     assert!(shell.drawn("my-review"));
-    assert!(shell.drawn("ci-summary"));
     assert!(shell.drawn("pr-actions"));
-
-    // A failing job unfolds its log tail; the full log is one more click.
-    shell.click("ci-failing-0");
-    let boxes = shell.update(|_, cx| app::conversation::ci_box::CiBoxes::global(cx));
-    shell.settle_until("the log tail", |cx| boxes.read(cx).tails_ready() > 0);
-    shell.click("ci-full-log-0");
-    let session = shell.session();
-    let picked = shell.update(|_, cx| {
-        let open = session.read(cx).open_pr()?;
-        let log = open.ci.log.as_ref()?;
-        Some(log.job.state)
-    });
-    assert_eq!(picked, Some(CiState::Fail), "a failing job's log opened");
-    assert!(shell.shown_tabs().iter().any(|tab| tab == app::panels::LOG));
-
-    shell.click_element(SharedString::from("open-checks"));
-    let checks = shell
-        .panel_of(1288, PanelKind::Checks)
-        .expect("a Checks tab");
     assert!(
-        shell.is_shown(checks),
-        "Open checks brought its tab forward"
+        !shell.drawn("ci-summary"),
+        "the checks are in the pipelines card at the end"
     );
-
-    // The CI icon of an inbox row goes straight to that pull request's
-    // Checks, without the conversation a row click would preview.
-    shell.click("inbox-ci-412");
-    let checks = shell
-        .panel_of(412, PanelKind::Checks)
-        .expect("#412's Checks");
-    assert!(shell.is_shown(checks));
-    assert_eq!(shell.panel_of(412, PanelKind::Conversation), None);
 }
 
 #[gpui::test]

@@ -1,6 +1,6 @@
-//! The open pull request's CI as the Checks and Log panels show it, without
-//! gpui: runs, jobs and steps, what a re-run would touch, and how a job's
-//! log is followed while it runs.
+//! The open pull request's CI as the Conversation's pipelines card and the
+//! Log panel show it, without gpui: runs, jobs and steps, what a re-run would
+//! touch, and how a job's log is followed while it runs.
 
 use std::time::Duration;
 
@@ -72,7 +72,7 @@ pub fn failed_jobs(run: &CiRun) -> impl Iterator<Item = &CiJob> {
     run.jobs.iter().filter(|job| job.state == CiState::Fail)
 }
 
-/// What the forge lets the panel do; the rest becomes a web link.
+/// What the forge lets the app do with CI; the rest becomes a web link.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct CiActions {
     pub retry: bool,

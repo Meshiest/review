@@ -46,8 +46,6 @@ Not planned yet.
 
 ## Open decisions
 
-- CI shows twice in the Conversation: the CI box at the top and the merge
-  box at the bottom. Recommend dropping the top box, as GitHub does.
 - "Review with agent" refuses a checkout with symlinks that escape it.
   Recommend listing those links on the "Open on machine" config card too.
 - The "from Claude" label on drafts is lost on restart. Recommend keeping it

@@ -32,7 +32,7 @@ use std::rc::Rc;
 use std::time::{Duration, Instant};
 
 use app::appearance::ThemeFlags;
-use app::panels::{ChecksPanel, ConversationPanel, DiffPanel, LogPanel};
+use app::panels::{ConversationPanel, DiffPanel, LogPanel};
 use app::scenario::{first_line, keystroke_for};
 use app::session::Session;
 use app::shell::{Probe, Shell};
@@ -381,14 +381,12 @@ fn main() {
                 let dock = new_dock(window, cx);
                 let diff = DiffPanel::new(window, cx);
                 let conversation = ConversationPanel::new(window, cx);
-                let checks = ChecksPanel::new(window, cx);
                 let log = LogPanel::new(window, cx);
                 let layout = DockLayout::h_split()
                     .child(
                         DockLayout::tabs()
                             .panel_view(panel_handle(diff.clone()), cx)
-                            .panel_view(panel_handle(conversation), cx)
-                            .panel_view(panel_handle(checks), cx),
+                            .panel_view(panel_handle(conversation), cx),
                         Some(px(820.0)),
                     )
                     .child(

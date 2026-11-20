@@ -1,8 +1,6 @@
-//! The right-click menu of a CI job, the same wherever the job is listed:
-//! the sidebar's Checks section, the Checks panel, the Conversation's CI box
-//! and its merge box. Re-runs and watching go through the session's and the
-//! subscriptions' own paths, so a re-run of several jobs asks first as the
-//! Checks panel's button does.
+//! The right-click menu of a CI job in the Conversation's pipelines card.
+//! Re-runs and watching go through the session's and the subscriptions' own
+//! paths, so a re-run of several jobs asks first as the card's button does.
 
 use forge::model::{CiJob, CiRun, ForgeKind, JobId};
 use gpui::App;
@@ -10,8 +8,7 @@ use gpui_kit::component::menu::PopupMenu;
 
 use crate::ci::{self, Retry};
 use crate::model::PrKey;
-use crate::panels::PanelKind;
-use crate::session::{OpenMode, Session};
+use crate::session::Session;
 use crate::subscriptions::Subscriptions;
 use crate::threads::comment_menu::copy;
 use crate::threads::thread_menu::entry_item;
@@ -21,7 +18,6 @@ use crate::untrusted::is_web_url;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum JobAction {
     ViewLog,
-    ShowInChecks,
     RerunJob,
     RerunFailed,
     /// `true` starts watching the job's run, `false` stops.
@@ -35,7 +31,6 @@ impl JobAction {
     fn slug(self) -> &'static str {
         match self {
             Self::ViewLog => "view-log",
-            Self::ShowInChecks => "show-in-checks",
             Self::RerunJob => "rerun-job",
             Self::RerunFailed => "rerun-failed",
             Self::Watch(true) => "watch",
@@ -108,7 +103,7 @@ impl JobMenu {
             .find(|url| is_web_url(url))
     }
 
-    /// The entries in groups: where to see it, re-runs and watching, its link.
+    /// The entries in groups: its log, re-runs and watching, its link.
     #[must_use]
     pub fn entries(&self, cx: &App) -> Vec<Vec<JobEntry>> {
         use JobAction as A;
@@ -116,10 +111,7 @@ impl JobMenu {
         let Some(found) = self.find(cx) else {
             let why = || Some("No job behind this check: the forge lists none".to_owned());
             return vec![
-                vec![
-                    JobEntry::new(A::ViewLog, "View log", why()),
-                    JobEntry::new(A::ShowInChecks, "Show in Checks", None),
-                ],
+                vec![JobEntry::new(A::ViewLog, "View log", why())],
                 vec![
                     JobEntry::new(A::RerunJob, "Re-run job", why()),
                     JobEntry::new(A::RerunFailed, "Re-run failed jobs", why()),
@@ -172,10 +164,7 @@ impl JobMenu {
             .is_none()
             .then(|| "The forge gave no address for it".to_owned());
         vec![
-            vec![
-                JobEntry::new(A::ViewLog, "View log", log),
-                JobEntry::new(A::ShowInChecks, "Show in Checks", None),
-            ],
+            vec![JobEntry::new(A::ViewLog, "View log", log)],
             vec![
                 JobEntry::new(A::RerunJob, "Re-run job", rerun),
                 JobEntry::new(A::RerunFailed, "Re-run failed jobs", failed),
@@ -195,14 +184,11 @@ impl JobMenu {
     /// Does what `action` says, on this menu's pull request.
     pub fn run(&self, action: JobAction, cx: &mut App) {
         let session = Session::global(cx);
-        let found = match (action, self.find(cx)) {
-            (JobAction::ShowInChecks, _) => return self.show_in_checks(cx),
-            (_, Some(found)) => found,
-            (_, None) => return,
+        let Some(found) = self.find(cx) else {
+            return;
         };
         let (key, run, job) = (&self.key, found.run.id, found.job.id);
         match action {
-            JobAction::ShowInChecks => {}
             JobAction::ViewLog => session.update(cx, |session, cx| {
                 session.focus(key, cx);
                 session.open_log(&job, None, cx);
@@ -211,19 +197,10 @@ impl JobMenu {
                 session.focus(key, cx);
                 session.request_retry(Retry::Job { run, job }, cx);
             }),
-            JobAction::RerunFailed => {
-                let asks = session.update(cx, |session, cx| {
-                    session.focus(key, cx);
-                    session.request_retry(Retry::FailedJobs { run }, cx);
-                    session
-                        .pr(key)
-                        .is_some_and(|open| open.ci.confirm.is_some())
-                });
-                // The confirmation is drawn in the Checks panel.
-                if asks {
-                    self.show_in_checks(cx);
-                }
-            }
+            JobAction::RerunFailed => session.update(cx, |session, cx| {
+                session.focus(key, cx);
+                session.request_retry(Retry::FailedJobs { run }, cx);
+            }),
             JobAction::Watch(_) => {
                 if let Some(subscriptions) = Subscriptions::global(cx) {
                     subscriptions.update(cx, |s, cx| s.toggle_run(key, &run, cx));
@@ -240,22 +217,6 @@ impl JobMenu {
                 }
             }
         }
-    }
-
-    /// Brings the Checks panel forward with the job's run unfolded.
-    fn show_in_checks(&self, cx: &mut App) {
-        let run = self.find(cx).map(|found| found.run.id);
-        Session::global(cx).update(cx, |session, cx| {
-            session.show(&self.key, PanelKind::Checks, OpenMode::Preview, cx);
-            let folded = run.as_ref().filter(|run| {
-                session
-                    .pr(&self.key)
-                    .is_some_and(|open| open.ci.folded.contains(*run))
-            });
-            if let Some(run) = folded {
-                session.toggle_run_folded(run, cx);
-            }
-        });
     }
 
     /// The menu, built when it opens.

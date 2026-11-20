@@ -513,13 +513,12 @@ impl ShellWindow {
         })
     }
 
-    /// The dock panel the session knows by `name` (`Checks`, `Log`, ...)
+    /// The dock panel the session knows by `name` (`Diff`, `Log`, ...)
     /// for the focused pull request.
     pub fn panel_id(&mut self, name: &'static str) -> PanelId {
         let kind = match name {
             app::panels::DIFF => PanelKind::Diff,
             app::panels::CONVERSATION => PanelKind::Conversation,
-            app::panels::CHECKS => PanelKind::Checks,
             _ => PanelKind::Log,
         };
         let session = self.session();

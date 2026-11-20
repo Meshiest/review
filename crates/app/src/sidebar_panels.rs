@@ -1,4 +1,4 @@
-//! The sidebar's panels: Inbox, Stack, Checks, Threads, Files and Repos, one
+//! The sidebar's panels: Inbox, Stack, Threads, Files and Repos, one
 //! [`SectionPanel`] each, in the left region of the app's one dock. They
 //! start in one column, the inbox on top, the focused pull request's
 //! sections under it and Repos folded at the bottom; the user can drag any
@@ -49,8 +49,6 @@ use crate::ui::{self, TextExt as _};
 /// rest.
 const INBOX_HEIGHT: f32 = 420.0;
 const STACK_HEIGHT: f32 = 100.0;
-/// Room for the failing and running jobs' rows and the summary line.
-const CHECKS_HEIGHT: f32 = 64.0;
 const THREADS_HEIGHT: f32 = 100.0;
 /// The least a folded section's slot keeps when its tab bar was not
 /// measured yet.
@@ -70,42 +68,29 @@ const REGIONS: [DockPlacement; 4] = [
 pub enum Section {
     Inbox,
     Stack,
-    Checks,
     Threads,
     Files,
     Repos,
 }
 
 impl Section {
-    pub const ALL: [Self; 6] = [
+    pub const ALL: [Self; 5] = [
         Self::Inbox,
         Self::Stack,
-        Self::Checks,
         Self::Threads,
         Self::Files,
         Self::Repos,
     ];
 
-    /// The name the layout saves it under. The checks section is not
-    /// "Checks": that is the dock tab with the runs.
+    /// The name the layout saves it under, also its tab's title.
     #[must_use]
     pub fn name(self) -> &'static str {
         match self {
             Self::Inbox => "Inbox",
             Self::Stack => "Stack",
-            Self::Checks => "Rollup",
             Self::Threads => "Threads",
             Self::Files => "Files",
             Self::Repos => "Repos",
-        }
-    }
-
-    /// What its tab reads.
-    #[must_use]
-    pub fn title(self) -> &'static str {
-        match self {
-            Self::Checks => "Checks",
-            other => other.name(),
         }
     }
 
@@ -121,7 +106,6 @@ impl Section {
         match self {
             Self::Inbox => (Some(INBOX_HEIGHT), false),
             Self::Stack => (Some(STACK_HEIGHT), false),
-            Self::Checks => (Some(CHECKS_HEIGHT), false),
             Self::Threads => (Some(THREADS_HEIGHT), false),
             Self::Files => (None, false),
             Self::Repos => (Some(FOLDED_MIN), true),
@@ -1025,7 +1009,7 @@ impl Panel for SectionPanel {
                         this.toggle_collapsed(window, cx);
                     }))
             })
-            .child(tab_label(div()).child(self.section.title()))
+            .child(tab_label(div()).child(self.section.name()))
             .when(!note.is_empty(), |el| {
                 el.child(
                     div()
@@ -1156,7 +1140,6 @@ impl Render for SectionBody {
                 (true, _) => None,
                 (false, Section::Inbox) => Some(sidebar.inbox_body(window, cx)),
                 (false, Section::Stack) => sidebar.stack_section(&t, cx),
-                (false, Section::Checks) => sidebar.checks_section(&t, cx),
                 (false, Section::Threads) => sidebar.threads_section(&t, cx),
                 (false, Section::Files) => sidebar.files_section(&t, cx),
                 (false, Section::Repos) => Some(sidebar.repos_body(&t, cx)),
@@ -1202,12 +1185,11 @@ pub fn section_panel(dock: &DockArea, section: Section, cx: &App) -> Option<Pane
         })
 }
 
-/// Moves the Checks section into a second column of the sidebar, right of
-/// the one the inbox is in: what dropping its tab on the sidebar's right
-/// edge does.
-pub fn checks_beside_inbox(dock: &Entity<DockArea>, window: &mut Window, cx: &mut App) {
+/// Moves `section` into a second column of the sidebar, right of the one
+/// the inbox is in: what dropping its tab on the sidebar's right edge does.
+pub fn beside_inbox(dock: &Entity<DockArea>, section: Section, window: &mut Window, cx: &mut App) {
     dock.update(cx, |dock, cx| {
-        let Some(checks) = section_panel(dock, Section::Checks, cx) else {
+        let Some(panel) = section_panel(dock, section, cx) else {
             return;
         };
         let Some(node) = dock
@@ -1221,7 +1203,7 @@ pub fn checks_beside_inbox(dock: &Entity<DockArea>, window: &mut Window, cx: &mu
             placement: Placement::Right,
             size: None,
         };
-        dock.move_panel(checks, target, window, cx);
+        dock.move_panel(panel, target, window, cx);
     });
 }
 
@@ -1333,7 +1315,7 @@ impl Render for FoldedStack {
                                     .truncate()
                                     .font_weight(FontWeight::SEMIBOLD)
                                     .text_color(c.text_secondary)
-                                    .child(section.title()),
+                                    .child(section.name()),
                             )
                             .when(!note.is_empty(), |el| {
                                 el.child(

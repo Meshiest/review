@@ -1,4 +1,5 @@
-//! The Log panel: the job picked in the Checks panel, through `log_view`.
+//! The Log panel: the job picked in the Conversation's pipelines card,
+//! through `log_view`. Its tab reads "Log: <job>".
 //!
 //! While the job runs the log is read from the last offset about every two
 //! seconds (sooner right after new bytes) and pushed into a [`LogFeed`];
@@ -460,7 +461,13 @@ impl LogPanel {
 
 impl Panel for LogPanel {
     fn title(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        self.binding.title(None, cx)
+        match self.target(cx) {
+            Some(target) => {
+                let name = SharedString::from(format!("Log: {}", target.job.name));
+                self.binding.title_as(name, None, cx)
+            }
+            None => self.binding.title(None, cx),
+        }
     }
 
     fn inner_padding(&self, _: &App) -> bool {
@@ -476,7 +483,7 @@ impl Render for LogPanel {
         let target = self.target(cx);
         let (Some(target), Some(tailing)) = (target, self.tailing.as_ref()) else {
             let note = if self.session.read(cx).open_pr().is_some() {
-                "Pick a job in Checks to see its log"
+                "Pick a job in the Conversation's checks to see its log"
             } else {
                 "No pull request open"
             };

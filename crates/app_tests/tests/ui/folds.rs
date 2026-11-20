@@ -144,49 +144,7 @@ fn conversation_of(cx: &mut TestAppContext, number: u64) -> ShellWindow {
 }
 
 #[gpui::test]
-fn the_ci_box_unfolds_in_place_and_a_failing_job_shows_its_log_tail(cx: &mut TestAppContext) {
-    let mut shell = conversation_of(cx, 1288);
-    let boxes = shell.update(|_, cx| app::conversation::ci_box::CiBoxes::global(cx));
-    let expanded = |shell: &mut ShellWindow| {
-        let session = shell.session();
-        shell.update(|_, cx| {
-            let key = session.read(cx).open_pr().expect("open").key.clone();
-            boxes.read(cx).is_expanded(&key)
-        })
-    };
-    let tabs = shell.shown_tabs();
-    assert!(!expanded(&mut shell));
-
-    // Empty space in the box: not a control, so the click is the box's.
-    shell.click("ci-space");
-    assert!(expanded(&mut shell), "a click in the box expanded it");
-    assert_eq!(shell.shown_tabs(), tabs, "and changed no tab");
-    shell.click("ci-space");
-    assert!(!expanded(&mut shell), "a second click folded it");
-    assert_eq!(shell.shown_tabs(), tabs);
-
-    shell.click("ci-failing-0");
-    shell.settle_until("the log tail", |cx| boxes.read(cx).tails_ready() > 0);
-    assert!(
-        shell.drawn("ci-tail-0"),
-        "the tail is under the failing job"
-    );
-    assert!(!expanded(&mut shell), "the job click is not the box's");
-    assert_eq!(shell.shown_tabs(), tabs, "no Log tab for a tail");
-    shell.click("ci-failing-0");
-    assert!(!shell.drawn("ci-tail-0"), "a second click closed it");
-
-    shell.click_element(gpui::SharedString::from("open-checks"));
-    assert_ne!(
-        shell.shown_tabs(),
-        tabs,
-        "Open checks opened the Checks tab"
-    );
-    assert!(!expanded(&mut shell), "without folding the box");
-}
-
-#[gpui::test]
-fn a_click_anywhere_on_a_checks_run_row_folds_it_but_not_on_its_link(cx: &mut TestAppContext) {
+fn a_click_anywhere_on_a_run_row_folds_it_but_not_on_its_link(cx: &mut TestAppContext) {
     let fixtures = Fixtures::load();
     let (row, run) = fixtures
         .inbox
@@ -208,13 +166,8 @@ fn a_click_anywhere_on_a_checks_run_row_folds_it_but_not_on_its_link(cx: &mut Te
             ..Options::default()
         },
     );
+    crate::pipelines::open_card(&mut shell, row.key.number.0);
     let session = shell.session();
-    shell.update(|_, cx| {
-        session.update(cx, |session, cx| {
-            session.show_panel(app::panels::PanelKind::Checks, cx)
-        })
-    });
-    shell.settle();
     let folded = |shell: &mut ShellWindow| {
         shell.update(|_, cx| {
             session
@@ -223,7 +176,8 @@ fn a_click_anywhere_on_a_checks_run_row_folds_it_but_not_on_its_link(cx: &mut Te
                 .is_some_and(|open| open.ci.folded.contains(&run.id))
         })
     };
-    let selector = format!("run-{}", run.id);
+    let selector = format!("ci-run-{}", run.id);
+    crate::pipelines::reveal(&mut shell, &selector);
     let header = shell.bounds_of(String::leak(selector.clone()));
     // The middle of the row, far from any control.
     shell.click_at(gpui::point(
@@ -234,10 +188,14 @@ fn a_click_anywhere_on_a_checks_run_row_folds_it_but_not_on_its_link(cx: &mut Te
         folded(&mut shell),
         "a click in the middle of the row folded it"
     );
+    assert!(
+        crate::pipelines::listed(&mut shell),
+        "and not the card around it"
+    );
 
     let link = format!(
         "web-link-{}",
-        gpui::ElementId::from(("run-web", app::checks_panel::ix_of(&run)))
+        gpui::ElementId::from(("ci-run-web", app::conversation::pipelines::ix_of(&run)))
     );
     shell.click_at(gpui::point(
         header.left() + header.size.width * 0.5,
@@ -251,6 +209,7 @@ fn a_click_anywhere_on_a_checks_run_row_folds_it_but_not_on_its_link(cx: &mut Te
         "the link opened the run's page"
     );
     assert!(!folded(&mut shell), "without folding the row");
+    assert!(crate::pipelines::listed(&mut shell), "or the card");
 }
 
 #[gpui::test]

@@ -4,7 +4,7 @@
 //! main area; Open on forge. A tab that is not a pull request's gets only
 //! the close and placement entries.
 
-use app::panels::{CHECKS, CONVERSATION, DIFF, PanelKind, tab_selector};
+use app::panels::{CONVERSATION, DIFF, PanelKind, tab_selector};
 use app::session::OpenMode;
 use app::sidebar_panels::Section;
 use app::tab_menu::{self, TabAction};
@@ -37,7 +37,8 @@ fn region_of(shell: &mut ShellWindow, panel: PanelId) -> Option<DockPlacement> {
     shell.update(|_, cx| tab_menu::place_of(dock.read(cx), panel).map(|place| place.region))
 }
 
-/// #41 with its Diff, Conversation and Checks tabbed in one group.
+/// #41's Diff and Conversation and #42's Diff tabbed in one group, #41
+/// focused.
 fn three_tabs(cx: &mut TestAppContext) -> ShellWindow {
     let mut shell = open_shell(
         cx,
@@ -47,9 +48,15 @@ fn three_tabs(cx: &mut TestAppContext) -> ShellWindow {
         },
     );
     shell.show(41, PanelKind::Conversation, OpenMode::Permanent);
-    shell.show(41, PanelKind::Checks, OpenMode::Permanent);
-    assert_eq!(shell.groups(), [vec![DIFF, CONVERSATION, CHECKS]]);
+    shell.show(42, PanelKind::Diff, OpenMode::Permanent);
+    assert_eq!(shell.groups(), [vec![DIFF, CONVERSATION, DIFF]]);
+    shell.show(41, PanelKind::Conversation, OpenMode::Permanent);
     shell
+}
+
+/// #42's Diff, the tab right of #41's.
+fn other_diff(shell: &mut ShellWindow) -> PanelId {
+    shell.panel_of(42, PanelKind::Diff).expect("#42's Diff")
 }
 
 #[gpui::test]
@@ -112,16 +119,17 @@ fn a_right_click_opens_the_menu_and_its_entries_act(cx: &mut TestAppContext) {
 #[gpui::test]
 fn the_close_entries_close_what_they_say(cx: &mut TestAppContext) {
     let mut shell = three_tabs(cx);
-    let (diff, conversation, checks) = (
+    let (diff, conversation, other) = (
         shell.panel_id(DIFF),
         shell.panel_id(CONVERSATION),
-        shell.panel_id(CHECKS),
+        other_diff(&mut shell),
     );
     run(&mut shell, TabAction::CloseToRight, conversation);
-    assert!(shell.dock_lacks(checks), "Checks was right of it");
+    assert!(shell.dock_lacks(other), "#42's Diff was right of it");
     assert!(!shell.dock_lacks(diff) && !shell.dock_lacks(conversation));
 
-    shell.show(41, PanelKind::Checks, OpenMode::Permanent);
+    shell.show(42, PanelKind::Diff, OpenMode::Permanent);
+    shell.show(41, PanelKind::Conversation, OpenMode::Permanent);
     run(&mut shell, TabAction::CloseOthers, conversation);
     assert_eq!(shell.groups(), [vec![CONVERSATION]]);
 
@@ -174,9 +182,9 @@ fn keep_open_makes_the_preview_permanent(cx: &mut TestAppContext) {
 #[gpui::test]
 fn the_placement_entries_split_and_move_tabs(cx: &mut TestAppContext) {
     let mut shell = three_tabs(cx);
-    let (conversation, checks) = (shell.panel_id(CONVERSATION), shell.panel_id(CHECKS));
-    run(&mut shell, TabAction::SplitRight, checks);
-    assert_eq!(shell.groups(), [vec![DIFF, CONVERSATION], vec![CHECKS]]);
+    let (conversation, other) = (shell.panel_id(CONVERSATION), other_diff(&mut shell));
+    run(&mut shell, TabAction::SplitRight, other);
+    assert_eq!(shell.groups(), [vec![DIFF, CONVERSATION], vec![DIFF]]);
     let dock = shell.dock();
     let axis = shell.update(|_, cx| dock.read(cx).dump(cx).center.info.axis());
     assert_eq!(axis, Some(gpui::Axis::Horizontal), "beside it");

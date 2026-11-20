@@ -1,5 +1,5 @@
-//! The end of the Conversation: the merge box (checks with Show, whether it
-//! can merge, Merge with its method) and the comment box (Close pull
+//! The end of the Conversation: the merge box (the pipelines card, whether
+//! it can merge, Merge with its method) and the comment box (Close pull
 //! request, Comment) scroll with the timeline. Comment posts through the
 //! composer; Merge and Close confirm in the merge box.
 
@@ -95,17 +95,13 @@ fn merge_in_the_merge_box_picks_its_method_and_asks_first(cx: &mut TestAppContex
     assert!(shell.drawn("merge-box-checks-summary"));
     assert!(shell.drawn("merge-box-status"));
 
-    // Show lists the jobs; Hide folds them again.
-    if shell
-        .element(SharedString::from("merge-box-checks"))
-        .is_some()
-    {
-        shell.click_element(SharedString::from("merge-box-checks"));
-        assert!(shell.drawn("merge-box-jobs"));
-        reveal(&mut shell, "merge-box");
-        shell.click_element(SharedString::from("merge-box-checks"));
-        assert!(!shell.drawn("merge-box-jobs"));
-    }
+    // The pipelines row lists the jobs; a second click folds them again.
+    reveal(&mut shell, "merge-box-checks");
+    shell.click("merge-box-checks");
+    assert!(shell.drawn("merge-box-jobs"));
+    reveal(&mut shell, "merge-box-checks");
+    shell.click("merge-box-checks");
+    assert!(!shell.drawn("merge-box-jobs"));
 
     let session = shell.session();
     let allowed = shell.update(|_, cx| {
@@ -118,6 +114,7 @@ fn merge_in_the_merge_box_picks_its_method_and_asks_first(cx: &mut TestAppContex
     if allowed > 1 {
         reveal(&mut shell, "merge-box");
         shell.click("merge-box-method");
+        reveal(&mut shell, "merge-box-methods");
         shell.click("merge-box-method-merge");
         let method = shell.update(|_, cx| {
             session

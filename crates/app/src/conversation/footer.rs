@@ -1,39 +1,35 @@
 //! The end of the Conversation, as GitHub ends it: after the timeline, the
-//! merge box (how the checks stand, with Show for the job list; whether it
-//! can merge, or what blocks it; Merge with its method), then the comment
+//! merge box (the pipelines card, see [`super::pipelines`]; whether it can
+//! merge, or what blocks it; Merge with its method), then the comment
 //! box with "Close pull request" on the left and "Comment" on the right.
 //! Both scroll with the timeline. The writes go through the same session
 //! and composer paths as the header's buttons.
 
 use std::rc::Rc;
 
-use forge::model::{CiState, MergeBlocker, PrState};
+use forge::model::{MergeBlocker, PrState};
 use gpui::{
     AnyElement, App, Entity, FontWeight, InteractiveElement as _, IntoElement, ParentElement,
     SharedString, StatefulInteractiveElement as _, Styled, WeakEntity, Window, div,
     prelude::FluentBuilder as _, px,
 };
 use gpui_kit::assets::IconName;
-use gpui_kit::component::menu::ContextMenuExt as _;
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use theme::Theme;
 
 use super::ConversationPanel;
-use super::ci_box::{self, JobRow};
-use crate::checks_panel::job_menu::JobMenu;
+use super::pipelines::{LogTails, Pipelines};
 use crate::composer::{Composer, Leading};
 use crate::lifecycle::{Action, Load, blocker_label, method_label};
 use crate::model::PrKey;
 use crate::pr_header::{Facts, method_id};
 use crate::session::{OpenPr, Session};
 use crate::ui::spinner::SpinnerSlots;
-use crate::ui::{self, Button, ButtonKind, CI_HEADER, CI_ROW, TextExt as _, ci_color, ci_icon};
+use crate::ui::{self, Button, ButtonKind, CI_HEADER, TextExt as _};
 
 /// What the footer shows open, kept on the panel.
 #[derive(Clone, Debug, Default)]
 pub(super) struct FooterState {
-    /// The job list under the checks summary.
-    pub checks_open: bool,
     /// The merge methods under the Merge button.
     pub methods_open: bool,
     /// The action the footer asked for: its confirmation shows here, not
@@ -85,11 +81,12 @@ pub(super) struct Footer<'a> {
     pub confirm_here: bool,
     pub panel: WeakEntity<ConversationPanel>,
     pub session: &'a Entity<Session>,
+    pub tails: &'a Entity<LogTails>,
     pub spinners: &'a SpinnerSlots,
 }
 
 impl Footer<'_> {
-    /// The merge box: checks, mergeability, the Merge button.
+    /// The merge box: the pipelines card, mergeability, the Merge button.
     pub fn merge_box(&self, t: &Theme, cx: &App) -> AnyElement {
         let c = &t.colors;
         let mut card = ui::card(cx)
@@ -99,7 +96,15 @@ impl Footer<'_> {
             .w_full()
             .min_w_0()
             .small(t)
-            .child(self.checks(t, cx))
+            .child(
+                Pipelines {
+                    open: self.open,
+                    session: self.session,
+                    tails: self.tails,
+                    spinners: self.spinners,
+                }
+                .render(t, cx),
+            )
             .child(ui::divider(cx))
             .child(self.mergeability(t));
         if let Some(merge) = self.merge_row(t, cx) {
@@ -122,118 +127,6 @@ impl Footer<'_> {
             .filter(|_| self.confirm_here)
             .map(|(facts, action)| self.confirmation(facts, action, t));
         card.children(notice).children(confirm).into_any_element()
-    }
-
-    fn checks(&self, t: &Theme, cx: &App) -> AnyElement {
-        let c = &t.colors;
-        let rows = ci_box::job_rows(self.open);
-        let (state, headline, counts) = checks_summary(&rows, self.open.pr.ci);
-        let toggle = (!rows.is_empty()).then(|| {
-            let panel = self.panel.clone();
-            let label = if self.state.checks_open {
-                "Hide"
-            } else {
-                "Show"
-            };
-            Button::new("merge-box-checks", label, ButtonKind::Ghost).on_click(move |_, _, cx| {
-                edit(&panel, cx, |state| state.checks_open = !state.checks_open);
-            })
-        });
-        let jobs = self.state.checks_open.then(|| self.job_list(&rows, t, cx));
-        v_flex()
-            .debug_selector(|| "merge-box-checks-summary".into())
-            .px(px(12.0))
-            .py(px(10.0))
-            .gap(px(8.0))
-            .child(
-                h_flex()
-                    .gap(px(10.0))
-                    .items_center()
-                    .child(ci_icon(t, state, CI_HEADER, self.spinners))
-                    .child(
-                        v_flex()
-                            .flex_1()
-                            .min_w_0()
-                            .child(
-                                div()
-                                    .font_weight(FontWeight::SEMIBOLD)
-                                    .text_color(c.text)
-                                    .child(headline),
-                            )
-                            .when(!counts.is_empty(), |el| {
-                                el.child(div().text_color(c.text_muted).child(counts))
-                            }),
-                    )
-                    .children(toggle),
-            )
-            .children(jobs)
-            .into_any_element()
-    }
-
-    /// Every job, failing first; a job with a log opens it.
-    fn job_list(&self, rows: &[JobRow], t: &Theme, cx: &App) -> AnyElement {
-        let c = &t.colors;
-        let hover = c.hover;
-        let key = &self.open.key;
-        let logs = self
-            .session
-            .read(cx)
-            .capabilities_for(key)
-            .is_some_and(|caps| caps.job_logs);
-        let rows = rows.iter().enumerate().map(|(ix, row)| {
-            let line = h_flex()
-                .id(("merge-box-job", ix))
-                .debug_selector(move || format!("merge-box-job-{ix}"))
-                .gap(px(8.0))
-                .px(px(4.0))
-                .mx(px(-4.0))
-                .min_h(px(24.0))
-                .items_center()
-                .rounded(t.radius.sm)
-                .child(ci_icon(t, row.state, CI_ROW, self.spinners))
-                .child(
-                    div()
-                        .flex_1()
-                        .min_w_0()
-                        .truncate()
-                        .text_color(c.text)
-                        .child(row.name.clone()),
-                )
-                .child(
-                    div()
-                        .flex_none()
-                        .mono(t)
-                        .tiny(t)
-                        .text_color(ci_color(t, row.state))
-                        .child(row.detail.clone()),
-                );
-            let job = row
-                .job
-                .as_ref()
-                .filter(|job| logs && job.started_at.is_some());
-            let line = match job {
-                Some(job) => {
-                    let (session, key, id) = (self.session.clone(), key.clone(), job.id.clone());
-                    line.cursor_pointer()
-                        .hover(move |s| s.bg(hover))
-                        .on_click(move |_, _, cx| {
-                            session.update(cx, |session, cx| {
-                                session.focus(&key, cx);
-                                session.open_log(&id, None, cx);
-                            });
-                        })
-                }
-                None => line,
-            };
-            let menu = JobMenu::new(key.clone(), row.job.as_ref().map(|job| job.id.clone()));
-            line.context_menu(move |popup, _, cx| menu.popup(popup, cx))
-                .into_any_element()
-        });
-        v_flex()
-            .debug_selector(|| "merge-box-jobs".into())
-            .pl(px(26.0))
-            .children(rows)
-            .into_any_element()
     }
 
     /// Whether it can merge: no conflicts, or what blocks it.
@@ -548,45 +441,6 @@ pub(super) fn close_button(
     })
 }
 
-/// The overall state, a headline and the counts by state.
-fn checks_summary(rows: &[JobRow], rollup: CiState) -> (CiState, &'static str, String) {
-    let count = |state: CiState| rows.iter().filter(|row| row.state == state).count();
-    let failing = count(CiState::Fail);
-    let active = rows.iter().filter(|row| row.state.is_active()).count();
-    let passed = count(CiState::Pass);
-    let skipped = count(CiState::Skipped) + count(CiState::Canceled);
-    let counts = [
-        (failing, "failing"),
-        (active, "in progress"),
-        (passed, "successful"),
-        (skipped, "skipped"),
-    ]
-    .into_iter()
-    .filter(|(n, _)| *n > 0)
-    .map(|(n, what)| format!("{n} {what}"))
-    .collect::<Vec<_>>()
-    .join(", ");
-    let (state, headline) = if rows.is_empty() {
-        let headline = match rollup {
-            CiState::None => "No checks",
-            CiState::Fail => "Some checks were not successful",
-            CiState::Running | CiState::Queued => "Some checks have not finished",
-            CiState::Pass => "All checks have passed",
-            CiState::Skipped | CiState::Canceled => "The checks did not run",
-        };
-        (rollup, headline)
-    } else if failing > 0 {
-        (CiState::Fail, "Some checks were not successful")
-    } else if active > 0 {
-        (CiState::Running, "Some checks have not finished")
-    } else if passed > 0 {
-        (CiState::Pass, "All checks have passed")
-    } else {
-        (CiState::Skipped, "The checks did not run")
-    };
-    (state, headline, counts)
-}
-
 fn joined(parts: &[&SharedString]) -> String {
     parts
         .iter()
@@ -605,30 +459,6 @@ fn capitalized(text: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    fn row(state: CiState) -> JobRow {
-        JobRow {
-            state,
-            name: "job".into(),
-            job: None,
-            detail: String::new(),
-        }
-    }
-
-    #[test]
-    fn the_summary_names_the_worst_state_and_counts_each() {
-        let rows = [row(CiState::Fail), row(CiState::Pass), row(CiState::Pass)];
-        let (state, headline, counts) = checks_summary(&rows, CiState::Fail);
-        assert_eq!(state, CiState::Fail);
-        assert_eq!(headline, "Some checks were not successful");
-        assert_eq!(counts, "1 failing, 2 successful");
-        let rows = [row(CiState::Running), row(CiState::Pass)];
-        assert_eq!(checks_summary(&rows, CiState::Running).0, CiState::Running);
-        assert_eq!(
-            checks_summary(&[], CiState::None),
-            (CiState::None, "No checks", String::new())
-        );
-    }
 
     #[test]
     fn blockers_read_as_a_sentence() {

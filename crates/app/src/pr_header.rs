@@ -1163,7 +1163,6 @@ pub(crate) fn palette_items(session: &Entity<Session>, key: &PrKey, cx: &App) ->
             "pr:conversation",
             "Open the conversation",
         ),
-        (PanelKind::Checks, "pr:checks", "Open the checks"),
     ] {
         items.push(Item::new(
             id,

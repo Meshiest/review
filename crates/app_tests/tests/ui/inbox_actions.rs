@@ -516,10 +516,6 @@ fn the_menu_has_the_new_sections(cx: &mut TestAppContext) {
     let flat = entries(&mut shell, 42);
     for (action, label) in [
         (
-            RowAction::Open(PanelKind::Checks, OpenMode::Permanent),
-            "Open checks",
-        ),
-        (
             RowAction::Open(PanelKind::Diff, OpenMode::Permanent),
             "Open diff",
         ),
@@ -531,20 +527,24 @@ fn the_menu_has_the_new_sections(cx: &mut TestAppContext) {
         assert_eq!(entry(&mut shell, 42, &action).label, label);
     }
     assert!(flat.iter().all(|entry| !entry.label.is_empty()));
+    assert!(
+        !flat.iter().any(|entry| entry.label == "Open checks"),
+        "the checks are in the Conversation, not a tab of their own"
+    );
 }
 
 #[gpui::test]
-fn open_checks_and_open_diff_bring_those_panels_forward(cx: &mut TestAppContext) {
+fn open_in_a_new_tab_and_open_diff_bring_those_panels_forward(cx: &mut TestAppContext) {
     let mut shell = open_shell(cx, Options::default());
     run(
         &mut shell,
         42,
-        RowAction::Open(PanelKind::Checks, OpenMode::Permanent),
+        RowAction::Open(PanelKind::Conversation, OpenMode::Permanent),
     );
-    let checks = shell
-        .panel_of(42, PanelKind::Checks)
-        .expect("a Checks panel for #42");
-    assert!(shell.is_shown(checks), "Checks is in front");
+    let conversation = shell
+        .panel_of(42, PanelKind::Conversation)
+        .expect("a Conversation panel for #42");
+    assert!(shell.is_shown(conversation), "the Conversation is in front");
     run(
         &mut shell,
         42,
