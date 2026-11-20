@@ -155,6 +155,8 @@ pub struct AgentCommand {
     pub forward: Option<Forward>,
     /// The pull request it reviews.
     pub pr: PrKey,
+    /// That pull request as the tab names it (see [`TerminalSpec::title`]).
+    pub label: String,
     /// Its review token, revoked when the terminal ends.
     pub token: crate::claude_review::mcp::Token,
 }
@@ -330,9 +332,13 @@ impl TerminalSpec {
         })
     }
 
-    /// What the tab says: the machine and the end of the directory.
+    /// What the tab says: the machine and the end of the directory, or for
+    /// an agent the pull request it reviews and the machine.
     #[must_use]
     pub fn title(&self) -> String {
+        if let Some(agent) = &self.agent {
+            return format!("Review {} \u{b7} {}", agent.label, self.machine);
+        }
         match self.cwd.as_deref().map(short_dir) {
             Some(dir) => format!("{} \u{b7} {dir}", self.machine),
             None => self.machine.clone(),
@@ -1804,6 +1810,7 @@ mod tests {
                 crate::model::RepoRef::new("github.com", "o", "r"),
                 crate::model::PrNumber(4),
             ),
+            label: "r#4".into(),
             token: crate::claude_review::mcp::Token::new().unwrap(),
         }
     }
@@ -1837,6 +1844,11 @@ mod tests {
             Some("")
         );
         assert_eq!(config.cwd, Some(PathBuf::from("C:/w/pr-4")));
+        assert_eq!(
+            spec.title(),
+            format!("Review r#4 \u{b7} {}", machines::THIS_PC),
+            "the tab names the pull request under review"
+        );
     }
 
     #[test]

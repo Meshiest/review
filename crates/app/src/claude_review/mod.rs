@@ -51,6 +51,9 @@ const MENU_TEXT: usize = 80;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ReviewLaunch {
     pub workspace: WorkspaceEntry,
+    /// The pull request as its terminal's tab names it: `widgets#41`, or
+    /// `widgets!41` for a merge request.
+    pub label: String,
     /// The pull request's web page, for the prompt.
     pub url: String,
     /// Claude's MCP server for this launch; `None` for another agent.
@@ -469,10 +472,23 @@ fn claude_terminal(
             cleared: vec![ADDITIONAL_CLAUDE_MD.to_owned()],
             forward: mcp.forward,
             pr: key.clone(),
+            label: review.label.clone(),
             token: mcp.token.clone(),
         }),
         ..TerminalSpec::shell_on(machine)
     })
+}
+
+/// `key` as a terminal's tab names it: the repository's name, then the
+/// forge's sigil and the number, from the open pull request or its inbox row.
+fn pr_label(key: &PrKey, cx: &App) -> String {
+    let session = Session::global(cx).read(cx);
+    let sigil = session
+        .pr(key)
+        .map(|open| open.pr.forge)
+        .or_else(|| session.inbox.get(key).map(|row| row.forge))
+        .map_or('#', |forge| forge.sigil());
+    format!("{}{sigil}{}", key.repo.name, key.number)
 }
 
 /// Where the remote machine keeps the app's scratch clones and the review's
@@ -697,6 +713,7 @@ pub fn start(key: &PrKey, window: &mut Window, cx: &mut App) {
             context,
             ReviewLaunch {
                 workspace,
+                label: pr_label(key, cx),
                 url,
                 mcp,
                 app_dirs: app_dirs(data_dir.as_deref()),
@@ -858,6 +875,7 @@ mod tests {
 
     fn review(workdir: Option<&str>, token: &Token) -> ReviewLaunch {
         ReviewLaunch {
+            label: "r#41".into(),
             workspace: WorkspaceEntry {
                 repo: "o/r".into(),
                 machine: "devbox".into(),
