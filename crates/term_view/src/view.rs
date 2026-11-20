@@ -106,6 +106,9 @@ impl TerminalView {
                 while woken.recv().await.is_ok() {
                     let result = this.update(cx, |view, cx| {
                         cx.notify();
+                        if let Some(text) = view.session.take_clipboard() {
+                            cx.write_to_clipboard(ClipboardItem::new_string(text));
+                        }
                         let state = view.session.exit_state();
                         if !exited && state != ExitState::Running {
                             exited = true;

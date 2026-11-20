@@ -4,10 +4,15 @@ use std::sync::{Arc, Mutex, MutexGuard, OnceLock, PoisonError};
 
 use alacritty_terminal::event::{Event, EventListener, WindowSize};
 use alacritty_terminal::event_loop::{EventLoopSender, Msg};
+use alacritty_terminal::term::ClipboardType;
 
 use crate::ExitState;
 
 pub(crate) type OnChange = Arc<dyn Fn() + Send + Sync>;
+
+/// The most text a program may put on the clipboard at once (OSC 52); more
+/// is dropped.
+const CLIPBOARD_MAX: usize = 1 << 20;
 
 /// State shared between the PTY thread (through [`Listener`]) and the UI.
 pub(crate) struct Shared {
@@ -19,6 +24,9 @@ pub(crate) struct Shared {
     generation: AtomicU64,
     exit: Mutex<ExitState>,
     title: Mutex<Option<String>>,
+    /// Text a program asked to put on the system clipboard (OSC 52), until
+    /// the UI takes it.
+    clipboard: Mutex<Option<String>>,
     on_change: Option<OnChange>,
     sender: OnceLock<EventLoopSender>,
     size: Mutex<WindowSize>,
@@ -31,6 +39,7 @@ impl Shared {
             generation: AtomicU64::new(0),
             exit: Mutex::new(ExitState::Running),
             title: Mutex::new(None),
+            clipboard: Mutex::new(None),
             on_change,
             sender: OnceLock::new(),
             size: Mutex::new(size),
@@ -60,6 +69,24 @@ impl Shared {
 
     pub(crate) fn title(&self) -> Option<String> {
         lock(&self.title).clone()
+    }
+
+    pub(crate) fn take_clipboard(&self) -> Option<String> {
+        lock(&self.clipboard).take()
+    }
+
+    /// Keeps `text` for the UI to put on the clipboard and always notifies,
+    /// as [`Self::finish_and_wake`] does: a copy must not wait for output.
+    fn store_clipboard(&self, text: String) {
+        if text.len() > CLIPBOARD_MAX {
+            return;
+        }
+        *lock(&self.clipboard) = Some(text);
+        self.generation.fetch_add(1, Ordering::AcqRel);
+        self.dirty.store(true, Ordering::Release);
+        if let Some(on_change) = &self.on_change {
+            on_change();
+        }
     }
 
     pub(crate) fn set_size(&self, size: WindowSize) {
@@ -134,10 +161,84 @@ impl EventListener for Listener {
             }
             Event::ChildExit(status) => shared.finish_and_wake(Some(status)),
             Event::Exit => shared.finish_and_wake(None),
+            // A program's copy (OSC 52), as Claude Code makes when text is
+            // selected in it.
+            Event::ClipboardStore(ClipboardType::Clipboard, text) => shared.store_clipboard(text),
+            // The X11 primary selection, and reading the clipboard, which
+            // would hand a program whatever the user copied elsewhere.
             Event::MouseCursorDirty
-            | Event::ClipboardStore(..)
+            | Event::ClipboardStore(ClipboardType::Selection, _)
             | Event::ClipboardLoad(..)
             | Event::ColorRequest(..) => {}
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::atomic::AtomicUsize;
+
+    use super::*;
+
+    fn listener() -> (Listener, Arc<AtomicUsize>) {
+        let woken = Arc::new(AtomicUsize::new(0));
+        let count = Arc::clone(&woken);
+        let on_change: OnChange = Arc::new(move || {
+            count.fetch_add(1, Ordering::SeqCst);
+        });
+        let shared = Shared::new(
+            Some(on_change),
+            WindowSize {
+                num_lines: 24,
+                num_cols: 80,
+                cell_width: 8,
+                cell_height: 16,
+            },
+        );
+        (Listener(Arc::new(shared)), woken)
+    }
+
+    #[test]
+    fn a_programs_copy_waits_for_the_ui_and_wakes_it_every_time() {
+        let (listener, woken) = listener();
+        let copy = |text: &str| Event::ClipboardStore(ClipboardType::Clipboard, text.to_owned());
+        listener.send_event(copy("first"));
+        listener.send_event(copy("second"));
+        assert_eq!(woken.load(Ordering::SeqCst), 2, "no copy waits on output");
+        assert_eq!(listener.0.take_clipboard().as_deref(), Some("second"));
+        assert_eq!(listener.0.take_clipboard(), None, "taken once");
+    }
+
+    /// The bytes Claude Code prints to copy: OSC 52, base64, through the
+    /// emulator's own parser.
+    #[test]
+    fn an_osc52_copy_reaches_the_clipboard_and_a_paste_request_is_ignored() {
+        use alacritty_terminal::term::test::TermSize;
+        use alacritty_terminal::term::{Config, Term};
+        use alacritty_terminal::vte::ansi::Processor;
+
+        let (listener, _) = listener();
+        let shared = Arc::clone(&listener.0);
+        let mut term = Term::new(Config::default(), &TermSize::new(80, 24), listener);
+        let mut parser: Processor = Processor::new();
+        // "hello" in base64, ended by BEL; then a request to read it back.
+        parser.advance(&mut term, b"]52;c;aGVsbG8=]52;c;?");
+        assert_eq!(shared.take_clipboard().as_deref(), Some("hello"));
+        assert_eq!(
+            shared.take_clipboard(),
+            None,
+            "the read request stores nothing"
+        );
+    }
+
+    #[test]
+    fn the_selection_and_huge_copies_are_dropped() {
+        let (listener, _) = listener();
+        listener.send_event(Event::ClipboardStore(ClipboardType::Selection, "x".into()));
+        listener.send_event(Event::ClipboardStore(
+            ClipboardType::Clipboard,
+            "y".repeat(CLIPBOARD_MAX + 1),
+        ));
+        assert_eq!(listener.0.take_clipboard(), None);
     }
 }

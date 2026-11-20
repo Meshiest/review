@@ -10,7 +10,7 @@ use alacritty_terminal::event::WindowSize;
 use alacritty_terminal::event_loop::{EventLoop, Msg};
 use alacritty_terminal::grid::Dimensions;
 use alacritty_terminal::sync::FairMutex;
-use alacritty_terminal::term::Config as TermConfig;
+use alacritty_terminal::term::{Config as TermConfig, Osc52};
 use alacritty_terminal::tty::{self, Shell};
 use thiserror::Error;
 
@@ -206,6 +206,8 @@ impl Session {
 
         let term_config = TermConfig {
             scrolling_history: config.scrollback_lines.min(MAX_SCROLLBACK_LINES),
+            // A program may copy to the clipboard, never read it.
+            osc52: Osc52::OnlyCopy,
             ..TermConfig::default()
         };
         let term = Arc::new(FairMutex::new(Term::new(
@@ -308,6 +310,12 @@ impl Session {
     /// The title the program set with an escape sequence.
     pub fn title(&self) -> Option<String> {
         self.shared.title()
+    }
+
+    /// Text the program asked to put on the clipboard (OSC 52) since the
+    /// last call, for the UI to write to the system clipboard.
+    pub fn take_clipboard(&self) -> Option<String> {
+        self.shared.take_clipboard()
     }
 }
 
