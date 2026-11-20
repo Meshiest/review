@@ -78,22 +78,37 @@ pub struct TerminalView {
     /// The button the program was told is down, and where.
     held: Option<(Button, (usize, usize))>,
     hover_cell: Option<(usize, usize)>,
-    /// When the user last pressed a key or a mouse button in the pane; a
-    /// program's copy is only taken shortly after (see [`copy_allowed`]).
-    last_input: Option<Instant>,
+    /// Where the left button went down in the pane, until it comes up.
+    press: Option<gpui::Point<Pixels>>,
+    /// When the user last ended a drag (a selection) in the pane; a
+    /// program's copy is only taken just after (see [`copy_allowed`]).
+    last_drag: Option<Instant>,
 }
 
-/// How long after the user's own key or click in a focused pane a program
-/// may still put text on the clipboard.
-const COPY_WINDOW: Duration = Duration::from_secs(3);
+/// How long after the user ends a drag in a focused pane a program may put
+/// text on the clipboard.
+const COPY_WINDOW: Duration = Duration::from_secs(1);
+
+/// How far the mouse must move between press and release to be a drag.
+const DRAG_DISTANCE: f32 = 4.0;
+
+/// Whether the mouse moved far enough between `press` and `release` to be a
+/// drag rather than a click.
+fn dragged(press: gpui::Point<Pixels>, release: gpui::Point<Pixels>) -> bool {
+    let (dx, dy) = (
+        f32::from(release.x - press.x),
+        f32::from(release.y - press.y),
+    );
+    dx.hypot(dy) >= DRAG_DISTANCE
+}
 
 /// Whether a program's copy (OSC 52) reaches the system clipboard: only
-/// while its pane has the focus and the user pressed a key or a mouse
-/// button there within [`COPY_WINDOW`], as Claude Code copies when a
-/// selection ends. Output alone (a file printed from a pull request, a
-/// remote banner) can never replace what the user copied.
-fn copy_allowed(focused: bool, last_input: Option<Instant>, now: Instant) -> bool {
-    focused && last_input.is_some_and(|at| now.saturating_duration_since(at) <= COPY_WINDOW)
+/// while its pane has the focus and within [`COPY_WINDOW`] of the user
+/// ending a drag there, which is how Claude Code copies a selection. Keys,
+/// plain clicks and output alone (a file printed from a pull request, a
+/// remote banner) never let a program replace what the user copied.
+fn copy_allowed(focused: bool, last_drag: Option<Instant>, now: Instant) -> bool {
+    focused && last_drag.is_some_and(|at| now.saturating_duration_since(at) <= COPY_WINDOW)
 }
 
 impl EventEmitter<TerminalEvent> for TerminalView {}
@@ -123,7 +138,7 @@ impl TerminalView {
                     let result = this.update(cx, |view, cx| {
                         cx.notify();
                         if let Some(text) = view.session.take_clipboard()
-                            && copy_allowed(view.focused, view.last_input, Instant::now())
+                            && copy_allowed(view.focused, view.last_drag, Instant::now())
                         {
                             cx.write_to_clipboard(ClipboardItem::new_string(text));
                         }
@@ -166,7 +181,8 @@ impl TerminalView {
                 synced: (0, 0),
                 wheel_lines: 0.0,
                 selecting: false,
-                last_input: None,
+                press: None,
+                last_drag: None,
                 held: None,
                 hover_cell: None,
             };
@@ -428,7 +444,6 @@ impl TerminalView {
     // Keyboard.
 
     fn on_key_down(&mut self, event: &KeyDownEvent, cx: &mut Context<Self>) {
-        self.last_input = Some(Instant::now());
         let mode = self.mode();
         if let Some(local) = keys::local(&event.keystroke, mode) {
             match local {
@@ -474,7 +489,9 @@ impl TerminalView {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        self.last_input = Some(Instant::now());
+        if event.button == MouseButton::Left {
+            self.press = Some(event.position);
+        }
         window.focus(&self.focus, cx);
         let Some(geometry) = self.geometry else {
             return;
@@ -568,7 +585,12 @@ impl TerminalView {
     }
 
     pub(crate) fn mouse_up(&mut self, event: &MouseUpEvent, cx: &mut Context<Self>) {
-        self.last_input = Some(Instant::now());
+        if event.button == MouseButton::Left
+            && let Some(press) = self.press.take()
+            && dragged(press, event.position)
+        {
+            self.last_drag = Some(Instant::now());
+        }
         if self.selecting && event.button == MouseButton::Left {
             self.finish_selection(cx);
             return;
@@ -762,16 +784,23 @@ mod tests {
     use super::*;
 
     #[test]
-    fn a_programs_copy_needs_the_focus_and_the_users_recent_input() {
+    fn only_a_drag_counts_as_a_selection() {
+        let at = |x: f32, y: f32| gpui::point(gpui::px(x), gpui::px(y));
+        assert!(!dragged(at(10.0, 10.0), at(11.0, 12.0)), "a click");
+        assert!(dragged(at(10.0, 10.0), at(60.0, 10.0)), "a drag");
+    }
+
+    #[test]
+    fn a_programs_copy_needs_the_focus_and_a_drag_just_before() {
         let now = Instant::now();
         let just = now.checked_sub(Duration::from_millis(200));
         let stale = now.checked_sub(COPY_WINDOW + Duration::from_secs(1));
         assert!(copy_allowed(true, just, now), "right after a selection");
         assert!(!copy_allowed(false, just, now), "a pane without the focus");
-        assert!(!copy_allowed(true, None, now), "no input since it opened");
+        assert!(!copy_allowed(true, None, now), "no drag since it opened");
         assert!(
             !copy_allowed(true, stale, now),
-            "output long after any input"
+            "output long after the drag"
         );
     }
 
