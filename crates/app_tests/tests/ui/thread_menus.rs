@@ -623,3 +623,51 @@ fn a_resolved_thread_starts_folded_and_its_chevron_toggles_it(cx: &mut TestAppCo
     assert!(folded(&mut shell, &key, &resolved), "and folds it again");
     assert!(shell.drawn(&format!("inline-row-{resolved}")));
 }
+
+#[gpui::test]
+fn the_conversation_card_resolves_its_thread(cx: &mut TestAppContext) {
+    let fixtures = Fixtures::load();
+    let row = fixtures
+        .inbox
+        .prs
+        .iter()
+        .find(|row| row.forge == ForgeKind::GitHub)
+        .expect("a GitHub fixture");
+    let pr = fixtures.forge_pr(&row.key).expect("its forge record");
+    let scratch = Scratch::new("conversation-resolve");
+    let fake = Arc::new(ThreadForge {
+        host: pr.repo.host.clone(),
+        pull_request: pr.clone(),
+        threads: vec![inline_thread("T1", "42", 3)],
+        resolved: Mutex::default(),
+    });
+    let services = fake_services(
+        &scratch,
+        vec![fake.clone() as Arc<dyn forge::Forge>],
+        std::slice::from_ref(&pr.repo),
+    );
+    let mut shell = open_shell(cx, Options::default());
+    go_live(&mut shell, services, vec![pr.clone()], ForgeKind::GitHub);
+    shell.keys("j enter");
+    let session = shell.session();
+    shell.settle_until("the thread from the fake forge", |cx| {
+        session
+            .read(cx)
+            .open_pr()
+            .is_some_and(|open| open.threads.len() == 1)
+    });
+    let thread = shell.update(|_, cx| session.read(cx).open_pr().expect("open").threads[0].clone());
+    let button = format!("conversation-resolve-{}", app::threads::ix_of(&thread));
+    crate::conversation::reveal(&mut shell, &button);
+    shell.click_named(&button);
+    shell.settle_until("the resolve at the forge", |cx| {
+        session
+            .read(cx)
+            .open_pr()
+            .is_some_and(|open| open.threads.iter().any(|t| t.is_resolved()))
+    });
+    assert_eq!(
+        *fake.resolved.lock().unwrap_or_else(PoisonError::into_inner),
+        [("T1".to_owned(), true)]
+    );
+}

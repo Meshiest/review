@@ -110,6 +110,53 @@ fn hash_ix(text: &str) -> usize {
     })
 }
 
+/// The Resolve or Unresolve button of `thread`, where the forge lets the
+/// viewer change it; its debug selector is `{selector}-{ix}`. The diff's
+/// cards and the Conversation's both draw it.
+pub fn resolve_button(
+    writing: &Entity<Writing>,
+    thread: &Thread,
+    selector: &'static str,
+    cx: &App,
+) -> Option<AnyElement> {
+    if !can_resolve(thread, cx) {
+        return None;
+    }
+    let resolved = thread.is_resolved();
+    let busy = writing.read(cx).thread_state(&thread.id) == Some(&ActionState::Busy);
+    let label = match (resolved, busy) {
+        (false, false) => "Resolve",
+        (false, true) => "Resolving",
+        (true, false) => "Unresolve",
+        (true, true) => "Unresolving",
+    };
+    let (writing, target) = (writing.clone(), thread.clone());
+    let ix = ix_of(thread);
+    Some(
+        div()
+            .flex_none()
+            .debug_selector(move || format!("{selector}-{ix}"))
+            .child(
+                Button::new((selector, ix), label, ButtonKind::Ghost).on_click(move |_, _, cx| {
+                    cx.stop_propagation();
+                    writing.update(cx, |writing, cx| {
+                        writing.set_resolved(&target, !resolved, cx);
+                    });
+                }),
+            )
+            .into_any_element(),
+    )
+}
+
+/// Why the last resolve or unresolve of `thread` failed, if it did.
+pub fn resolve_failure(
+    writing: &Entity<Writing>,
+    thread: &Thread,
+    cx: &App,
+) -> Option<SharedString> {
+    failure(writing.read(cx).thread_state(&thread.id))
+}
+
 /// Whether the open pull request's forge lets the viewer resolve threads
 /// (Forgejo shows resolved state read-only).
 fn can_resolve(thread: &Thread, cx: &App) -> bool {
@@ -1095,35 +1142,7 @@ impl ThreadCards {
     /// The Resolve or Unresolve button of a thread, where the forge lets
     /// the viewer change it.
     fn resolve_button(&self, thread: &Thread, cx: &mut Context<Self>) -> Option<AnyElement> {
-        if !can_resolve(thread, cx) {
-            return None;
-        }
-        let resolved = thread.is_resolved();
-        let busy = self.writing.read(cx).thread_state(&thread.id) == Some(&ActionState::Busy);
-        let label = match (resolved, busy) {
-            (false, false) => "Resolve",
-            (false, true) => "Resolving",
-            (true, false) => "Unresolve",
-            (true, true) => "Unresolving",
-        };
-        let (writing, target) = (self.writing.clone(), thread.clone());
-        let ix = ix_of(thread);
-        Some(
-            div()
-                .flex_none()
-                .debug_selector(move || format!("resolve-{ix}"))
-                .child(
-                    Button::new(("resolve", ix), label, ButtonKind::Ghost).on_click(
-                        move |_, _, cx| {
-                            cx.stop_propagation();
-                            writing.update(cx, |writing, cx| {
-                                writing.set_resolved(&target, !resolved, cx)
-                            });
-                        },
-                    ),
-                )
-                .into_any_element(),
-        )
+        resolve_button(&self.writing, thread, "resolve", cx)
     }
 
     /// The foot of a card: Reply and Resolve, or the reply being written.

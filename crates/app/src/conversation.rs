@@ -744,8 +744,7 @@ impl ConversationPanel {
         let comments: Vec<AnyElement> = thread
             .comments
             .iter()
-            .enumerate()
-            .map(|(k, comment)| {
+            .map(|comment| {
                 let parts = self.comment_parts(comment, &marked, t, cx);
                 let apply = threads::suggestion_actions(pr, thread, comment, t, cx);
                 let comment_menu = CommentMenu {
@@ -764,7 +763,6 @@ impl ConversationPanel {
                     .debug_selector(move || selector)
                     .gap(px(4.0))
                     .pt(px(8.0))
-                    .when(k > 0, |el| el.border_t_1().border_color(c.border))
                     .child(Self::byline(comment, t, cx))
                     .child(
                         v_flex()
@@ -798,13 +796,36 @@ impl ConversationPanel {
             .child(head)
             .child(code)
             .children(comments)
-            .child(
-                div()
-                    .small(t)
-                    .text_color(c.text_muted)
-                    .child(threads::summary(thread)),
-            )
+            .children(self.thread_foot(thread, t, cx))
             .into_any_element()
+    }
+
+    /// An open thread's foot: Resolve or Unresolve, and why the last change
+    /// failed. The comments above it need no count.
+    fn thread_foot(&self, thread: &Thread, t: &Theme, cx: &App) -> Option<AnyElement> {
+        let c = &t.colors;
+        let resolve = threads::resolve_button(&self.writing, thread, "conversation-resolve", cx);
+        let failed = threads::resolve_failure(&self.writing, thread, cx);
+        if resolve.is_none() && failed.is_none() {
+            return None;
+        }
+        Some(
+            h_flex()
+                .gap(px(8.0))
+                .items_center()
+                .ml(px(ui::avatar::CARD))
+                .children(resolve)
+                .children(failed.map(|error| {
+                    div()
+                        .flex_1()
+                        .min_w_0()
+                        .truncate()
+                        .small(t)
+                        .text_color(c.danger)
+                        .child(error)
+                }))
+                .into_any_element(),
+        )
     }
 
     /// A comment's body: markdown pieces, and each suggestion block as the
