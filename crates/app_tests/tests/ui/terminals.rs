@@ -44,6 +44,18 @@ fn terminal_panels(shell: &mut ShellWindow) -> Vec<(PanelId, Entity<TerminalPane
     })
 }
 
+/// The terminal panels whose program started: not a launch tab still
+/// showing its steps.
+fn programs(shell: &mut ShellWindow) -> Vec<(PanelId, Entity<TerminalPanel>)> {
+    let panels = terminal_panels(shell);
+    shell.update(|_, cx| {
+        panels
+            .into_iter()
+            .filter(|(_, panel)| panel.read(cx).checklist().is_none())
+            .collect()
+    })
+}
+
 /// A shell that is quick to start and to end.
 const SHELL: &str = if cfg!(windows) { "cmd" } else { "sh" };
 
@@ -253,7 +265,18 @@ fn open_on_machine_makes_the_worktree_then_starts_the_command(cx: &mut TestAppCo
         matches!(&state, Some(WorktreeState::Failed { error, .. }) if error.contains("invented")),
         "{state:?}"
     );
-    assert!(terminal_panels(&mut shell).is_empty());
+    assert!(programs(&mut shell).is_empty());
+    let tabs = terminal_panels(&mut shell);
+    assert_eq!(tabs.len(), 1, "its tab shows the failed step");
+    let failed = shell.update(|_, cx| {
+        tabs[0]
+            .1
+            .read(cx)
+            .checklist()
+            .and_then(|list| list.error().map(str::to_owned))
+    });
+    assert!(failed.is_some_and(|error| error.contains("invented")));
+    assert!(shell.element("launch-retry").is_some(), "Retry");
 
     // This PC, with a stand-in Claude: the pull request changes no agent
     // config, so it starts at once, with the safe flags.
@@ -278,7 +301,10 @@ fn open_on_machine_makes_the_worktree_then_starts_the_command(cx: &mut TestAppCo
     };
     assert!(info.path.ends_with("pr-41"), "{}", info.path);
     assert!(std::path::Path::new(&info.path).is_dir());
-    assert!(shell.drawn("worktree-state"), "the header says where it is");
+    assert!(
+        !shell.drawn("worktree-state"),
+        "no status line in the header"
+    );
     assert!(!shell.drawn("agent-config-dialog"), "nothing to ask");
 
     let panels = terminal_panels(&mut shell);
@@ -328,10 +354,7 @@ fn another_agent_never_starts_by_itself(cx: &mut TestAppContext) {
     });
     assert_eq!(check, Some(ConfigCheck::Clean));
     assert!(shell.drawn("agent-config-dialog"));
-    assert!(
-        terminal_panels(&mut shell).is_empty(),
-        "nothing started yet"
-    );
+    assert!(programs(&mut shell).is_empty(), "nothing started yet");
 
     // The default opens a shell there, without the command.
     shell.click_element("agent-start-safe");
@@ -351,7 +374,7 @@ fn another_agent_never_starts_by_itself(cx: &mut TestAppContext) {
     open(&mut shell);
     shell.click_element("agent-trust");
     assert!(shell.drawn("agent-trust-question"));
-    assert_eq!(terminal_panels(&mut shell).len(), 1, "nothing new yet");
+    assert_eq!(programs(&mut shell).len(), 1, "nothing new yet");
     shell.click_element("agent-trust-confirm");
     shell.advance(Duration::from_millis(50));
     let panels = terminal_panels(&mut shell);
@@ -466,7 +489,7 @@ fn assert_absolute_programs(spec: &TerminalSpec) {
 }
 
 fn close_terminals(shell: &mut ShellWindow) {
-    for (_, panel) in terminal_panels(shell) {
+    for (_, panel) in programs(shell) {
         shell.settle_until("the program to start", |cx| panel.read(cx).view().is_some());
         let view = shell.update(|_, cx| panel.read(cx).view().cloned().expect("running"));
         shell.update(|_, cx| view.update(cx, |view, cx| view.close(cx)));
@@ -481,10 +504,7 @@ fn a_pr_that_changes_agent_config_starts_without_it_by_default(cx: &mut TestAppC
     let terminals = open_config_changing_pr(&mut shell, &scratch, &claude);
 
     assert!(shell.drawn("agent-config-dialog"), "the warning shows");
-    assert!(
-        terminal_panels(&mut shell).is_empty(),
-        "nothing started yet"
-    );
+    assert!(programs(&mut shell).is_empty(), "nothing started yet");
     let check = shell.update(|_, cx| {
         terminals
             .read(cx)
@@ -542,10 +562,7 @@ fn trusting_a_prs_agent_config_takes_a_confirmation(cx: &mut TestAppContext) {
 
     shell.click_element("agent-trust");
     assert!(shell.drawn("agent-trust-question"), "it asks again");
-    assert!(
-        terminal_panels(&mut shell).is_empty(),
-        "nothing started yet"
-    );
+    assert!(programs(&mut shell).is_empty(), "nothing started yet");
     assert!(shell.element("agent-trust-confirm").is_some());
     let asked = shell.update(|_, cx| {
         terminals
@@ -559,7 +576,7 @@ fn trusting_a_prs_agent_config_takes_a_confirmation(cx: &mut TestAppContext) {
     shell.click_element("agent-trust-back");
     assert!(!shell.drawn("agent-trust-question"));
     assert!(shell.element("agent-start-safe").is_some());
-    assert!(terminal_panels(&mut shell).is_empty());
+    assert!(programs(&mut shell).is_empty());
 
     shell.click_element("agent-trust");
     shell.click_element("agent-trust-confirm");

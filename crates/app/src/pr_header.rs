@@ -19,6 +19,7 @@ use gpui::{
 };
 use gpui_kit::assets::IconName;
 use gpui_kit::component::input::{InputEvent, Textarea, TextareaState};
+use gpui_kit::component::menu::{DropdownMenu as _, PopupMenu, PopupMenuItem};
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use theme::Theme;
 
@@ -29,8 +30,10 @@ use crate::panels::PanelKind;
 use crate::references;
 use crate::session::{OpenMode, OpenPr, Session};
 use crate::sink::Verdict;
-use crate::terminals::{Purpose, Terminals, WorktreeState};
+use crate::terminals::{Purpose, Terminals};
+use crate::threads::thread_menu::entry_item;
 use crate::ui::{self, Button, ButtonKind, TextExt as _};
+use crate::workspaces::{self, Pick, SaveState, Workspaces};
 use crate::writing::Writing;
 use gpui_kit::TestSupportExt as _;
 
@@ -208,20 +211,16 @@ pub enum Menu {
     Review,
     Merge,
     More,
-    /// "Review with agent": Claude's pending comments, the agent's terminal
-    /// and the workspace settings.
-    Agent,
 }
 
 impl Menu {
-    /// `review`, `merge`, `more` or `agent`, as `--demo-menu` names them.
+    /// `review`, `merge` or `more`, as `--demo-menu` names them.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
         match name {
             "review" => Some(Self::Review),
             "merge" => Some(Self::Merge),
             "more" => Some(Self::More),
-            "agent" => Some(Self::Agent),
             _ => None,
         }
     }
@@ -250,8 +249,9 @@ pub struct PrActions {
     /// for it), so the bar does not draw a second one.
     hide_confirm: bool,
     _subscriptions: Vec<Subscription>,
-    /// Redraws when the worktree of a pull request changes.
-    _terminals: Option<Subscription>,
+    /// Redraws when the workspaces change, which decide whether "Review
+    /// with agent" starts one or asks which.
+    _workspaces: Option<Subscription>,
 }
 
 impl PrActions {
@@ -275,6 +275,8 @@ impl PrActions {
         );
         let observed = cx.observe(&session, |_: &mut Self, _, cx| cx.notify());
         let menu = cx.try_global::<DemoMenu>().and_then(|demo| demo.0);
+        let workspaces = Workspaces::global(cx)
+            .map(|workspaces| cx.observe(&workspaces, |_: &mut Self, _, cx| cx.notify()));
         Self {
             session,
             pr: None,
@@ -285,8 +287,7 @@ impl PrActions {
             compact,
             hide_confirm: false,
             _subscriptions: vec![typed, observed],
-            _terminals: Terminals::global(cx)
-                .map(|terminals| cx.observe(&terminals, |_, _, cx| cx.notify())),
+            _workspaces: workspaces,
         }
     }
 
@@ -392,8 +393,8 @@ impl PrActions {
         });
     }
 
-    /// "Review with agent": the agent's terminal, started where the
-    /// repository's workspace says, or brought forward while it runs.
+    /// "Review with agent": the agent's tab, started in the repository's
+    /// workspace, or brought forward while it starts or runs.
     fn review_with_agent(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let Some(key) = self.pr.clone() else {
             return;
@@ -403,199 +404,65 @@ impl PrActions {
         cx.notify();
     }
 
-    /// "Workspace settings…": the settings page on its Workspaces section.
-    fn workspace_settings(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        self.menu = None;
-        crate::claude_review::open_workspace_settings(None, window, cx);
-        cx.notify();
-    }
-
     /// "Review with agent" as a split button: the main part starts or
-    /// focuses the agent, the chevron lists Claude's pending comments, whose
-    /// count is on the button.
+    /// focuses the agent in the repository's workspace, the chevron opens
+    /// the menu of its workspaces and Claude's pending comments, whose count
+    /// is on the button. With several workspaces and none preferred, the
+    /// whole button opens the menu, which asks which one to start.
     fn agent_split(&self, pending: usize, cx: &mut Context<Self>) -> AnyElement {
-        let t = ui::theme(cx);
-        let c = &t.colors;
-        let hover = c.hover;
-        let open = self.menu == Some(Menu::Agent);
-        let inner = px(ui::CONTROL_HEIGHT - 2.0);
-        let badge = (pending > 0).then(|| {
-            div()
-                .debug_selector(|| "agent-pending-count".into())
-                .px(px(5.0))
-                .rounded(t.radius.sm)
-                .bg(c.selected)
-                .tiny(&t)
-                .text_color(c.text)
-                .child(pending.to_string())
-        });
-        let main = h_flex()
-            .id("review-with-agent")
-            .h_full()
-            .px(px(8.0))
-            .gap(px(6.0))
-            .items_center()
-            .whitespace_nowrap()
-            .cursor_pointer()
-            .hover(move |s| s.bg(hover))
-            .on_click(cx.listener(|this, _, window, cx| this.review_with_agent(window, cx)))
-            .child("Review with agent")
-            .children(badge)
-            .test_support();
-        let chevron = div()
-            .id("review-with-agent-menu")
-            .debug_selector(|| "review-with-agent-menu".into())
-            .size(inner)
-            .flex()
-            .items_center()
-            .justify_center()
-            .when(open, |el| el.bg(c.selected))
-            .cursor_pointer()
-            .hover(move |s| s.bg(hover))
-            .on_click(cx.listener(|this, _, _, cx| this.toggle(Menu::Agent, cx)))
-            .child(
-                Icon::new(IconName::ChevronDown)
-                    .size(px(12.0))
-                    .text_color(c.text_secondary),
-            )
-            .test_support();
-        ui::secondary_style(h_flex().id("review-with-agent-unit"), cx)
-            .overflow_hidden()
-            .small(&t)
-            .child(main)
-            .child(div().w(px(1.0)).h_full().bg(c.border_strong))
-            .child(chevron)
-            .into_any_element()
-    }
-
-    /// The agent menu: each of Claude's drafts not yet in the review (a
-    /// click shows it in the diff, "Add" queues it), "Add all", "Discard
-    /// all", the agent's terminal and the workspace settings.
-    fn agent_menu(&self, cx: &mut Context<Self>) -> AnyElement {
-        let t = ui::theme(cx);
-        let c = &t.colors;
-        let hover = c.hover;
         let Some(key) = self.pr.clone() else {
             return div().into_any_element();
         };
-        let pending = self
-            .writing
-            .as_ref()
-            .map(|writing| crate::claude_review::pending(writing.read(cx)))
-            .unwrap_or_default();
-        let rows = pending.iter().enumerate().map(|(ix, comment)| {
-            let jump_key = key.clone();
-            let jump = comment.anchor.clone();
-            let add = comment.anchor.clone();
-            let writing = self.writing.clone();
-            h_flex()
-                .gap(px(6.0))
-                .items_center()
-                .child(
-                    v_flex()
-                        .id(("agent-pending", ix))
-                        .debug_selector(move || format!("agent-pending-{ix}"))
-                        .flex_1()
-                        .min_w_0()
-                        .px(px(6.0))
-                        .py(px(4.0))
-                        .rounded(t.radius.sm)
-                        .cursor_pointer()
-                        .hover(move |s| s.bg(hover))
-                        .on_click(cx.listener(move |this, _, _, cx| {
-                            this.menu = None;
-                            crate::claude_review::jump_to(&jump_key, &jump, cx);
-                            cx.notify();
-                        }))
-                        .child(
-                            div()
-                                .truncate()
-                                .mono(&t)
-                                .text_color(c.text)
-                                .child(comment.place.clone()),
-                        )
-                        .child(
-                            div()
-                                .truncate()
-                                .tiny(&t)
-                                .text_color(c.text_muted)
-                                .child(comment.first_line.clone()),
-                        ),
-                )
-                .child(
-                    Button::new(("agent-add", ix), "Add", ButtonKind::Ghost).on_click(
-                        move |_, _, cx| {
-                            if let Some(writing) = &writing {
-                                writing.update(cx, |writing, cx| writing.queue_draft(&add, cx));
-                            }
-                        },
-                    ),
-                )
-                .into_any_element()
-        });
-        let empty = pending.is_empty();
-        let (add_key, discard_key) = (key.clone(), key.clone());
-        let bulk = (!empty).then(|| {
-            h_flex()
-                .gap(px(6.0))
-                .child(
-                    Button::new("agent-add-all", "Add all", ButtonKind::Secondary)
-                        .on_click(move |_, _, cx| crate::claude_review::add_all(&add_key, cx)),
-                )
-                .child(
-                    Button::new("agent-discard-all", "Discard all", ButtonKind::Danger).on_click(
-                        move |_, _, cx| crate::claude_review::discard_all(&discard_key, cx),
-                    ),
-                )
-        });
-        let item = |id: &'static str, label: &'static str| {
-            div()
-                .id(id)
-                .debug_selector(move || id.into())
-                .px(px(8.0))
-                .py(px(5.0))
-                .rounded(t.radius.sm)
-                .cursor_pointer()
-                .hover(move |s| s.bg(hover))
-                .text_color(c.text)
-                .child(label)
-        };
-        let title = if empty {
-            "No comments from Claude waiting".to_owned()
-        } else {
-            format!("Comments from Claude ({})", pending.len())
-        };
-        v_flex()
-            .w(px(380.0))
-            .gap(px(4.0))
-            .child(
+        let t = ui::theme(cx);
+        let c = &t.colors;
+        let badge = |t: &Theme| {
+            (pending > 0).then(|| {
                 div()
-                    .px(px(6.0))
-                    .font_weight(FontWeight::SEMIBOLD)
-                    .text_color(c.text)
-                    .child(title),
-            )
-            .child(
-                v_flex()
-                    .id("agent-pending-list")
-                    .max_h(px(320.0))
-                    .overflow_y_scroll()
-                    .gap(px(2.0))
-                    .children(rows),
-            )
-            .children(bulk)
-            .child(ui::divider(cx))
-            .child(
-                item("agent-open-terminal", "Open agent terminal").on_click(
-                    cx.listener(|this, _, window, cx| this.review_with_agent(window, cx)),
-                ),
-            )
-            .child(
-                item("agent-workspace-settings", "Workspace settings\u{2026}").on_click(
-                    cx.listener(|this, _, window, cx| this.workspace_settings(window, cx)),
-                ),
-            )
-            .into_any_element()
+                    .debug_selector(|| "agent-pending-count".into())
+                    .px(px(5.0))
+                    .rounded(t.radius.sm)
+                    .bg(t.colors.selected)
+                    .tiny(t)
+                    .text_color(t.colors.text)
+                    .child(pending.to_string())
+            })
+        };
+        let asks = Workspaces::global(cx)
+            .is_some_and(|w| matches!(w.read(cx).pick(&key.repo), Pick::Choose(_)));
+        let writing = self.writing.clone();
+        let menu = move |asking: bool| {
+            let (key, writing) = (key.clone(), writing.clone());
+            move |popup: PopupMenu, _: &mut Window, cx: &mut Context<PopupMenu>| {
+                agent_popup(popup, &key, writing.as_ref(), asking, cx)
+            }
+        };
+        if asks {
+            let trigger = ui::secondary_style(div().id("review-with-agent"), cx)
+                .debug_selector(|| "review-with-agent".into())
+                .gap(px(6.0))
+                .px(px(8.0))
+                .small(&t)
+                .whitespace_nowrap()
+                .cursor_pointer()
+                .child("Review with agent")
+                .children(badge(&t))
+                .child(
+                    Icon::new(IconName::ChevronDown)
+                        .size(px(12.0))
+                        .text_color(c.text_secondary),
+                );
+            return ui::MenuTrigger::new(trigger)
+                .open_bg(c.selected)
+                .dropdown_menu_with_anchor(Anchor::TopRight, menu(true))
+                .into_any_element();
+        }
+        let mut button = ui::SplitButton::new("review-with-agent", "Review with agent")
+            .on_click(cx.listener(|this, _, window, cx| this.review_with_agent(window, cx)))
+            .menu(menu(false));
+        if let Some(badge) = badge(&t) {
+            button = button.badge(badge);
+        }
+        button.into_any_element()
     }
 
     fn request(&mut self, action: Action, cx: &mut Context<Self>) {
@@ -1251,15 +1118,175 @@ pub(crate) fn palette_items(session: &Entity<Session>, key: &PrKey, cx: &App) ->
                 .then_some("Terminals are off"),
         ),
     );
-    let target = key.clone();
-    items.push(Item::new(
-        "pr:review-with-agent",
-        "Review with agent",
-        move |window, cx| crate::claude_review::start(&target, window, cx),
-    ));
+    items.extend(agent_items(key, cx));
     items
         .into_iter()
         .map(|item| item.detail(detail.clone()))
+        .collect()
+}
+
+/// The "Review with agent" menu: the workspaces of the pull request's
+/// repository (the one a launch uses checked; picking one makes it the
+/// repository's preferred workspace, and with `asking` starts the agent
+/// there), Claude's drafts not yet in the review, and the workspace
+/// settings.
+fn agent_popup(
+    menu: PopupMenu,
+    key: &PrKey,
+    writing: Option<&Entity<Writing>>,
+    asking: bool,
+    cx: &App,
+) -> PopupMenu {
+    let menu = workspace_items(menu.min_w(px(320.0)).max_w(px(440.0)), key, asking, cx);
+    let pending = writing
+        .map(|writing| crate::claude_review::pending(writing.read(cx)))
+        .unwrap_or_default();
+    let mut menu = menu.separator().label(if pending.is_empty() {
+        "No comments from Claude waiting".to_owned()
+    } else {
+        format!("Comments from Claude ({})", pending.len())
+    });
+    for (ix, comment) in pending.iter().enumerate() {
+        let (place, first_line) = (comment.place.clone(), comment.first_line.clone());
+        let (jump_key, anchor) = (key.clone(), comment.anchor.clone());
+        menu = menu.item(
+            PopupMenuItem::element(move |_, cx| {
+                let t = ui::theme(cx);
+                v_flex()
+                    .debug_selector(move || format!("agent-pending-{ix}"))
+                    .max_w(px(MENU_TEXT_WIDTH))
+                    .child(div().truncate().mono(&t).child(place.clone()))
+                    .child(
+                        div()
+                            .truncate()
+                            .tiny(&t)
+                            .text_color(t.colors.text_muted)
+                            .child(first_line.clone()),
+                    )
+            })
+            .on_click(move |_, _, cx| crate::claude_review::jump_to(&jump_key, &anchor, cx)),
+        );
+    }
+    if !pending.is_empty() {
+        let (add_key, discard_key) = (key.clone(), key.clone());
+        menu = menu
+            .item(entry_item(
+                "agent-add-all".to_owned(),
+                "Add all to the review",
+                None,
+                move |cx| crate::claude_review::add_all(&add_key, cx),
+            ))
+            .item(entry_item(
+                "agent-discard-all".to_owned(),
+                "Discard all",
+                None,
+                move |cx| crate::claude_review::discard_all(&discard_key, cx),
+            ));
+    }
+    menu.separator().item(
+        PopupMenuItem::element(|_, _| {
+            div()
+                .debug_selector(|| "agent-workspace-settings".into())
+                .child("Workspace settings\u{2026}")
+        })
+        .on_click(|_, window, cx| crate::claude_review::open_workspace_settings(None, window, cx)),
+    )
+}
+
+/// The widest a line of text in the agent menu gets.
+const MENU_TEXT_WIDTH: f32 = 400.0;
+
+/// The menu's workspaces for `key`'s repository, or a way to add one.
+fn workspace_items(menu: PopupMenu, key: &PrKey, asking: bool, cx: &App) -> PopupMenu {
+    let Some(workspaces) = Workspaces::global(cx) else {
+        return menu;
+    };
+    let workspaces = workspaces.read(cx);
+    let matching = workspaces.matching(&key.repo);
+    let used = workspaces.for_repo(&key.repo).map(|stored| stored.id);
+    let title = match (matching.len(), used) {
+        (0, _) => "No workspace for this repository",
+        (_, None) => "Choose the workspace for this repository",
+        _ => "Workspace",
+    };
+    let mut menu = menu.label(title);
+    for (ix, stored) in matching.iter().enumerate() {
+        let (id, text) = (stored.id, workspaces::describe(&stored.entry));
+        let key = key.clone();
+        let item = PopupMenuItem::element(move |_, _| {
+            let text = text.clone();
+            // A long directory is cut short rather than widening the menu.
+            div()
+                .debug_selector(move || format!("agent-workspace-{ix}"))
+                .max_w(px(MENU_TEXT_WIDTH))
+                .truncate()
+                .child(text)
+        })
+        .checked(used == Some(id))
+        .on_click(move |_, _, cx| {
+            if asking {
+                crate::claude_review::choose_and_launch(&key, id, cx);
+            } else if let Some(workspaces) = Workspaces::global(cx) {
+                workspaces.update(cx, |workspaces, cx| workspaces.prefer(&key.repo, id, cx));
+            }
+        });
+        menu = menu.item(item);
+    }
+    if matching.is_empty() {
+        let key = key.clone();
+        menu = menu.item(
+            PopupMenuItem::element(|_, _| {
+                div()
+                    .debug_selector(|| "agent-add-workspace".into())
+                    .child("Add a workspace\u{2026}")
+            })
+            .on_click(move |_, window, cx| {
+                crate::claude_review::open_workspace_settings(Some(&key), window, cx);
+            }),
+        );
+    }
+    if let SaveState::Failed(error) = workspaces.state() {
+        menu = menu.label(error.clone());
+    }
+    menu
+}
+
+/// "Review with agent" in the palette: one item, or with several
+/// workspaces and none preferred, one per workspace, which also makes it
+/// the repository's preferred one.
+fn agent_items(key: &PrKey, cx: &App) -> Vec<Item> {
+    let choices = Workspaces::global(cx).and_then(|workspaces| {
+        let workspaces = workspaces.read(cx);
+        let Pick::Choose(_) = workspaces.pick(&key.repo) else {
+            return None;
+        };
+        let choices: Vec<_> = workspaces
+            .matching(&key.repo)
+            .into_iter()
+            .map(|stored| (stored.id, workspaces::describe(&stored.entry)))
+            .collect();
+        Some(choices)
+    });
+    let Some(choices) = choices else {
+        let target = key.clone();
+        return vec![Item::new(
+            "pr:review-with-agent",
+            "Review with agent",
+            move |window, cx| {
+                crate::claude_review::start(&target, window, cx);
+            },
+        )];
+    };
+    choices
+        .into_iter()
+        .map(|(id, place)| {
+            let target = key.clone();
+            Item::new(
+                format!("pr:review-with-agent:{place}"),
+                format!("Review with agent in {place}"),
+                move |_, cx| crate::claude_review::choose_and_launch(&target, id, cx),
+            )
+        })
         .collect()
 }
 
@@ -1366,7 +1393,6 @@ impl Render for PrActions {
             Menu::Review => self.review_menu(&facts, cx),
             Menu::Merge => self.merge_menu(&facts, cx),
             Menu::More => self.more_menu(&facts, cx),
-            Menu::Agent => self.agent_menu(cx),
         });
         let popover = popover.map(|body| {
             deferred(
@@ -1430,24 +1456,6 @@ impl Render for PrActions {
             crate::claude_review::pending(writing.read(cx)).len()
         });
         let with_agent = self.agent_split(pending, cx);
-        let worktree = self.pr.as_ref().and_then(|key| {
-            let state = Terminals::global(cx)?.read(cx).worktree(key)?.clone();
-            let color = match state {
-                WorktreeState::Failed { .. } => c.danger,
-                WorktreeState::Choosing(_) => c.warn,
-                WorktreeState::Working { .. }
-                | WorktreeState::Ready(_)
-                | WorktreeState::Cloning { .. } => c.text_muted,
-            };
-            Some(
-                div()
-                    .debug_selector(|| "worktree-state".into())
-                    .tiny(&t)
-                    .truncate()
-                    .text_color(color)
-                    .child(state.line()),
-            )
-        });
         let bar = h_flex()
             .gap(px(8.0))
             .items_center()
@@ -1471,8 +1479,7 @@ impl Render for PrActions {
                         .gap(px(12.0))
                         .items_center()
                         .child(bar)
-                        .children(notes)
-                        .children(worktree),
+                        .children(notes),
                 )
                 .children(confirm)
                 .into_any_element();
@@ -1482,7 +1489,6 @@ impl Render for PrActions {
             .gap(px(6.0))
             .child(bar)
             .children(notes)
-            .children(worktree)
             .children(confirm)
             .into_any_element()
     }

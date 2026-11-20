@@ -39,7 +39,7 @@ use crate::machines::{self, Machine};
 use crate::model::{ChangedFile, FileStatus, PrKey};
 use crate::session::Session;
 use crate::terminals::{CommandLine, Outcome, Prepared, TerminalSpec};
-use crate::worktrees::{self, Placement, PrSource, WorktreeInfo};
+use crate::worktrees::{self, Placement, PrSource, Step, WorktreeInfo};
 
 /// Claude Code flags that keep a checkout's config out: settings from the
 /// user's own file only (project and local settings, and with them hooks,
@@ -373,7 +373,7 @@ pub fn prepare_job(
         let head = open.pr.sha.to_string();
         let check = check_files(&open.files);
         return Ok(Box::new(move |progress: worktrees::Progress<'_>| {
-            progress("adding the worktree");
+            progress(Step::Worktree);
             std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
             let info = WorktreeInfo {
                 machine: machines::THIS_PC.to_owned(),
@@ -402,7 +402,7 @@ pub fn prepare_job(
         if machine.is_local() {
             let objects = services.objects.app_owned(&source.repo)?;
             let info = worktrees::ensure_local(&objects, &source, progress)?;
-            progress("comparing agent config");
+            progress(Step::Config);
             let check = check_store(&objects, source.number, &info.head);
             let links = escaping_links(&objects, &info.head);
             return Ok(Prepared {
@@ -416,7 +416,7 @@ pub fn prepare_job(
         let info = worktrees::ensure_remote(&machine, &source, Placement::AppOwned, progress)?;
         // The remote checkout is compared here, in this PC's copy, which has
         // the base branch too.
-        progress("comparing agent config");
+        progress(Step::Config);
         let (check, links) =
             match services.objects.resolve(&source.repo).and_then(|objects| {
                 worktrees::fetch_local(&objects, &source.fetch).map(|_| objects)
@@ -481,10 +481,11 @@ pub fn prepare_review_job(
         let check = check_files(&open.files);
         let machine = machine.clone();
         return Ok(Box::new(move |progress: worktrees::Progress<'_>| {
-            progress("adding the worktree");
+            progress(Step::Worktree);
             std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
             let path = std::path::absolute(&dir).unwrap_or(dir);
             refuse_nested(&path.to_string_lossy(), workdir.as_deref(), true)?;
+            progress(Step::Context);
             worktrees::write_review_files_local(&path, &context, false)?;
             let mcp_file = mcp
                 .as_ref()
@@ -524,7 +525,7 @@ pub fn prepare_review_job(
         let needs_clone = if local {
             worktrees::needs_clone_local(&worktrees::expand_home(&dir))?
         } else {
-            progress("connecting");
+            progress(Step::Connect);
             worktrees::needs_clone_remote(&machine, &dir)?
         };
         if needs_clone {
@@ -539,14 +540,14 @@ pub fn prepare_review_job(
             let dir = worktrees::expand_home(&dir);
             let (clone, info) = worktrees::ensure_in_dir_local(&dir, &source, progress)?;
             refuse_nested(&info.path, workdir.as_deref(), true)?;
-            progress("comparing agent config");
+            progress(Step::Config);
             let check = check_store(&clone, source.number, &info.head);
             let links = escaping_links(&clone, &info.head);
             (info, check, links)
         } else {
             let info = worktrees::ensure_in_dir_remote(&machine, &source, &dir, progress)?;
             refuse_nested(&info.path, workdir.as_deref(), false)?;
-            progress("comparing agent config");
+            progress(Step::Config);
             // The remote checkout is compared here, in this PC's copy.
             let (check, links) = match services.objects.resolve(&source.repo).and_then(|objects| {
                 worktrees::fetch_local(&objects, &source.fetch).map(|_| objects)
@@ -570,7 +571,7 @@ pub fn prepare_review_job(
             }
             .into());
         }
-        progress("writing the context file");
+        progress(Step::Context);
         if local {
             worktrees::write_review_files_local(Path::new(&info.path), &context, true)?;
         } else {

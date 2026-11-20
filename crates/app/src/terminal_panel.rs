@@ -3,8 +3,14 @@
 //! the machine, the directory and whether the program ended; closing the
 //! tab ends the program. It follows the theme and the buffer font.
 //!
+//! A launch that makes a worktree first opens its tab at once, with the
+//! numbered steps it goes through ([`Checklist`]); the terminal replaces
+//! them in the same tab when its program starts.
+//!
 //! Terminals are not restarted with the app: a restored layout holds a
 //! placeholder that offers to open the same terminal again.
+
+use std::rc::Rc;
 
 use gpui::prelude::FluentBuilder as _;
 use gpui::{
@@ -21,15 +27,21 @@ use term::{ExitState, SessionConfig};
 use term_view::{TermStyle, TerminalEvent, TerminalView};
 use theme::ActiveTheme;
 
+use crate::checklist::{Checklist, StepState};
 use crate::panels::{close_button, tab_label};
 use crate::terminals::TerminalSpec;
+use crate::ui::spinner::SpinnerSlots;
 use crate::ui::{self, Button, ButtonKind, TextExt as _};
+use crate::worktrees::Step;
 
 pub const TERMINAL: &str = "Terminal";
 
 /// Where the panel's program is.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum RunState {
+    /// Making the worktree before the program starts: the tab shows the
+    /// steps.
+    Preparing,
     /// Finding the programs on the PATH, off the UI thread.
     Starting,
     Running,
@@ -40,12 +52,24 @@ pub enum RunState {
     Failed(SharedString),
 }
 
+/// Runs a launch again from its first step.
+pub type Retry = Rc<dyn Fn(&mut Window, &mut App)>;
+
+/// A launch whose program has not started: what the tab says and the steps.
+struct Launching {
+    title: String,
+    checklist: Checklist,
+    retry: Option<Retry>,
+}
+
 pub struct TerminalPanel {
     id: EntityId,
     focus: FocusHandle,
     spec: TerminalSpec,
     view: Option<Entity<TerminalView>>,
     state: RunState,
+    launching: Option<Launching>,
+    spinners: SpinnerSlots,
     /// The view takes focus once it is up, if the panel holds it then.
     focus_view: bool,
     _starting: Option<Task<()>>,
@@ -96,6 +120,60 @@ impl TerminalPanel {
         cx.new(|cx| Self::new(spec, cx))
     }
 
+    /// A launch's tab before its program starts, titled `title` and showing
+    /// `checklist`; [`Self::run`] starts the program in it. `retry` starts
+    /// the launch again after a failed step.
+    pub fn launching(
+        title: String,
+        spec: TerminalSpec,
+        checklist: Checklist,
+        retry: Option<Retry>,
+        cx: &mut App,
+    ) -> Entity<Self> {
+        cx.new(|cx| {
+            let mut panel = Self::new(spec, cx);
+            panel.state = RunState::Preparing;
+            panel.launching = Some(Launching {
+                title,
+                checklist,
+                retry,
+            });
+            panel
+        })
+    }
+
+    /// The launch's steps while its program has not started.
+    #[must_use]
+    pub fn checklist(&self) -> Option<&Checklist> {
+        self.launching
+            .as_ref()
+            .map(|launching| &launching.checklist)
+    }
+
+    /// Changes the launch's steps; nothing once the program started.
+    pub fn update_checklist(&mut self, f: impl FnOnce(&mut Checklist), cx: &mut Context<Self>) {
+        if let Some(launching) = &mut self.launching {
+            f(&mut launching.checklist);
+            cx.notify();
+        }
+    }
+
+    /// Shows the launch's steps from the start again, in this tab.
+    pub fn relaunch(&mut self, checklist: Checklist, cx: &mut Context<Self>) {
+        if let Some(launching) = &mut self.launching {
+            launching.checklist = checklist;
+            self.state = RunState::Preparing;
+            cx.notify();
+        }
+    }
+
+    /// Starts `spec`'s program in place of the launch's steps.
+    pub fn run(&mut self, spec: TerminalSpec, cx: &mut Context<Self>) {
+        self.launching = None;
+        self.spec = spec;
+        self.start(cx);
+    }
+
     fn new(spec: TerminalSpec, cx: &mut Context<Self>) -> Self {
         let theme = cx.observe_global::<ActiveTheme>(|this: &mut Self, cx| {
             let style = term_style(cx);
@@ -110,6 +188,8 @@ impl TerminalPanel {
             spec,
             view: None,
             state: RunState::NotStarted,
+            launching: None,
+            spinners: SpinnerSlots::for_dock(cx),
             focus_view: false,
             _starting: None,
             _subscriptions: vec![theme],
@@ -201,6 +281,11 @@ impl TerminalPanel {
     fn badge(&self) -> Option<(String, bool)> {
         match &self.state {
             RunState::Running => None,
+            RunState::Preparing => Some(match self.checklist() {
+                Some(list) if list.error().is_some() => ("failed".to_owned(), true),
+                Some(list) if list.stopped() => ("waiting".to_owned(), false),
+                _ => ("starting".to_owned(), false),
+            }),
             RunState::Starting => Some(("starting".to_owned(), false)),
             RunState::Exited(Some(0)) => Some(("exited".to_owned(), false)),
             RunState::Exited(Some(code)) => Some((format!("exited {code}"), true)),
@@ -223,15 +308,16 @@ impl TerminalPanel {
             ),
             RunState::Failed(error) => (format!("Could not start: {error}"), true),
             RunState::Starting => ("Starting...".to_owned(), false),
-            RunState::Running | RunState::Exited(_) => (String::new(), false),
+            RunState::Preparing | RunState::Running | RunState::Exited(_) => (String::new(), false),
         };
         // An agent's review token ended with it; "Review with agent" starts
         // a new one.
-        let reopen =
-            (!matches!(self.state, RunState::Starting) && self.spec.agent.is_none()).then(|| {
-                Button::toolbar("terminal-reopen", "Reopen")
-                    .on_click(cx.listener(|this, _, window, cx| this.reopen(window, cx)))
-            });
+        let reopen = (!matches!(self.state, RunState::Starting | RunState::Preparing)
+            && self.spec.agent.is_none())
+        .then(|| {
+            Button::toolbar("terminal-reopen", "Reopen")
+                .on_click(cx.listener(|this, _, window, cx| this.reopen(window, cx)))
+        });
         v_flex()
             .size_full()
             .items_center()
@@ -248,6 +334,114 @@ impl TerminalPanel {
             .children(reopen)
             .into_any_element()
     }
+
+    /// The launch's numbered steps: a spinner on the one under way, check
+    /// marks on finished ones, the error and "Retry" on a failed one.
+    fn steps_view(&self, launching: &Launching, cx: &mut Context<Self>) -> gpui::AnyElement {
+        let t = ui::theme(cx);
+        let c = &t.colors;
+        let rows = launching
+            .checklist
+            .steps()
+            .iter()
+            .enumerate()
+            .map(|(ix, (step, state))| {
+                let mark = match state {
+                    StepState::Running => self
+                        .spinners
+                        .slot(STEP_MARK - 4.0, c.accent)
+                        .into_any_element(),
+                    StepState::Done => step_icon(IconName::CircleCheck, c.ok),
+                    StepState::Failed(_) => step_icon(IconName::CircleX, c.danger),
+                    StepState::Blocked(_) => step_icon(IconName::TriangleAlert, c.warn),
+                    StepState::Waiting => div()
+                        .size(px(STEP_MARK))
+                        .flex()
+                        .items_center()
+                        .justify_center()
+                        .rounded_full()
+                        .border_1()
+                        .border_color(c.border_strong)
+                        .tiny(&t)
+                        .text_color(c.text_muted)
+                        .child((ix + 1).to_string())
+                        .into_any_element(),
+                };
+                let failed = matches!(state, StepState::Failed(_));
+                let (label_color, detail) = match state {
+                    StepState::Waiting => (c.text_muted, None),
+                    StepState::Running | StepState::Done => (c.text, None),
+                    StepState::Failed(text) => (c.danger, Some(text.clone())),
+                    StepState::Blocked(text) => (c.text, Some(text.clone())),
+                };
+                // A failed step starts over; a clone in a terminal goes on
+                // once the user says it is done.
+                let action = match (state, &launching.retry) {
+                    (StepState::Failed(_), Some(retry)) => Some(("launch-retry", "Retry", retry)),
+                    (StepState::Blocked(_), Some(retry)) if *step == Step::CloneInTerminal => {
+                        Some(("launch-continue", "Continue", retry))
+                    }
+                    _ => None,
+                };
+                let action = action.map(|(id, label, retry)| {
+                    let retry = retry.clone();
+                    h_flex().pt(px(4.0)).child(
+                        Button::new(id, label, ButtonKind::Secondary)
+                            .on_click(move |_, window, cx| retry(window, cx)),
+                    )
+                });
+                h_flex()
+                    .debug_selector(move || format!("launch-step-{ix}"))
+                    .gap(px(10.0))
+                    .items_start()
+                    .child(
+                        div()
+                            .flex_none()
+                            .size(px(STEP_MARK))
+                            .flex()
+                            .items_center()
+                            .justify_center()
+                            .child(mark),
+                    )
+                    .child(
+                        v_flex()
+                            .min_w_0()
+                            .gap(px(2.0))
+                            .child(div().text_color(label_color).child(step.label()))
+                            .children(detail.map(|detail| {
+                                div()
+                                    .small(&t)
+                                    .text_color(if failed { c.danger } else { c.text_secondary })
+                                    .child(detail)
+                            }))
+                            .children(action),
+                    )
+            });
+        v_flex()
+            .debug_selector(|| "launch-steps".into())
+            .size_full()
+            .p(px(24.0))
+            .gap(px(12.0))
+            .bg(c.surface)
+            .child(
+                div()
+                    .font_weight(gpui::FontWeight::SEMIBOLD)
+                    .text_color(c.text)
+                    .child(launching.title.clone()),
+            )
+            .children(rows)
+            .into_any_element()
+    }
+}
+
+/// The size of a step's number, spinner or icon.
+const STEP_MARK: f32 = 18.0;
+
+fn step_icon(icon: IconName, color: gpui::Hsla) -> gpui::AnyElement {
+    Icon::new(icon)
+        .size(px(STEP_MARK))
+        .text_color(color)
+        .into_any_element()
 }
 
 impl Focusable for TerminalPanel {
@@ -264,7 +458,13 @@ impl BasePanel for TerminalPanel {
         TERMINAL
     }
 
+    fn set_active(&mut self, active: bool, _: &mut Window, cx: &mut Context<Self>) {
+        self.spinners.set_shown(active);
+        cx.notify();
+    }
+
     fn on_removed(&mut self, _: &mut Window, cx: &mut Context<Self>) {
+        self.spinners.set_shown(false);
         self.stop(cx);
     }
 
@@ -298,7 +498,10 @@ impl Panel for TerminalPanel {
                     .size(px(12.0))
                     .text_color(c.text_muted),
             )
-            .child(tab_label(div()).child(self.spec.title()))
+            .child(tab_label(div()).child(match &self.launching {
+                Some(launching) => launching.title.clone(),
+                None => self.spec.title(),
+            }))
             .children(badge)
             .child(close_button(self.id, selector, cx))
     }
@@ -320,10 +523,12 @@ impl Render for TerminalPanel {
                 });
             }
         }
+        self.spinners.clear();
         let t = ui::theme(cx);
         let c = &t.colors;
-        let body = match (&self.view, &self.state) {
-            (Some(view), RunState::Running | RunState::Exited(_)) => div()
+        let body = match (&self.view, &self.state, &self.launching) {
+            (_, _, Some(launching)) => self.steps_view(launching, cx),
+            (Some(view), RunState::Running | RunState::Exited(_), None) => div()
                 .flex_1()
                 .min_h_0()
                 .child(view.clone())

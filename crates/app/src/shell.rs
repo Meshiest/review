@@ -205,7 +205,10 @@ impl Shell {
                 window,
                 |this: &mut Self, _, event: &TerminalsEvent, window, cx| match event {
                     TerminalsEvent::Open { spec, at } => {
-                        this.add_terminal(spec.clone(), *at, window, cx);
+                        this.add_terminal((**spec).clone(), *at, window, cx);
+                    }
+                    TerminalsEvent::Show { panel, at } => {
+                        this.show_terminal(panel.clone(), *at, window, cx);
                     }
                 },
             )
@@ -585,6 +588,27 @@ impl Shell {
         if let (Some(agent), Some(review)) = (agent, crate::claude_review::AgentReview::global(cx))
         {
             review.update(cx, |review, cx| review.attach(&agent, &panel, cx));
+        }
+        self.show_terminal(panel, at, window, cx);
+    }
+
+    /// Places `panel` `at` with the keys, or brings it forward when the dock
+    /// has it already.
+    pub fn show_terminal(
+        &mut self,
+        panel: Entity<TerminalPanel>,
+        at: Where,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if self
+            .dock
+            .read(cx)
+            .panel(PanelId::from(panel.entity_id()))
+            .is_some()
+        {
+            self.focus_terminal(&panel, window, cx);
+            return;
         }
         let handle = tab_handle(panel.clone());
         let id = handle.panel_id(cx);

@@ -24,7 +24,7 @@ fn panel(shell: &mut ShellWindow) -> Entity<SettingsPanel> {
 fn settings_with(shell: &mut ShellWindow, entries: Vec<WorkspaceEntry>) -> Entity<SettingsPanel> {
     shell.update(|_, cx| {
         let workspaces = Workspaces::global(cx).expect("workspaces are installed");
-        workspaces.update(cx, |workspaces, cx| workspaces.loaded(None, entries, cx));
+        workspaces.update(cx, |workspaces, cx| workspaces.loaded(entries, cx));
     });
     shell.keys("ctrl-,");
     let panel = panel(shell);
@@ -235,7 +235,6 @@ fn the_wizard_says_a_terminal_runs_the_clone(cx: &mut TestAppContext) {
         let workspaces = Workspaces::global(cx).expect("workspaces");
         workspaces.update(cx, |workspaces, cx| {
             workspaces.loaded(
-                None,
                 vec![WorkspaceEntry {
                     host: None,
                     ..entry("buildbox", "~/w")

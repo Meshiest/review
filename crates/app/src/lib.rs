@@ -8,6 +8,7 @@ pub mod agent;
 pub mod appearance;
 pub mod assets;
 pub mod avatars;
+pub mod checklist;
 pub mod ci;
 pub mod ci_settle;
 pub mod claude_review;
@@ -313,7 +314,7 @@ pub fn init(cx: &mut App, setup: &Setup) {
     };
     subscriptions::Subscriptions::install(session.clone(), cx);
     terminals::Terminals::install(setup.fixtures, cx);
-    workspaces::Workspaces::install(cx);
+    workspaces::Workspaces::install(workspaces::config_file(setup.fixtures), cx);
     claude_review::AgentReview::install(setup.fixtures, cx);
     if setup.demo_composer {
         session.update(cx, |session, cx| {

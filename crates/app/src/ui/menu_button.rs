@@ -6,9 +6,9 @@ use std::rc::Rc;
 
 use gpui::prelude::FluentBuilder as _;
 use gpui::{
-    Anchor, App, ClickEvent, Context, Div, ElementId, Hsla, InteractiveElement, Interactivity,
-    IntoElement, MouseButton, ParentElement as _, RenderOnce, SharedString, Stateful,
-    StatefulInteractiveElement as _, StyleRefinement, Styled, Window, div, px,
+    Anchor, AnyElement, App, ClickEvent, Context, Div, ElementId, Hsla, InteractiveElement,
+    Interactivity, IntoElement, MouseButton, ParentElement as _, RenderOnce, SharedString,
+    Stateful, StatefulInteractiveElement as _, StyleRefinement, Styled, Window, div, px,
 };
 use gpui_kit::TestSupportExt as _;
 use gpui_kit::assets::IconName;
@@ -91,6 +91,7 @@ pub struct SplitButton {
     disabled: bool,
     on_click: Option<ClickHandler>,
     menu: Option<MenuBuilder>,
+    badge: Option<AnyElement>,
 }
 
 impl SplitButton {
@@ -101,7 +102,15 @@ impl SplitButton {
             disabled: false,
             on_click: None,
             menu: None,
+            badge: None,
         }
+    }
+
+    /// Drawn after the label in the main part: a count, say.
+    #[must_use]
+    pub fn badge(mut self, badge: impl IntoElement) -> Self {
+        self.badge = Some(badge.into_any_element());
+        self
     }
 
     /// The main part is drawn faint, and a click on it does nothing.
@@ -143,6 +152,7 @@ impl RenderOnce for SplitButton {
             .debug_selector(move || id.into())
             .h_full()
             .px(px(8.0))
+            .gap(px(6.0))
             .flex()
             .items_center()
             .whitespace_nowrap()
@@ -155,6 +165,7 @@ impl RenderOnce for SplitButton {
             // A press never moves the focus, so the box being written in keeps it.
             .on_mouse_down(MouseButton::Left, |_, window, _| window.prevent_default())
             .child(self.label)
+            .children(self.badge)
             .test_support();
         let unit = secondary_style(h_flex().id(ElementId::from(format!("{id}-unit"))), cx)
             .debug_selector(move || format!("{id}-unit"))

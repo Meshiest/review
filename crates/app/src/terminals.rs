@@ -3,10 +3,13 @@
 //! worktrees "Open on machine" makes before it starts its command there.
 //!
 //! The shell places the terminal panels; this module says what to start and
-//! where (a [`TerminalsEvent::Open`]).
+//! where (a [`TerminalsEvent::Open`]). A launch that makes a worktree opens
+//! its tab first ([`TerminalsEvent::Show`]), which shows the steps until the
+//! program starts there.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::path::PathBuf;
+use std::rc::Rc;
 use std::thread;
 
 use futures::StreamExt as _;
@@ -15,7 +18,7 @@ use gpui::prelude::FluentBuilder as _;
 use gpui::{
     AnyElement, App, AppContext as _, Context, Entity, EventEmitter, FocusHandle, FontWeight,
     Global, InteractiveElement as _, IntoElement, MouseButton, ParentElement, Render,
-    StatefulInteractiveElement as _, Styled, Task, Window, actions, div, px,
+    StatefulInteractiveElement as _, Styled, Task, WeakEntity, Window, actions, div, px,
 };
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{Icon, h_flex, v_flex};
@@ -23,13 +26,15 @@ use serde::{Deserialize, Serialize};
 use term::SessionConfig;
 
 use crate::agent::{self, ConfigCheck, LaunchMode};
+use crate::checklist::{Checklist, Purpose as StepsFor};
 use crate::claude_review::{self, ReviewLaunch};
 use crate::machines::{self, Machine, Place};
 use crate::model::{ForgeKind, PrKey};
 use crate::panels::PanelKind;
 use crate::session::{OpenMode, Session};
+use crate::terminal_panel::{Retry, TerminalPanel};
 use crate::ui::{self, Button, ButtonKind, TextExt as _};
-use crate::worktrees::{self, WorktreeInfo};
+use crate::worktrees::{self, Step, WorktreeInfo};
 
 actions!(
     terminals,
@@ -45,7 +50,7 @@ actions!(
 
 /// Blocking work that makes a worktree and checks its agent config,
 /// reporting its steps.
-type WorktreeJob = Box<dyn FnOnce(worktrees::Progress<'_>) -> Result<Outcome, String> + Send>;
+pub type WorktreeJob = Box<dyn FnOnce(worktrees::Progress<'_>) -> Result<Outcome, String> + Send>;
 
 /// How a worktree job ends.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -86,8 +91,25 @@ pub struct Prepared {
 struct Launch<'a> {
     key: &'a PrKey,
     machine: &'a Machine,
-    at: Where,
     review: Option<&'a ReviewLaunch>,
+}
+
+/// What a launch's tab shows before its program starts.
+pub struct LaunchTab {
+    pub title: String,
+    /// The machine's name, as the picker shows it.
+    pub machine: String,
+    pub checklist: Checklist,
+    /// Runs the launch again after a failed step.
+    pub retry: Retry,
+}
+
+/// The step that starts the launch's program.
+fn start_step(review: Option<&ReviewLaunch>) -> Step {
+    match review {
+        Some(_) => Step::StartAgent,
+        None => Step::StartCommand,
+    }
 }
 
 /// A worktree whose pull request changes agent config, waiting for the user
@@ -661,7 +683,13 @@ pub enum Purpose {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TerminalsEvent {
     /// Open a terminal panel running `spec`, placed `at`.
-    Open { spec: TerminalSpec, at: Where },
+    Open { spec: Box<TerminalSpec>, at: Where },
+    /// Show a launch's tab: placed `at` when it is not in the dock yet,
+    /// brought forward when it is.
+    Show {
+        panel: Entity<TerminalPanel>,
+        at: Where,
+    },
 }
 
 /// A pull request's worktree on the machine it was last opened on.
@@ -669,7 +697,7 @@ pub enum TerminalsEvent {
 pub enum WorktreeState {
     Working {
         machine: String,
-        step: String,
+        step: Step,
     },
     Ready(WorktreeInfo),
     /// Ready, but its command waits for the user: the pull request changes
@@ -685,40 +713,6 @@ pub enum WorktreeState {
         machine: String,
         error: String,
     },
-}
-
-impl WorktreeState {
-    /// One line for the pull request header.
-    #[must_use]
-    pub fn line(&self) -> String {
-        let ready = |info: &WorktreeInfo| {
-            let place = if info.local { "local" } else { "remote" };
-            let note = info
-                .note
-                .as_deref()
-                .map(|note| format!(" ({note})"))
-                .unwrap_or_default();
-            format!(
-                "Worktree, {place} on {}: {} at {}{note}",
-                info.machine,
-                info.path,
-                info.short_head()
-            )
-        };
-        match self {
-            Self::Working { machine, step } => format!("Worktree on {machine}: {step}..."),
-            Self::Ready(info) => ready(info),
-            Self::Choosing(info) => format!(
-                "{}; waiting for you to choose how its command starts",
-                ready(info)
-            ),
-            Self::Cloning { machine, dir } => format!(
-                "Cloning into {dir} in a terminal on {machine}; choose Review with agent again \
-                 once it is done"
-            ),
-            Self::Failed { machine, error } => format!("Worktree on {machine} failed: {error}"),
-        }
-    }
 }
 
 #[derive(Clone)]
@@ -741,9 +735,14 @@ pub struct Terminals {
     focus: FocusHandle,
     worktrees: HashMap<PrKey, WorktreeState>,
     jobs: HashMap<PrKey, Task<()>>,
+    /// Each pull request's launch tab, which shows the steps until its
+    /// program starts.
+    tabs: HashMap<PrKey, WeakEntity<TerminalPanel>>,
     pending: Option<PendingLaunch>,
     /// Where a fixtures run makes its worktree folders.
     fixture_root: PathBuf,
+    /// Jobs a test hands in, run in place of the next launches' own.
+    queued_jobs: VecDeque<WorktreeJob>,
     _read_hosts: Option<Task<()>>,
 }
 
@@ -782,11 +781,13 @@ impl Terminals {
                 focus: cx.focus_handle(),
                 worktrees: HashMap::new(),
                 jobs: HashMap::new(),
+                tabs: HashMap::new(),
                 pending: None,
                 fixture_root: std::env::current_dir()
                     .unwrap_or_default()
                     .join(".scratch")
                     .join("fixture-worktrees"),
+                queued_jobs: VecDeque::new(),
                 _read_hosts: read_hosts,
             }
         });
@@ -821,6 +822,12 @@ impl Terminals {
         self.fixture_root = root;
     }
 
+    /// Runs `job` in place of the next launch's own worktree job, for tests
+    /// that step through a launch or make it fail.
+    pub fn queue_job(&mut self, job: WorktreeJob) {
+        self.queued_jobs.push_back(job);
+    }
+
     #[must_use]
     pub fn is_picking(&self) -> bool {
         self.picker.is_some()
@@ -841,6 +848,58 @@ impl Terminals {
     #[must_use]
     pub fn pending(&self) -> Option<&PendingLaunch> {
         self.pending.as_ref()
+    }
+
+    /// `key`'s launch tab while it shows the steps, before its program
+    /// starts.
+    #[must_use]
+    pub fn launch_tab(&self, key: &PrKey, cx: &App) -> Option<Entity<TerminalPanel>> {
+        let panel = self.tabs.get(key)?.upgrade()?;
+        panel.read(cx).checklist().is_some().then_some(panel)
+    }
+
+    /// Opens `key`'s launch tab at once, before any work: the tab already
+    /// showing its steps starts over, else a new tab opens `at`.
+    pub fn open_launch_tab(
+        &mut self,
+        key: &PrKey,
+        tab: LaunchTab,
+        at: Where,
+        cx: &mut Context<Self>,
+    ) -> Entity<TerminalPanel> {
+        let LaunchTab {
+            title,
+            machine,
+            checklist,
+            retry,
+        } = tab;
+        let panel = match self.launch_tab(key, cx) {
+            Some(panel) => {
+                panel.update(cx, |panel, cx| panel.relaunch(checklist, cx));
+                panel
+            }
+            None => {
+                let stub = TerminalSpec {
+                    machine,
+                    ..TerminalSpec::default()
+                };
+                let panel = TerminalPanel::launching(title, stub, checklist, Some(retry), cx);
+                self.tabs.insert(key.clone(), panel.downgrade());
+                panel
+            }
+        };
+        cx.emit(TerminalsEvent::Show {
+            panel: panel.clone(),
+            at,
+        });
+        panel
+    }
+
+    /// Changes the steps `key`'s launch tab shows, while it shows them.
+    fn steps(&self, key: &PrKey, cx: &mut App, f: impl FnOnce(&mut Checklist)) {
+        if let Some(panel) = self.tabs.get(key).and_then(WeakEntity::upgrade) {
+            panel.update(cx, |panel, cx| panel.update_checklist(f, cx));
+        }
     }
 
     /// Opens the picker for `purpose`, with focus on it.
@@ -897,7 +956,7 @@ impl Terminals {
                     return;
                 }
                 cx.emit(TerminalsEvent::Open {
-                    spec: TerminalSpec::shell_on(&machine),
+                    spec: Box::new(TerminalSpec::shell_on(&machine)),
                     at: picker.at,
                 });
             }
@@ -905,17 +964,41 @@ impl Terminals {
         }
     }
 
-    /// Makes the pull request's worktree on `machine` (fetching its head),
-    /// then asks for a terminal there running the machine's command.
+    /// Opens a tab with the steps, makes the pull request's worktree on
+    /// `machine` (fetching its head), then runs the machine's command in
+    /// that tab.
     pub fn open_on(&mut self, key: PrKey, machine: Machine, at: Where, cx: &mut Context<Self>) {
+        let title = format!(
+            "{} \u{b7} {}",
+            claude_review::pr_label(&key, cx),
+            machine.name
+        );
+        let retry: Retry = {
+            let (key, machine) = (key.clone(), machine.clone());
+            Rc::new(move |_, cx| {
+                if let Some(terminals) = Terminals::global(cx) {
+                    terminals.update(cx, |terminals, cx| {
+                        terminals.open_on(key.clone(), machine.clone(), at, cx);
+                    });
+                }
+            })
+        };
+        let tab = LaunchTab {
+            title,
+            machine: machine.name.clone(),
+            checklist: Checklist::plan(StepsFor::Command, !machine.is_local()),
+            retry,
+        };
+        self.open_launch_tab(&key, tab, at, cx);
         let job = self.worktree_job(&key, &machine, cx);
         self.run_job(key, machine, at, job, None, cx);
     }
 
     /// "Review with agent": makes the pull request's worktree where the
-    /// workspace says, writes `context` in it, then starts the agent in a
-    /// terminal (asking first when the pull request changes agent config,
-    /// and always for an agent other than Claude).
+    /// workspace says, writes `context` in it, then starts the agent in the
+    /// launch tab (asking first when the pull request changes agent config,
+    /// and always for an agent other than Claude). The tab is open already
+    /// ([`Self::open_launch_tab`]).
     pub fn review_on(
         &mut self,
         key: PrKey,
@@ -936,8 +1019,9 @@ impl Terminals {
         self.run_job(key, machine, Where::Split, job, Some(review), cx);
     }
 
-    /// Shows in the header that `key`'s worktree on `machine` failed.
+    /// `key`'s launch failed before its job ran: its tab shows `error`.
     pub fn fail(&mut self, key: PrKey, machine: &str, error: String, cx: &mut Context<Self>) {
+        self.steps(&key, cx, |steps| steps.fail(error.clone()));
         self.worktrees.insert(
             key,
             WorktreeState::Failed {
@@ -957,12 +1041,25 @@ impl Terminals {
         review: Option<ReviewLaunch>,
         cx: &mut Context<Self>,
     ) {
-        let state = |step: &str| WorktreeState::Working {
-            machine: machine.name.clone(),
-            step: step.to_owned(),
+        let purpose = if review.is_some() {
+            StepsFor::Review
+        } else {
+            StepsFor::Command
         };
-        self.worktrees.insert(key.clone(), state("starting"));
+        let plan = Checklist::plan(purpose, !machine.is_local());
+        self.steps(&key, cx, |steps| *steps = plan);
+        self.worktrees.insert(
+            key.clone(),
+            WorktreeState::Working {
+                machine: machine.name.clone(),
+                step: Step::Fetch,
+            },
+        );
         cx.notify();
+        let job = match self.queued_jobs.pop_front() {
+            Some(queued) => Ok(queued),
+            None => job,
+        };
         let job = match job {
             Ok(job) => job,
             Err(error) => {
@@ -971,13 +1068,13 @@ impl Terminals {
                 return;
             }
         };
-        let (tx, mut rx) = mpsc::unbounded::<Result<String, Result<Outcome, String>>>();
+        let (tx, mut rx) = mpsc::unbounded::<Result<Step, Result<Outcome, String>>>();
         thread::Builder::new()
             .name(format!("worktree-{}", key.number))
             .spawn(move || {
                 let progress_tx = tx.clone();
-                let mut progress = move |step: &str| {
-                    let _ = progress_tx.unbounded_send(Ok(step.to_owned()));
+                let mut progress = move |step: Step| {
+                    let _ = progress_tx.unbounded_send(Ok(step));
                 };
                 let result = job(&mut progress);
                 let _ = tx.unbounded_send(Err(result));
@@ -988,10 +1085,13 @@ impl Terminals {
             while let Some(message) = rx.next().await {
                 let done = this.update(cx, |this, cx| {
                     let next = match message {
-                        Ok(step) => WorktreeState::Working {
-                            machine: machine.name.clone(),
-                            step,
-                        },
+                        Ok(step) => {
+                            this.steps(&task_key, cx, |steps| steps.reach(step));
+                            WorktreeState::Working {
+                                machine: machine.name.clone(),
+                                step,
+                            }
+                        }
                         Err(Ok(Outcome::Prepared(prepared))) => this.prepared(
                             task_key.clone(),
                             machine.clone(),
@@ -1001,16 +1101,27 @@ impl Terminals {
                             cx,
                         ),
                         Err(Ok(Outcome::Clone { spec, dir })) => {
-                            cx.emit(TerminalsEvent::Open { spec: *spec, at });
+                            let what = format!(
+                                "{dir} on {} has no clone yet, so a terminal beside this one \
+                                 clones the repository there. Choose Continue once git is done.",
+                                machine.name
+                            );
+                            this.steps(&task_key, cx, |steps| {
+                                steps.block(Step::CloneInTerminal, what);
+                            });
+                            cx.emit(TerminalsEvent::Open { spec, at });
                             WorktreeState::Cloning {
                                 machine: machine.name.clone(),
                                 dir,
                             }
                         }
-                        Err(Err(error)) => WorktreeState::Failed {
-                            machine: machine.name.clone(),
-                            error,
-                        },
+                        Err(Err(error)) => {
+                            this.steps(&task_key, cx, |steps| steps.fail(error.clone()));
+                            WorktreeState::Failed {
+                                machine: machine.name.clone(),
+                                error,
+                            }
+                        }
                     };
                     let done = !matches!(next, WorktreeState::Working { .. });
                     if matches!(
@@ -1045,6 +1156,7 @@ impl Terminals {
         if review.is_some()
             && let Err(error) = claude_review::refuse_links(&prepared.links)
         {
+            self.steps(&key, cx, |steps| steps.fail(error.clone()));
             return WorktreeState::Failed {
                 machine: machine.name,
                 error,
@@ -1056,9 +1168,16 @@ impl Terminals {
         if agent::needs_choice(command, &prepared.check) {
             if let Some(old) = self.pending.take() {
                 claude_review::forget(old.review.as_ref(), cx);
+                self.steps(&old.key, cx, |steps| {
+                    steps.fail("Another launch asked first, so this one stopped.".to_owned());
+                });
                 self.worktrees
                     .insert(old.key, WorktreeState::Ready(old.prepared.info));
             }
+            let start = start_step(review.as_ref());
+            self.steps(&key, cx, |steps| {
+                steps.block(start, "Choose how it starts in the dialog.".to_owned());
+            });
             let state = WorktreeState::Choosing(prepared.info.clone());
             self.pending = Some(PendingLaunch {
                 key,
@@ -1073,12 +1192,13 @@ impl Terminals {
         let launch = Launch {
             key: &key,
             machine: &machine,
-            at,
             review: review.as_ref(),
         };
         self.launch(launch, prepared, LaunchMode::Safe, cx)
     }
 
+    /// Starts the program in the launch's tab. A tab the user closed
+    /// meanwhile ends the launch.
     fn launch(
         &mut self,
         launch: Launch<'_>,
@@ -1089,23 +1209,32 @@ impl Terminals {
         let Launch {
             key,
             machine,
-            at,
             review,
         } = launch;
+        self.steps(key, cx, |steps| steps.reach(start_step(review)));
         let spec = match review {
             Some(review) => claude_review::launch_spec(key, machine, &prepared, review, mode),
             None => agent::launch_spec(machine, &prepared.info, mode),
         };
-        match spec {
-            Ok(spec) => {
-                cx.emit(TerminalsEvent::Open { spec, at });
-                WorktreeState::Ready(prepared.info)
+        let spec = match spec {
+            Ok(spec) => spec,
+            Err(error) => {
+                self.steps(key, cx, |steps| steps.fail(error.clone()));
+                return WorktreeState::Failed {
+                    machine: machine.name.clone(),
+                    error,
+                };
             }
-            Err(error) => WorktreeState::Failed {
-                machine: machine.name.clone(),
-                error,
-            },
+        };
+        let Some(panel) = self.launch_tab(key, cx) else {
+            claude_review::forget(review, cx);
+            return WorktreeState::Ready(prepared.info);
+        };
+        if let (Some(agent), Some(state)) = (&spec.agent, claude_review::AgentReview::global(cx)) {
+            state.update(cx, |state, cx| state.attach(agent, &panel, cx));
         }
+        panel.update(cx, |panel, cx| panel.run(spec, cx));
+        WorktreeState::Ready(prepared.info)
     }
 
     /// Answers the waiting launch: start it as `mode` says. Trusting the
@@ -1121,7 +1250,6 @@ impl Terminals {
         let launch = Launch {
             key: &pending.key,
             machine: &pending.machine,
-            at: pending.at,
             review: pending.review.as_ref(),
         };
         let state = self.launch(launch, pending.prepared, mode, cx);
@@ -1146,6 +1274,9 @@ impl Terminals {
             return;
         };
         claude_review::forget(pending.review.as_ref(), cx);
+        self.steps(&pending.key, cx, |steps| {
+            steps.fail("You canceled the launch; the worktree stays.".to_owned());
+        });
         self.worktrees
             .insert(pending.key, WorktreeState::Ready(pending.prepared.info));
         cx.notify();
@@ -2007,23 +2138,5 @@ mod tests {
         assert_eq!(serde_json::from_value::<TerminalSpec>(value).unwrap(), spec);
         let old: TerminalSpec = serde_json::from_str("{\"machine\":\"This PC\"}").unwrap();
         assert_eq!(old.host, None);
-    }
-
-    #[test]
-    fn worktree_lines_say_where_and_what() {
-        let line = WorktreeState::Ready(worktree("/w/pr-4")).line();
-        assert_eq!(line, "Worktree, remote on devbox: /w/pr-4 at b4c0f06");
-        let choosing = WorktreeState::Choosing(worktree("/w/pr-4")).line();
-        assert!(choosing.ends_with("choose how its command starts"));
-        let cloning = WorktreeState::Cloning {
-            machine: "devbox".into(),
-            dir: "~/src/r".into(),
-        }
-        .line();
-        assert_eq!(
-            cloning,
-            "Cloning into ~/src/r in a terminal on devbox; choose Review with agent again once \
-             it is done"
-        );
     }
 }

@@ -1,10 +1,12 @@
 //! The settings panel: theme family, mode, avatars, notifications, the diff,
 //! the interface and buffer fonts, and the workspaces "Review with agent"
 //! runs in. Every appearance control applies live through
-//! [`appearance::update`], which also saves; workspaces are checked and saved
-//! to `config.toml` with their own button.
+//! [`appearance::update`], which also saves. Each workspace row says whether
+//! `config.toml` holds it as shown; its Save button writes it there, and only
+//! saved workspaces are used.
 
 use std::cell::Cell;
+use std::path::Path;
 use std::rc::Rc;
 
 use forge::model::RepoRef;
@@ -36,7 +38,7 @@ use crate::settings::{
 };
 use crate::terminals::{self, Terminals};
 use crate::ui::{self, Button, ButtonKind, TextExt as _};
-use crate::workspaces::{self, SaveState, Workspaces};
+use crate::workspaces::{self, SaveState, WorkspaceId, Workspaces};
 
 pub const SETTINGS: &str = "Settings";
 /// The font list's key context; its search box holds focus while it is open.
@@ -784,6 +786,8 @@ impl SettingsPanel {
 
 /// One workspace being edited on the settings page.
 struct WorkspaceRow {
+    /// The saved workspace it edits; `None` until its first save.
+    id: Option<WorkspaceId>,
     /// Kept as the config or the request had it; the row does not edit it.
     host: Option<String>,
     repo: Entity<InputState>,
@@ -793,10 +797,11 @@ struct WorkspaceRow {
     command: Entity<InputState>,
     prompt: Entity<TextareaState>,
     allow_commands: bool,
-    error: Option<String>,
-    /// Draws the panel again as the repository or directory is typed, which
-    /// the line about cloning shows.
-    _watch: [Subscription; 2],
+    /// Why its folder button could not open a folder list.
+    browse_error: Option<String>,
+    /// Draws the panel again as a field is typed in: the row's saved state
+    /// and its line about cloning follow the text.
+    _watch: [Subscription; 5],
 }
 
 /// Which of a row's directories a folder button fills.
@@ -836,8 +841,25 @@ struct DirBrowser {
     _task: Option<Task<()>>,
 }
 
+/// Where a row stands against the config file.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum RowState {
+    /// The file holds it as shown: Review with agent uses it.
+    Saved,
+    Saving,
+    /// Edited, or new, and not in the file yet.
+    Unsaved,
+    /// It cannot be saved, and why.
+    Invalid(String),
+}
+
 impl WorkspaceRow {
-    fn new(entry: &WorkspaceEntry, window: &mut Window, cx: &mut Context<SettingsPanel>) -> Self {
+    fn new(
+        id: Option<WorkspaceId>,
+        entry: &WorkspaceEntry,
+        window: &mut Window,
+        cx: &mut Context<SettingsPanel>,
+    ) -> Self {
         let mut input = |value: &str, placeholder: &'static str, window: &mut Window| {
             let value = value.to_owned();
             cx.new(|cx| {
@@ -863,22 +885,33 @@ impl WorkspaceRow {
             window,
         );
         let prompt = entry.prompt.clone().unwrap_or_default();
-        let watch = [&repo, &path].map(|state| cx.observe(state, |_, _, cx| cx.notify()));
+        let prompt = cx.new(|cx| {
+            TextareaState::new(window, cx)
+                .auto_grow(2, 6)
+                .placeholder("Default: review the pull request and add comments with the tool")
+                .default_value(prompt)
+        });
+        let [repo_watch, path_watch, workdir_watch, command_watch] =
+            [&repo, &path, &workdir, &command]
+                .map(|state| cx.observe(state, |_, _, cx| cx.notify()));
+        let watch = [
+            repo_watch,
+            path_watch,
+            workdir_watch,
+            command_watch,
+            cx.observe(&prompt, |_, _, cx| cx.notify()),
+        ];
         Self {
+            id,
             host: entry.host.clone(),
             repo,
             machine: entry.machine.clone(),
             path,
             workdir,
             command,
-            prompt: cx.new(|cx| {
-                TextareaState::new(window, cx)
-                    .auto_grow(2, 6)
-                    .placeholder("Default: review the pull request and add comments with the tool")
-                    .default_value(prompt)
-            }),
+            prompt,
             allow_commands: entry.allow_commands,
-            error: None,
+            browse_error: None,
             _watch: watch,
         }
     }
@@ -904,6 +937,34 @@ impl WorkspaceRow {
             command: optional(text(&self.command)),
             prompt: optional(prompt),
             allow_commands: self.allow_commands,
+            preferred: false,
+        }
+    }
+
+    /// Where the row stands; `machines` are the machine names offered.
+    fn state(&self, machines: &[String], workspaces: &Workspaces, cx: &App) -> RowState {
+        let entry = self.entry(cx);
+        if let Err(why) = workspaces::validate(&entry, machines) {
+            return RowState::Invalid(why);
+        }
+        // The row does not edit the preference.
+        let same = |stored: Option<&WorkspaceEntry>| {
+            stored.is_some_and(|stored| {
+                WorkspaceEntry {
+                    preferred: false,
+                    ..stored.clone()
+                } == entry
+            })
+        };
+        let Some(id) = self.id else {
+            return RowState::Unsaved;
+        };
+        if same(workspaces.saved_entry(id)) {
+            RowState::Saved
+        } else if workspaces.is_writing() && same(workspaces.wanted_entry(id)) {
+            RowState::Saving
+        } else {
+            RowState::Unsaved
         }
     }
 }
@@ -915,20 +976,29 @@ impl SettingsPanel {
         let Some(workspaces) = Workspaces::global(cx) else {
             return;
         };
-        let (epoch, entries) = {
+        let (epoch, wanted) = {
             let workspaces = workspaces.read(cx);
-            (workspaces.epoch(), workspaces.entries().to_vec())
+            (workspaces.epoch(), workspaces.wanted().to_vec())
         };
         if epoch != self.workspaces_epoch {
             self.workspaces_epoch = epoch;
             self.browser = None;
-            self.workspace_rows = entries
+            self.workspace_rows.clear();
+        }
+        // Loaded from the file, or back after a removal that could not be
+        // written.
+        for stored in wanted {
+            if !self
+                .workspace_rows
                 .iter()
-                .map(|entry| WorkspaceRow::new(entry, window, cx))
-                .collect();
+                .any(|row| row.id == Some(stored.id))
+            {
+                let row = WorkspaceRow::new(Some(stored.id), &stored.entry, window, cx);
+                self.workspace_rows.push(row);
+            }
         }
         if let Some(entry) = workspaces.update(cx, |workspaces, _| workspaces.take_request()) {
-            let row = WorkspaceRow::new(&entry, window, cx);
+            let row = WorkspaceRow::new(None, &entry, window, cx);
             let path = row.path.clone();
             self.workspace_rows.push(row);
             self.reveal_workspaces(window, cx);
@@ -952,12 +1022,30 @@ impl SettingsPanel {
             .collect()
     }
 
-    /// Each row's problem, for tests.
+    /// Each row's state line as it reads.
     #[must_use]
-    pub fn workspace_errors(&self) -> Vec<Option<String>> {
+    pub fn workspace_status_lines(&self, cx: &App) -> Vec<String> {
+        let failure = Workspaces::global(cx).and_then(|w| match w.read(cx).state() {
+            SaveState::Failed(error) => Some(error.clone()),
+            _ => None,
+        });
+        self.workspace_states(cx)
+            .iter()
+            .map(|state| row_status_text(state, failure.as_deref()))
+            .collect()
+    }
+
+    /// Where each row stands.
+    #[must_use]
+    pub fn workspace_states(&self, cx: &App) -> Vec<RowState> {
+        let Some(workspaces) = Workspaces::global(cx) else {
+            return Vec::new();
+        };
+        let names = Self::machine_names(cx);
+        let workspaces = workspaces.read(cx);
         self.workspace_rows
             .iter()
-            .map(|row| row.error.clone())
+            .map(|row| row.state(&names, workspaces, cx))
             .collect()
     }
 
@@ -1061,7 +1149,7 @@ impl SettingsPanel {
         };
         let input = row.dir_input(field).clone();
         let Some(machine) = Self::find_machine(&row.machine, cx) else {
-            row.error = Some(format!("{} is not a machine listed here.", row.machine));
+            row.browse_error = Some(format!("{} is not a machine listed here.", row.machine));
             cx.notify();
             return;
         };
@@ -1106,7 +1194,7 @@ impl SettingsPanel {
                 Ok(Err(error)) => {
                     this.update(cx, |this, cx| {
                         if let Some(row) = this.workspace_rows.get_mut(ix) {
-                            row.error = Some(format!("The folder picker failed: {error}"));
+                            row.browse_error = Some(format!("The folder picker failed: {error}"));
                             cx.notify();
                         }
                     })
@@ -1264,30 +1352,88 @@ impl SettingsPanel {
             ..WorkspaceEntry::default()
         };
         self.workspace_rows
-            .push(WorkspaceRow::new(&entry, window, cx));
+            .push(WorkspaceRow::new(None, &entry, window, cx));
         cx.notify();
     }
 
-    /// Checks every row and, when all are good, saves them.
-    pub fn save_workspaces(&mut self, cx: &mut Context<Self>) {
-        let names: Vec<String> = Self::machine_choices(cx)
+    /// The machine names a row may name.
+    fn machine_names(cx: &App) -> Vec<String> {
+        Self::machine_choices(cx)
             .into_iter()
             .map(|(name, _)| name)
-            .collect();
-        let entries: Vec<WorkspaceEntry> = self
-            .workspace_rows
-            .iter()
-            .map(|row| row.entry(cx))
-            .collect();
-        let mut good = true;
-        for (row, entry) in self.workspace_rows.iter_mut().zip(&entries) {
-            row.error = workspaces::validate(entry, &names).err();
-            good &= row.error.is_none();
+            .collect()
+    }
+
+    /// Saves row `ix` to the config file when it is valid.
+    pub fn save_workspace(&mut self, ix: usize, cx: &mut Context<Self>) {
+        let names = Self::machine_names(cx);
+        let Some(workspaces) = Workspaces::global(cx) else {
+            return;
+        };
+        let Some(row) = self.workspace_rows.get(ix) else {
+            return;
+        };
+        let (id, entry) = (row.id, row.entry(cx));
+        if workspaces::validate(&entry, &names).is_err() {
+            return;
         }
-        if good && let Some(workspaces) = Workspaces::global(cx) {
-            workspaces.update(cx, |workspaces, cx| workspaces.save(entries, cx));
+        let id = workspaces.update(cx, |workspaces, cx| workspaces.save_entry(id, entry, cx));
+        if let Some(row) = self.workspace_rows.get_mut(ix) {
+            row.id = Some(id);
         }
         cx.notify();
+    }
+
+    /// Removes row `ix`, and its workspace from the config file.
+    pub fn remove_workspace(&mut self, ix: usize, cx: &mut Context<Self>) {
+        if ix >= self.workspace_rows.len() {
+            return;
+        }
+        let row = self.workspace_rows.remove(ix);
+        self.browser = None;
+        if let (Some(id), Some(workspaces)) = (row.id, Workspaces::global(cx)) {
+            workspaces.update(cx, |workspaces, cx| workspaces.remove(id, cx));
+        }
+        cx.notify();
+    }
+
+    /// A row's state line: saved, saving, unsaved with its Save button, or
+    /// why it cannot be saved. `failure` is the last write's error.
+    fn row_status(
+        t: &Theme,
+        ix: usize,
+        state: &RowState,
+        failure: Option<&str>,
+        cx: &Context<Self>,
+    ) -> AnyElement {
+        let c = &t.colors;
+        let (icon, color) = match state {
+            RowState::Saved => (IconName::CircleCheck, c.ok),
+            RowState::Saving => (IconName::CircleDashed, c.text_muted),
+            RowState::Unsaved => (IconName::CircleDashed, c.warn),
+            RowState::Invalid(_) => (IconName::CircleX, c.danger),
+        };
+        let text = row_status_text(state, failure);
+        let save = matches!(state, RowState::Unsaved | RowState::Invalid(_)).then(|| {
+            Button::new(("workspace-save", ix), "Save", ButtonKind::Primary)
+                .disabled(matches!(state, RowState::Invalid(_)))
+                .on_click(cx.listener(move |this, _, _, cx| this.save_workspace(ix, cx)))
+        });
+        h_flex()
+            .debug_selector(move || format!("workspace-state-{ix}"))
+            .gap(px(8.0))
+            .items_center()
+            .child(Icon::new(icon).size(px(14.0)).text_color(color))
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .tiny(t)
+                    .text_color(color)
+                    .child(text),
+            )
+            .children(save)
+            .into_any_element()
     }
 
     /// A directory input with its folder button on the left.
@@ -1468,7 +1614,33 @@ impl SettingsPanel {
                 .text_size(t.fonts.interface.size_px())
         };
         let panel = cx.weak_entity();
+        let states = self.workspace_states(cx);
+        let (failure, file) = Workspaces::global(cx).map_or((None, None), |workspaces| {
+            let workspaces = workspaces.read(cx);
+            let failure = match workspaces.state() {
+                SaveState::Failed(error) => Some(error.clone()),
+                _ => None,
+            };
+            let file = workspaces
+                .file()
+                .map(Path::to_path_buf)
+                .map_err(str::to_owned);
+            (failure, Some(file))
+        });
+        // Where the workspaces are saved, or why they cannot be.
+        let (file_line, file_color) = match file {
+            Some(Ok(path)) => (
+                format!(
+                    "Saved in {}; a saved workspace is used for every run.",
+                    path.display()
+                ),
+                c.text_muted,
+            ),
+            Some(Err(why)) => (format!("Workspaces cannot be saved: {why}."), c.danger),
+            None => (String::new(), c.text_muted),
+        };
         let rows = self.workspace_rows.iter().enumerate().map(|(ix, row)| {
+            let state = states.get(ix).cloned().unwrap_or(RowState::Unsaved);
             let mut options = choices.clone();
             if !options.iter().any(|(name, _)| *name == row.machine) {
                 options.push((
@@ -1521,7 +1693,7 @@ impl SettingsPanel {
                 .p(px(10.0))
                 .rounded(t.radius.md)
                 .border_1()
-                .border_color(if row.error.is_some() {
+                .border_color(if matches!(state, RowState::Invalid(_)) {
                     c.danger
                 } else {
                     c.border
@@ -1537,11 +1709,7 @@ impl SettingsPanel {
                         .child(
                             Button::new(("workspace-remove", ix), "Remove", ButtonKind::Ghost)
                                 .on_click(cx.listener(move |this, _, _, cx| {
-                                    if ix < this.workspace_rows.len() {
-                                        this.workspace_rows.remove(ix);
-                                        this.browser = None;
-                                        cx.notify();
-                                    }
+                                    this.remove_workspace(ix, cx);
                                 })),
                         ),
                 )
@@ -1589,26 +1757,17 @@ impl SettingsPanel {
                              context.",
                         )),
                 ))
-                .children(row.error.clone().map(|error| {
+                .children(row.browse_error.clone().map(|error| {
                     div()
                         .debug_selector(move || format!("workspace-error-{ix}"))
                         .tiny(t)
                         .text_color(c.danger)
                         .child(error)
                 }))
+                .child(Self::row_status(t, ix, &state, failure.as_deref(), cx))
                 .into_any_element()
         });
-        let state = Workspaces::global(cx).map(|workspaces| {
-            let workspaces = workspaces.read(cx);
-            (workspaces.state().clone(), workspaces.saves_to_file())
-        });
-        let status = match state {
-            Some((SaveState::Saving, _)) => "Saving...".to_owned(),
-            Some((SaveState::Saved, true)) => "Saved to config.toml".to_owned(),
-            Some((SaveState::Saved, false)) => "Kept for this run".to_owned(),
-            Some((SaveState::Failed(error), _)) => format!("Not saved: {error}"),
-            Some((SaveState::Idle, _)) | None => String::new(),
-        };
+        let rows: Vec<AnyElement> = rows.collect();
         let empty = self.workspace_rows.is_empty();
         self.section(
             cx,
@@ -1639,18 +1798,29 @@ impl SettingsPanel {
                     ),
                 )
                 .child(
-                    Button::new("workspace-save", "Save workspaces", ButtonKind::Primary)
-                        .on_click(cx.listener(|this, _, _, cx| this.save_workspaces(cx))),
-                )
-                .child(
                     div()
-                        .debug_selector(|| "workspace-status".into())
+                        .debug_selector(|| "workspace-file".into())
+                        .flex_1()
+                        .min_w_0()
                         .tiny(t)
-                        .text_color(c.text_muted)
-                        .child(status),
+                        .text_color(file_color)
+                        .child(file_line),
                 ),
         )
         .into_any_element()
+    }
+}
+
+/// What a row's state line says; `failure` is the last write's error, which
+/// an unsaved row shows.
+#[must_use]
+pub fn row_status_text(state: &RowState, failure: Option<&str>) -> String {
+    match (state, failure) {
+        (RowState::Saved, _) => "Saved: Review with agent uses it".to_owned(),
+        (RowState::Saving, _) => "Saving".to_owned(),
+        (RowState::Unsaved, Some(error)) => error.to_owned(),
+        (RowState::Unsaved, None) => "Unsaved changes".to_owned(),
+        (RowState::Invalid(why), _) => format!("Cannot save: {why}"),
     }
 }
 
@@ -1695,7 +1865,7 @@ impl Render for SettingsPanel {
         let saved = match state.file() {
             Some(file) if file.writable() => file.path().display().to_string(),
             Some(_) => "settings.toml has errors: changes are not saved".to_owned(),
-            None => "changes are not saved in this run".to_owned(),
+            None => "appearance changes are not saved: no settings file was given".to_owned(),
         };
         let theme = self.theme_section(&t, &settings, cx);
         let images = self.images_section(&settings, cx);

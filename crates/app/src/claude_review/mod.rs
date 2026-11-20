@@ -18,6 +18,7 @@ pub mod prompt;
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -27,15 +28,18 @@ use gpui::{App, AppContext as _, Context, Entity, Global, Subscription, Task, We
 use store::DraftAnchor;
 
 use crate::agent::{self, ConfigCheck, LaunchMode};
+use crate::checklist::{Checklist, Purpose as StepsFor};
 use crate::config::WorkspaceEntry;
 use crate::machines::{Machine, Place};
 use crate::model::PrKey;
 use crate::panels::PanelKind;
 use crate::session::{OpenMode, Session};
-use crate::terminal_panel::{RunState, TerminalPanel};
-use crate::terminals::{AgentCommand, Forward, Prepared, TerminalSpec, Terminals};
+use crate::terminal_panel::{Retry, RunState, TerminalPanel};
+use crate::terminals::{
+    AgentCommand, Forward, LaunchTab, Prepared, TerminalSpec, Terminals, Where,
+};
 use crate::untrusted::strip_controls;
-use crate::workspaces::{self, Workspaces};
+use crate::workspaces::{self, Pick, WorkspaceId, Workspaces};
 use crate::writing::Writing;
 use command::{ADDITIONAL_CLAUDE_MD, Platform, Start, Values};
 use findings::{Dropped, Finding};
@@ -481,7 +485,7 @@ fn claude_terminal(
 
 /// `key` as a terminal's tab names it: the repository's name, then the
 /// forge's sigil and the number, from the open pull request or its inbox row.
-fn pr_label(key: &PrKey, cx: &App) -> String {
+pub(crate) fn pr_label(key: &PrKey, cx: &App) -> String {
     let session = Session::global(cx).read(cx);
     let sigil = session
         .pr(key)
@@ -661,32 +665,95 @@ fn add_comment(key: &PrKey, request: CommentRequest, cx: &mut App) -> Result<Str
     ))
 }
 
-/// "Review with agent" on `key`: brings its agent terminal forward while it
-/// runs; otherwise starts the agent where the repository's workspace says,
-/// or opens the settings on a new workspace for the repository.
-pub fn start(key: &PrKey, window: &mut Window, cx: &mut App) {
-    if let Some(panel) =
-        AgentReview::global(cx).and_then(|review| review.read(cx).live_panel(key, cx))
-    {
-        if let Some(shell) = crate::shell::Shell::global(cx) {
-            shell.update(cx, |shell, cx| shell.focus_terminal(&panel, window, cx));
-        }
-        return;
+/// What a click on "Review with agent" did.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Started {
+    /// Brought the running or starting agent's tab forward.
+    Focused,
+    /// Opened the launch tab, which shows the steps.
+    Launched,
+    /// No workspace matches: the settings opened on a new row for one.
+    Settings,
+    /// Several match and none is preferred: nothing started. The header's
+    /// button opens its menu to ask instead, and the palette lists each.
+    Choose,
+}
+
+/// "Review with agent" on `key`: brings its agent's tab forward while it
+/// starts or runs; otherwise starts the agent in the repository's preferred
+/// workspace (or its only one), or opens the settings on a new workspace
+/// for the repository.
+pub fn start(key: &PrKey, window: &mut Window, cx: &mut App) -> Started {
+    if focus_running(key, window, cx) {
+        return Started::Focused;
     }
+    let Some(workspaces) = Workspaces::global(cx) else {
+        return Started::Settings;
+    };
+    let pick = workspaces.read(cx).pick(&key.repo);
+    match pick {
+        Pick::Missing => {
+            open_workspace_settings(Some(key), window, cx);
+            Started::Settings
+        }
+        Pick::Choose(_) => Started::Choose,
+        Pick::One(ix) => {
+            let workspace = workspaces.read(cx).saved()[ix].entry.clone();
+            launch(key, workspace, cx);
+            Started::Launched
+        }
+    }
+}
+
+/// Brings `key`'s agent tab forward while its agent runs or its launch is
+/// under way, and says whether there was one.
+fn focus_running(key: &PrKey, window: &mut Window, cx: &mut App) -> bool {
+    let running = AgentReview::global(cx).and_then(|review| review.read(cx).live_panel(key, cx));
+    let panel = running.or_else(|| {
+        let panel = Terminals::global(cx)?.read(cx).launch_tab(key, cx)?;
+        let stopped = panel.read(cx).checklist().is_some_and(Checklist::stopped);
+        (!stopped).then_some(panel)
+    });
+    let Some(panel) = panel else {
+        return false;
+    };
+    if let Some(shell) = crate::shell::Shell::global(cx) {
+        shell.update(cx, |shell, cx| shell.focus_terminal(&panel, window, cx));
+    }
+    true
+}
+
+/// Starts the agent on `key` in `workspace`: its tab opens at once with the
+/// steps, which the worktree job then goes through.
+pub fn launch(key: &PrKey, workspace: WorkspaceEntry, cx: &mut App) {
     let Some(terminals) = Terminals::global(cx) else {
         return;
     };
-    let workspace = Workspaces::global(cx)
-        .and_then(|workspaces| workspaces.read(cx).for_repo(&key.repo).cloned());
-    let Some(workspace) = workspace else {
-        open_workspace_settings(Some(key), window, cx);
-        return;
-    };
     Session::global(cx).update(cx, |session, cx| session.keep(key, cx));
-    let machines = terminals.read(cx).machines(cx);
-    let machine = machines
+    let machine = terminals
+        .read(cx)
+        .machines(cx)
         .into_iter()
         .find(|machine| workspaces::machine_key(machine) == workspace.machine);
+    let machine_name = machine
+        .as_ref()
+        .map_or_else(|| workspace.machine.clone(), |machine| machine.name.clone());
+    let title = format!("Review {} \u{b7} {machine_name}", pr_label(key, cx));
+    // Retry and Continue start the same workspace again.
+    let retry: Retry = {
+        let (key, workspace) = (key.clone(), workspace.clone());
+        Rc::new(move |_, cx| launch(&key, workspace.clone(), cx))
+    };
+    let remote = workspace.machine != crate::machines::LOCAL_HOST;
+    terminals.update(cx, |terminals, cx| {
+        let tab = LaunchTab {
+            title,
+            machine: machine_name.clone(),
+            checklist: Checklist::plan(StepsFor::Review, remote),
+            retry,
+        };
+        terminals.open_launch_tab(key, tab, Where::Split, cx);
+    });
     let Some(machine) = machine else {
         let error = format!(
             "the workspace's machine {} is neither this PC nor a host of the SSH config",
@@ -728,6 +795,19 @@ pub fn start(key: &PrKey, window: &mut Window, cx: &mut App) {
             terminals.fail(key.clone(), &machine.name, error, cx);
         }),
     }
+}
+
+/// Makes workspace `id` the one `key`'s repository uses, saved in the
+/// config, and starts the agent there.
+pub fn choose_and_launch(key: &PrKey, id: WorkspaceId, cx: &mut App) {
+    let Some(workspaces) = Workspaces::global(cx) else {
+        return;
+    };
+    let Some(workspace) = workspaces.read(cx).saved_entry(id).cloned() else {
+        return;
+    };
+    workspaces.update(cx, |workspaces, cx| workspaces.prefer(&key.repo, id, cx));
+    launch(key, workspace, cx);
 }
 
 /// The settings page on its Workspaces section; with `key`, a new row for

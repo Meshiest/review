@@ -50,8 +50,8 @@ fn source() -> Result<PrSource, String> {
     ))
 }
 
-fn log(step: &str) {
-    eprintln!("  {step}");
+fn log(step: worktrees::Step) {
+    eprintln!("  {}", step.label());
 }
 
 /// The worktree `info` names, from a list.

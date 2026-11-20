@@ -123,6 +123,10 @@ pub struct WorkspaceEntry {
     /// context. Off by default.
     #[serde(default)]
     pub allow_commands: bool,
+    /// The one "Review with agent" uses for its repository when several
+    /// match; chosen in the button's menu.
+    #[serde(default)]
+    pub preferred: bool,
 }
 
 fn local_machine() -> String {
@@ -353,6 +357,8 @@ pub fn render(forges: &[ForgeEntry]) -> String {
          #   allow_commands  true lets the agent run commands and edit files: that\n\
          #             gives it your full file and network access while the pull\n\
          #             request's text is in its context. Off by default.\n\
+         #   preferred  true on the one Review with agent uses when several\n\
+         #             workspaces match the repository; its menu sets it.\n\
          # [[workspaces]]\n\
          # repo = \"owner/name\"\n\
          # machine = \"local\"\n\
@@ -428,13 +434,18 @@ fn with_workspaces(text: &str, workspaces: &[WorkspaceEntry]) -> Result<String, 
                 }
             }
         }
-        match entry.allow_commands {
-            true if table.get("allow_commands").and_then(Item::as_bool) == Some(true) => {}
-            true => {
-                table.insert("allow_commands", value(true));
-            }
-            false => {
-                table.remove("allow_commands");
+        for (name, on) in [
+            ("allow_commands", entry.allow_commands),
+            ("preferred", entry.preferred),
+        ] {
+            match on {
+                true if table.get(name).and_then(Item::as_bool) == Some(true) => {}
+                true => {
+                    table.insert(name, value(true));
+                }
+                false => {
+                    table.remove(name);
+                }
             }
         }
     }
@@ -945,6 +956,7 @@ mod tests {
             host: Some("github.com".into()),
             machine: "devbox".into(),
             command: Some("claude --model opus".into()),
+            preferred: true,
             ..workspace("o/b", "~/src/b")
         };
         save_workspaces(&path, &[kept.clone(), added.clone()]).unwrap();

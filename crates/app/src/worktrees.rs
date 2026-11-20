@@ -85,8 +85,46 @@ pub enum Placement {
     InClone,
 }
 
-/// Reports what is happening, for the header ("fetching", "cloning").
-pub type Progress<'a> = &'a mut dyn FnMut(&str);
+/// One step of making a worktree and starting a program in it, as the
+/// launch tab's checklist shows them.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Step {
+    /// Reaching the machine over SSH.
+    Connect,
+    /// The app's own clone of the repository, made once.
+    Clone,
+    /// The workspace's directory has no clone: a terminal makes it.
+    CloneInTerminal,
+    Fetch,
+    /// Adding the worktree, or moving it to the new head.
+    Worktree,
+    /// Comparing the pull request's agent config with its merge base.
+    Config,
+    /// The review's context file and MCP config.
+    Context,
+    StartAgent,
+    StartCommand,
+}
+
+impl Step {
+    #[must_use]
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Connect => "Connecting over SSH",
+            Self::Clone => "Cloning the repository",
+            Self::CloneInTerminal => "Cloning the repository into its directory",
+            Self::Fetch => "Fetching the pull request",
+            Self::Worktree => "Creating the worktree",
+            Self::Config => "Checking the agent config",
+            Self::Context => "Writing the review context",
+            Self::StartAgent => "Starting the agent",
+            Self::StartCommand => "Starting the command",
+        }
+    }
+}
+
+/// Reports the step the work has reached.
+pub type Progress<'a> = &'a mut dyn FnMut(Step);
 
 /// The worktree's folder name in a repository's worktree directory.
 #[must_use]
@@ -107,7 +145,7 @@ pub fn ensure_local(
     source: &PrSource,
     progress: Progress<'_>,
 ) -> Result<WorktreeInfo, String> {
-    progress("fetching the pull request");
+    progress(Step::Fetch);
     let fetched = fetch_local(objects, &source.fetch)?;
     let head = fetched.head.to_string();
     let path = objects.worktree_path(source.number);
@@ -119,7 +157,7 @@ pub fn ensure_local(
     let pr_ref = pr_head_ref(source.number);
     let note = match existing {
         None => {
-            progress("adding the worktree");
+            progress(Step::Worktree);
             repo::add_worktree(objects, &pr_ref, &path).map_err(|e| e.to_string())?;
             None
         }
@@ -128,7 +166,7 @@ pub fn ensure_local(
             if repo::has_changes(&path).map_err(|e| e.to_string())? {
                 Some("has local changes, left at its commit".to_owned())
             } else {
-                progress("moving the worktree to the new head");
+                progress(Step::Worktree);
                 repo::checkout_detached(&path, &pr_ref).map_err(|e| e.to_string())?;
                 None
             }
@@ -258,10 +296,10 @@ pub fn ensure_remote(
     progress: Progress<'_>,
 ) -> Result<WorktreeInfo, String> {
     let err = |e: repo::Error| e.to_string();
-    progress("connecting");
+    progress(Step::Connect);
     let clone = remote_clone(machine, &source.repo, placement)?;
     if clone.scratch && !clone.repo.exists().map_err(err)? {
-        progress("cloning");
+        progress(Step::Clone);
         clone.repo.clone_bare(source.url()).map_err(err)?;
     }
     ensure_remote_in(machine, &clone.repo, source, progress)
@@ -276,7 +314,7 @@ fn ensure_remote_in(
     progress: Progress<'_>,
 ) -> Result<WorktreeInfo, String> {
     let err = |e: repo::Error| e.to_string();
-    progress("fetching the pull request");
+    progress(Step::Fetch);
     let head = repo
         .fetch_pr_head(source.url(), source.refs(), source.number)
         .map_err(err)?;
@@ -289,7 +327,7 @@ fn ensure_remote_in(
     let pr_ref = pr_head_ref(source.number);
     let note = match list.iter().find(|entry| entry.is_at(&path)) {
         None => {
-            progress("adding the worktree");
+            progress(Step::Worktree);
             repo.add_worktree(&pr_ref, &path).map_err(err)?;
             None
         }
@@ -298,7 +336,7 @@ fn ensure_remote_in(
             Some("has local changes, left at its commit".to_owned())
         }
         Some(_) => {
-            progress("moving the worktree to the new head");
+            progress(Step::Worktree);
             repo.checkout_detached(&path, &pr_ref).map_err(err)?;
             None
         }

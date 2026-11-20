@@ -288,9 +288,7 @@ fn install(session: Entity<Session>, started: Instant, boot: Boot, cx: &mut App)
     }
     if let Some(workspaces) = crate::workspaces::Workspaces::global(cx) {
         let entries = boot.config.workspaces.clone();
-        workspaces.update(cx, |workspaces, cx| {
-            workspaces.loaded(Config::default_path(), entries, cx);
-        });
+        workspaces.update(cx, |workspaces, cx| workspaces.loaded(entries, cx));
     }
     let services = Services::new(boot.config.clone(), boot.store, boot.hub, spawn);
     let notices = [boot.notice, appearance::loaded(cx, boot.startup)];
