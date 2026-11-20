@@ -1,6 +1,6 @@
 //! The Workspaces section's directory inputs: a folder button on the left
-//! of each, which opens the system's folder picker for this PC and the
-//! in-app folder list for an SSH machine, and the line saying that an empty
+//! of each, which opens the system's folder picker for this PC and a
+//! modal folder list for an SSH machine, and the line saying that an empty
 //! directory is cloned in a terminal running the command shown.
 //!
 //! No `ssh` runs: the fixtures' SSH machines are invented, and a listing is
@@ -158,6 +158,36 @@ fn on_an_ssh_machine_a_folder_list_opens_and_says_what_failed(cx: &mut TestAppCo
         path_of(&mut shell, &panel, 0),
         "~/src",
         "cancel changes nothing"
+    );
+}
+
+#[gpui::test]
+fn the_folder_list_is_a_modal_over_the_window(cx: &mut TestAppContext) {
+    let mut shell = open_shell(cx, Options::default());
+    settings_with(&mut shell, vec![entry("buildbox", "~/src")]);
+    shell.click("workspace-workdir-browse-0");
+    let modal = shell.bounds_of("workspace-browser");
+    let viewport = shell.update(|window, _| window.viewport_size());
+    let input = shell.bounds_of("workspace-workdir-input-0");
+    assert!(
+        (f32::from(modal.center().x) - f32::from(viewport.width) / 2.0).abs() < 2.0
+            && (f32::from(modal.center().y) - f32::from(viewport.height) / 2.0).abs() < 2.0,
+        "centered in the window: {modal:?} in {viewport:?}"
+    );
+    assert!(
+        !(modal.top() >= input.bottom() && modal.left() == input.left()),
+        "not inline under the input"
+    );
+
+    shell.keys("escape");
+    assert!(!shell.drawn("workspace-browser"), "Escape closes it");
+
+    shell.click("workspace-workdir-browse-0");
+    assert!(shell.drawn("workspace-browser"));
+    shell.click_at(gpui::point(gpui::px(4.0), gpui::px(4.0)));
+    assert!(
+        !shell.drawn("workspace-browser"),
+        "a click on the backdrop closes it"
     );
 }
 

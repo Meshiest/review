@@ -820,7 +820,8 @@ impl DirField {
     }
 }
 
-/// The folder list under one row's directory, on an SSH machine.
+/// The folder list for one row's directory on an SSH machine, in a modal
+/// over the window.
 struct DirBrowser {
     row: usize,
     field: DirField,
@@ -830,6 +831,8 @@ struct DirBrowser {
     /// The folder being listed now.
     loading: Option<String>,
     error: Option<String>,
+    /// The modal's, so Escape closes it.
+    focus: FocusHandle,
     _task: Option<Task<()>>,
 }
 
@@ -1067,6 +1070,8 @@ impl SettingsPanel {
             Self::pick_local(ix, input, window, cx);
         } else {
             let start = input.read(cx).value().trim().to_owned();
+            let focus = cx.focus_handle();
+            window.focus(&focus, cx);
             self.browser = Some(DirBrowser {
                 row: ix,
                 field,
@@ -1074,6 +1079,7 @@ impl SettingsPanel {
                 listing: None,
                 loading: None,
                 error: None,
+                focus,
                 _task: None,
             });
             self.list_folder(start, cx);
@@ -1179,7 +1185,63 @@ impl SettingsPanel {
         let chosen = listing.chosen();
         row.dir_input(browser.field)
             .update(cx, |input, cx| input.set_value(chosen, window, cx));
+        window.focus(&self.focus, cx);
         cx.notify();
+    }
+
+    /// Closes the folder modal without choosing.
+    fn close_browser(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.browser.take().is_some() {
+            window.focus(&self.focus, cx);
+            cx.notify();
+        }
+    }
+
+    /// The folder list in a modal over the whole window: a click on the
+    /// backdrop, Escape or Cancel closes it.
+    fn browser_modal(
+        &self,
+        browser: &DirBrowser,
+        viewport: gpui::Size<Pixels>,
+        t: &Theme,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let c = &t.colors;
+        deferred(
+            anchored().position(point(px(0.0), px(0.0))).child(
+                div()
+                    .id("workspace-browser-backdrop")
+                    .w(viewport.width)
+                    .h(viewport.height)
+                    .occlude()
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .bg(c.background.opacity(0.35))
+                    .on_mouse_down(
+                        gpui::MouseButton::Left,
+                        cx.listener(|this, _, window, cx| this.close_browser(window, cx)),
+                    )
+                    .child(
+                        div()
+                            .id("workspace-browser-modal")
+                            .track_focus(&browser.focus)
+                            .key_context(PICKER_CONTEXT)
+                            .on_action(cx.listener(|this, _: &ClosePicker, window, cx| {
+                                this.close_browser(window, cx);
+                            }))
+                            .occlude()
+                            .on_mouse_down(gpui::MouseButton::Left, |_, _, cx| {
+                                cx.stop_propagation();
+                            })
+                            .w(px(520.0))
+                            .max_w(viewport.width - px(32.0))
+                            .child(self.browser_view(browser, t, cx)),
+                    ),
+            ),
+        )
+        .with_priority(2)
+        .into_any_element()
     }
 
     /// The machine names a row may pick: this PC and every listed host.
@@ -1330,12 +1392,12 @@ impl SettingsPanel {
         let ready = browser.loading.is_none() && browser.listing.is_some();
         v_flex()
             .debug_selector(|| "workspace-browser".into())
-            .gap(px(6.0))
-            .p(px(8.0))
-            .rounded(t.radius.md)
+            .gap(px(8.0))
+            .p(px(12.0))
+            .rounded(t.radius.lg)
             .border_1()
-            .border_color(c.border)
-            .bg(c.field)
+            .border_color(c.border_strong)
+            .bg(c.surface_menu)
             .small(t)
             .child(
                 h_flex()
@@ -1360,9 +1422,8 @@ impl SettingsPanel {
                     )
                     .child(
                         Button::new("workspace-browser-cancel", "Cancel", ButtonKind::Ghost)
-                            .on_click(cx.listener(|this, _, _, cx| {
-                                this.browser = None;
-                                cx.notify();
+                            .on_click(cx.listener(|this, _, window, cx| {
+                                this.close_browser(window, cx);
                             })),
                     ),
             )
@@ -1376,7 +1437,7 @@ impl SettingsPanel {
             .child(
                 div()
                     .id("workspace-browser-list")
-                    .max_h(px(200.0))
+                    .max_h(px(360.0))
                     .overflow_y_scroll()
                     .child(list),
             )
@@ -1436,11 +1497,6 @@ impl SettingsPanel {
                     .ok();
                 },
             );
-            let open = self.browser.as_ref().filter(|browser| browser.row == ix);
-            let browser = |field: DirField| {
-                open.filter(|browser| browser.field == field)
-                    .map(|browser| Self::workspace_field(t, "", self.browser_view(browser, t, cx)))
-            };
             let host = row
                 .host
                 .as_deref()
@@ -1495,7 +1551,6 @@ impl SettingsPanel {
                     "Directory",
                     self.dir_field(t, ix, DirField::Repository, &row.path, cx),
                 ))
-                .children(browser(DirField::Repository))
                 .child(Self::workspace_field(
                     t,
                     "",
@@ -1510,7 +1565,6 @@ impl SettingsPanel {
                     "Working dir",
                     self.dir_field(t, ix, DirField::Workdir, &row.workdir, cx),
                 ))
-                .children(browser(DirField::Workdir))
                 .child(Self::workspace_field(t, "Command", input(&row.command)))
                 .child(Self::workspace_field(t, "Prompt", prompt))
                 .child(Self::workspace_field(
@@ -1633,7 +1687,7 @@ impl Panel for SettingsPanel {
 }
 
 impl Render for SettingsPanel {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let t = ui::theme(cx);
         let c = &t.colors;
         let state = cx.global::<Appearance>();
@@ -1651,6 +1705,10 @@ impl Render for SettingsPanel {
         let interface = self.font_section(FontRole::Interface, &t, cx);
         let buffer = self.font_section(FontRole::Buffer, &t, cx);
         let workspaces = self.workspaces_section(&t, cx);
+        let browser = self
+            .browser
+            .as_ref()
+            .map(|browser| self.browser_modal(browser, window.viewport_size(), &t, cx));
         v_flex()
             .id("settings-panel")
             .track_focus(&self.focus)
@@ -1694,5 +1752,6 @@ impl Render for SettingsPanel {
                     .child(inbox)
                     .child(workspaces),
             )
+            .children(browser)
     }
 }
