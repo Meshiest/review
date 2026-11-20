@@ -1,6 +1,6 @@
 use std::rc::Rc;
 use std::sync::Arc;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use gpui::prelude::*;
 use gpui::{
@@ -78,6 +78,22 @@ pub struct TerminalView {
     /// The button the program was told is down, and where.
     held: Option<(Button, (usize, usize))>,
     hover_cell: Option<(usize, usize)>,
+    /// When the user last pressed a key or a mouse button in the pane; a
+    /// program's copy is only taken shortly after (see [`copy_allowed`]).
+    last_input: Option<Instant>,
+}
+
+/// How long after the user's own key or click in a focused pane a program
+/// may still put text on the clipboard.
+const COPY_WINDOW: Duration = Duration::from_secs(3);
+
+/// Whether a program's copy (OSC 52) reaches the system clipboard: only
+/// while its pane has the focus and the user pressed a key or a mouse
+/// button there within [`COPY_WINDOW`], as Claude Code copies when a
+/// selection ends. Output alone (a file printed from a pull request, a
+/// remote banner) can never replace what the user copied.
+fn copy_allowed(focused: bool, last_input: Option<Instant>, now: Instant) -> bool {
+    focused && last_input.is_some_and(|at| now.saturating_duration_since(at) <= COPY_WINDOW)
 }
 
 impl EventEmitter<TerminalEvent> for TerminalView {}
@@ -106,7 +122,9 @@ impl TerminalView {
                 while woken.recv().await.is_ok() {
                     let result = this.update(cx, |view, cx| {
                         cx.notify();
-                        if let Some(text) = view.session.take_clipboard() {
+                        if let Some(text) = view.session.take_clipboard()
+                            && copy_allowed(view.focused, view.last_input, Instant::now())
+                        {
                             cx.write_to_clipboard(ClipboardItem::new_string(text));
                         }
                         let state = view.session.exit_state();
@@ -148,6 +166,7 @@ impl TerminalView {
                 synced: (0, 0),
                 wheel_lines: 0.0,
                 selecting: false,
+                last_input: None,
                 held: None,
                 hover_cell: None,
             };
@@ -409,6 +428,7 @@ impl TerminalView {
     // Keyboard.
 
     fn on_key_down(&mut self, event: &KeyDownEvent, cx: &mut Context<Self>) {
+        self.last_input = Some(Instant::now());
         let mode = self.mode();
         if let Some(local) = keys::local(&event.keystroke, mode) {
             match local {
@@ -454,6 +474,7 @@ impl TerminalView {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
+        self.last_input = Some(Instant::now());
         window.focus(&self.focus, cx);
         let Some(geometry) = self.geometry else {
             return;
@@ -547,6 +568,7 @@ impl TerminalView {
     }
 
     pub(crate) fn mouse_up(&mut self, event: &MouseUpEvent, cx: &mut Context<Self>) {
+        self.last_input = Some(Instant::now());
         if self.selecting && event.button == MouseButton::Left {
             self.finish_selection(cx);
             return;
@@ -738,6 +760,20 @@ impl Render for TerminalView {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_programs_copy_needs_the_focus_and_the_users_recent_input() {
+        let now = Instant::now();
+        let just = now.checked_sub(Duration::from_millis(200));
+        let stale = now.checked_sub(COPY_WINDOW + Duration::from_secs(1));
+        assert!(copy_allowed(true, just, now), "right after a selection");
+        assert!(!copy_allowed(false, just, now), "a pane without the focus");
+        assert!(!copy_allowed(true, None, now), "no input since it opened");
+        assert!(
+            !copy_allowed(true, stale, now),
+            "output long after any input"
+        );
+    }
 
     #[test]
     fn paste_converts_newlines() {
