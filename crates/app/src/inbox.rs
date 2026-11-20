@@ -1995,21 +1995,25 @@ impl Sidebar {
             let is_hidden = hidden.is_hidden(&repo);
             let toggled = repo.clone();
             let selector = format!("repo-row-{repo}");
+            let label = format!("repo-label-{repo}");
+            let hover = c.hover;
+            // The whole row toggles, its name included; the box only shows.
             h_flex()
+                .id(("repo-row", ix))
                 .debug_selector(move || selector)
                 .h(px(24.0))
                 .px(px(10.0))
                 .gap(px(6.0))
                 .items_center()
-                .child(
-                    ui::checkbox(("repo-shown", ix))
-                        .checked(!is_hidden)
-                        .on_click(cx.listener(move |this, _, _, cx| {
-                            this.set_repo_hidden(&toggled, !is_hidden, cx);
-                        })),
-                )
+                .cursor_pointer()
+                .hover(move |s| s.bg(hover))
+                .on_click(cx.listener(move |this, _, _, cx| {
+                    this.set_repo_hidden(&toggled, !is_hidden, cx);
+                }))
+                .child(ui::checkbox(("repo-shown", ix)).checked(!is_hidden))
                 .child(
                     div()
+                        .debug_selector(move || label)
                         .flex_1()
                         .min_w_0()
                         .truncate()

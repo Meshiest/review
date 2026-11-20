@@ -197,6 +197,16 @@ fn the_repos_panel_shows_and_hides_every_repository(cx: &mut TestAppContext) {
     shell.click_element(("repo-shown", 0usize));
     assert_eq!(repos_shown(&mut shell), (total - 1, total));
     assert_eq!(hidden(&mut shell).len(), 1, "saved in the settings");
+    // The name toggles it too, once.
+    let repo = hidden(&mut shell)[0].clone();
+    shell.click_named(&format!("repo-label-{repo}"));
+    assert_eq!(
+        repos_shown(&mut shell),
+        (total, total),
+        "a click on the name"
+    );
+    shell.click_element(("repo-shown", 0usize));
+    assert_eq!(repos_shown(&mut shell), (total - 1, total));
 
     shell.click_element(SharedString::from("repos-hide-all"));
     assert_eq!(repos_shown(&mut shell), (0, total));
