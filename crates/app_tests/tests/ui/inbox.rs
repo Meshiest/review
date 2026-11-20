@@ -156,8 +156,12 @@ fn grouping_by_repo_folds_and_hides_repositories(cx: &mut TestAppContext) {
     assert!(shell.drawn("inbox-row-1288"));
 
     shell.click("repo-menu-api");
-    assert!(shell.drawn("repo-menu-hide") && shell.drawn("repo-menu-open"));
-    shell.click("repo-menu-hide");
+    assert!(
+        shell.menu_items().is_some(),
+        "the ... button opens the menu"
+    );
+    // "Hide this repository", then "Open on the forge".
+    shell.click_menu_item(0, 2);
     assert_eq!(hidden(&mut shell), [repo_id(&key.repo)]);
     assert!(!shell.drawn("inbox-row-1288"), "hidden from every section");
     let session = shell.session();
@@ -364,9 +368,17 @@ fn a_right_click_on_a_repository_header_opens_its_menu(cx: &mut TestAppContext) 
         .cx
         .simulate_mouse_up(at, gpui::MouseButton::Right, none);
     shell.settle();
+    let menu = shell
+        .element(SharedString::from("popup-menu"))
+        .expect("the repository's menu is open")
+        .bounds();
+    let (dx, dy) = (
+        f32::from(menu.left() - at.x).abs(),
+        f32::from(menu.top() - at.y).abs(),
+    );
     assert!(
-        shell.drawn("repo-menu-hide") && shell.drawn("repo-menu-open"),
-        "the ... menu is open"
+        dx < 8.0 && dy < 8.0,
+        "the menu opens at the cursor: {menu:?} for a click at {at:?}"
     );
     assert!(shell.drawn("inbox-row-38"), "and the group did not fold");
 }

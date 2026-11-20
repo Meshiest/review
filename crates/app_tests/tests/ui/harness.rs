@@ -421,6 +421,21 @@ impl ShellWindow {
             .update(|window, _| gpui_base::test_support::find(window, &[], &id))
     }
 
+    /// The open popup menu's bounds. gpui-component's menu entries
+    /// register no id of their own, so tests find them by position in it.
+    pub fn menu_items(&mut self) -> Option<Bounds<Pixels>> {
+        self.element(gpui::SharedString::from("popup-menu"))
+            .map(|menu| menu.bounds())
+    }
+
+    /// Clicks entry `ix` of an open popup menu of `count` equal entries.
+    pub fn click_menu_item(&mut self, ix: usize, count: usize) {
+        let items = self.menu_items().expect("an open popup menu");
+        let row = items.size.height / count as f32;
+        let at = point(items.center().x, items.top() + row * (ix as f32 + 0.5));
+        self.click_at(at);
+    }
+
     /// Clicks the middle of the registered element with this id.
     pub fn click_element(&mut self, id: impl Into<ElementId>) {
         let id = id.into();

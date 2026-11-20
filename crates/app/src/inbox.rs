@@ -24,8 +24,8 @@ use forge::model::PrState;
 use gpui::{
     Anchor, AnyElement, App, AppContext as _, Axis, ClickEvent, Context, DragMoveEvent, Empty,
     Entity, FontWeight, InteractiveElement as _, IntoElement, MouseButton, ParentElement, Pixels,
-    Render, SharedString, StatefulInteractiveElement as _, Styled, WeakEntity, Window, anchored,
-    deferred, div, prelude::FluentBuilder as _, px,
+    Render, SharedString, StatefulInteractiveElement as _, Styled, WeakEntity, Window, div,
+    prelude::FluentBuilder as _, px,
 };
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{
@@ -33,7 +33,7 @@ use gpui_kit::component::{
     button::{Button as FlatButton, ButtonVariants as _},
     h_flex,
     input::InputState,
-    menu::{ContextMenuExt as _, DropdownMenu as _, PopupMenuItem},
+    menu::{ContextMenuExt as _, DropdownMenu as _, PopupMenu, PopupMenuItem},
     resizable::{HandleEdge, resize_handle},
     v_flex,
 };
@@ -294,8 +294,6 @@ pub(crate) struct InboxState {
     /// panel lists only repositories whose name contains it.
     repos_search: Option<Entity<InputState>>,
     repos_filter: String,
-    /// The repository group whose menu is open, in which section.
-    menu: Option<(usize, RepoRef)>,
     /// Saved sections, applied when a section of that title appears.
     saved: Vec<SavedSection>,
     /// The sections' height in the last frame, which they are allotted.
@@ -1026,7 +1024,6 @@ impl Sidebar {
         appearance::update_quiet(cx, move |settings| {
             settings.inbox.set_hidden(&repo, hidden);
         });
-        self.inbox.menu = None;
         cx.notify();
     }
 
@@ -1179,15 +1176,9 @@ impl Sidebar {
         let repo = pr.key.repo.clone();
         let name = repo.name.clone();
         let hover = c.hover;
-        let menu_open = self
-            .inbox
-            .menu
-            .as_ref()
-            .is_some_and(|(s, r)| *s == section && *r == repo);
-        let (fold, open_menu, right_menu) = (repo.clone(), repo.clone(), repo.clone());
+        let (fold, more_repo, menu_repo) = (repo.clone(), repo.clone(), repo.clone());
         let menu_selector = format!("repo-menu-{name}");
         let row_selector = format!("repo-group-{section}-{name}");
-        let menu = menu_open.then(|| self.repo_menu(&repo, t, cx));
         h_flex()
             .id(SharedString::from(format!(
                 "repo-group-{section}-{}",
@@ -1204,14 +1195,6 @@ impl Sidebar {
                 let fold = fold.clone();
                 move |this, _, _, cx| this.toggle_fold(section, repo_id(&fold), cx)
             }))
-            // A right-click opens the "..." menu.
-            .on_mouse_down(
-                MouseButton::Right,
-                cx.listener(move |this, _, _, cx| {
-                    this.inbox.menu = Some((section, right_menu.clone()));
-                    cx.notify();
-                }),
-            )
             .focusable()
             .focus_visible(move |s| s.bg(hover))
             .key_context(FOLD_CONTEXT)
@@ -1247,34 +1230,26 @@ impl Sidebar {
             )
             .child(
                 div()
-                    .id(SharedString::from(format!("repo-menu-{}", repo_id(&repo))))
+                    .id(SharedString::from(format!("repo-more-{}", repo_id(&repo))))
                     .debug_selector(move || menu_selector)
-                    .relative()
-                    .size(px(18.0))
                     .flex_none()
-                    .flex()
-                    .items_center()
-                    .justify_center()
-                    .rounded(t.radius.sm)
-                    .hover(move |s| s.bg(hover))
-                    .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
-                    .on_click(cx.listener(move |this, _: &ClickEvent, _, cx| {
-                        cx.stop_propagation();
-                        let same = this
-                            .inbox
-                            .menu
-                            .as_ref()
-                            .is_some_and(|(s, r)| *s == section && *r == open_menu);
-                        this.inbox.menu = (!same).then(|| (section, open_menu.clone()));
-                        cx.notify();
-                    }))
+                    // The header under it must not also take the click.
+                    .on_click(|_, _, cx| cx.stop_propagation())
                     .child(
-                        Icon::new(IconName::Ellipsis)
-                            .size(px(12.0))
-                            .text_color(c.text_muted),
-                    )
-                    .children(menu),
+                        FlatButton::new(SharedString::from(format!(
+                            "repo-menu-{}",
+                            repo_id(&repo)
+                        )))
+                        .icon(Icon::new(IconName::Ellipsis))
+                        .ghost()
+                        .xsmall()
+                        .cursor_pointer()
+                        .dropdown_menu_with_anchor(Anchor::TopRight, move |menu, _, _| {
+                            repo_menu(menu, &more_repo)
+                        }),
+                    ),
             )
+            .context_menu(move |menu, _, _| repo_menu(menu, &menu_repo))
             .into_any_element()
     }
 
@@ -1358,65 +1333,6 @@ impl Sidebar {
                     .child(count.to_string()),
             )
             .into_any_element()
-    }
-
-    /// The menu of a repository group, drawn over everything.
-    fn repo_menu(&self, repo: &RepoRef, t: &Theme, cx: &mut Context<Self>) -> AnyElement {
-        let c = &t.colors;
-        let hover = c.hover;
-        let id = repo_id(repo);
-        let url = format!("https://{}/{}", repo.host, repo.path());
-        let item = |key: &'static str, label: &'static str| {
-            h_flex()
-                .id(key)
-                .debug_selector(move || key.to_owned())
-                .h(px(26.0))
-                .px(px(10.0))
-                .items_center()
-                .rounded(t.radius.sm)
-                .cursor_pointer()
-                .text_color(c.text)
-                .hover(move |s| s.bg(hover))
-                .child(label)
-        };
-        let hide = item("repo-menu-hide", "Hide this repository").on_click(cx.listener(
-            move |this, _, _, cx| {
-                cx.stop_propagation();
-                this.set_repo_hidden(&id, true, cx);
-            },
-        ));
-        let web = item("repo-menu-open", "Open on the forge").on_click(cx.listener(
-            move |this, _, _, cx| {
-                cx.stop_propagation();
-                this.inbox.menu = None;
-                if crate::untrusted::is_web_url(&url) {
-                    cx.open_url(&url);
-                }
-                cx.notify();
-            },
-        ));
-        deferred(
-            anchored().child(
-                v_flex()
-                    .id("repo-menu")
-                    .mt(px(20.0))
-                    .w(px(200.0))
-                    .p(px(4.0))
-                    .rounded(t.radius.md)
-                    .border_1()
-                    .border_color(c.border_strong)
-                    .bg(c.surface_menu)
-                    .small(t)
-                    .on_mouse_down_out(cx.listener(|this, _, _, cx| {
-                        this.inbox.menu = None;
-                        cx.notify();
-                    }))
-                    .child(hide)
-                    .child(web),
-            ),
-        )
-        .priority(1)
-        .into_any_element()
     }
 
     fn pr_row(
@@ -2579,4 +2495,23 @@ mod tests {
         assert!(!listed(&rows(true)));
         assert_eq!(rows(true).len() + 1, rows(false).len());
     }
+}
+
+/// A repository group's menu, for a right-click on its header or its "..."
+/// button: hide it, or open it on its forge.
+pub(crate) fn repo_menu(menu: PopupMenu, repo: &RepoRef) -> PopupMenu {
+    let id = repo_id(repo);
+    let url = format!("https://{}/{}", repo.host, repo.path());
+    menu.item(
+        PopupMenuItem::new("Hide this repository").on_click(move |_, _, cx| {
+            Sidebar::global(cx).update(cx, |this, cx| this.set_repo_hidden(&id, true, cx));
+        }),
+    )
+    .item(
+        PopupMenuItem::new("Open on the forge").on_click(move |_, _, cx| {
+            if crate::untrusted::is_web_url(&url) {
+                cx.open_url(&url);
+            }
+        }),
+    )
 }
