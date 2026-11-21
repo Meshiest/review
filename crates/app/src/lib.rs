@@ -22,6 +22,7 @@ pub mod diff_style;
 pub mod dir_browser;
 pub mod dock_skin;
 pub mod drafts;
+pub mod find;
 pub mod fixtures;
 pub mod forge_sink;
 pub mod gutter;
@@ -174,12 +175,20 @@ impl Default for Setup {
 const DIFF_KEYS: &str = "DiffPanel && !Input";
 /// The sidebar's single-key bindings: not while its filter box has focus.
 const SIDEBAR_KEYS: &str = "Sidebar && !Input";
+/// The conversation's keys: not while its comment box has focus.
+const CONVERSATION_KEYS: &str = "Conversation && !Input";
 /// Window keys a terminal program also uses (Ctrl+B, Ctrl+W): they reach
 /// the program while a terminal has focus.
 const SHELL_KEYS: &str = "Shell && !Terminal";
 /// Single keys anywhere in the window: not while a text box or a terminal
 /// takes the typing.
 const SHELL_TEXT_KEYS: &str = "Shell && !Terminal && !Input";
+/// Find: Cmd+F on macOS, Ctrl+F elsewhere.
+const FIND: &str = if cfg!(target_os = "macos") {
+    "cmd-f"
+} else {
+    "ctrl-f"
+};
 /// `Esc` puts a zoomed dock back, unless something inside takes it first
 /// (a picker, a comment box) or a terminal program has the keys.
 const ZOOMED_KEYS: &str = "Zoomed && !Terminal";
@@ -190,6 +199,8 @@ fn bind_keys(cx: &mut App) {
     // Not while a text box has focus, so typing a letter still types it.
     let diff = Some(DIFF_KEYS);
     let sidebar = Some(SIDEBAR_KEYS);
+    let conversation = Some(CONVERSATION_KEYS);
+    let find_bar = Some(find::KEY_CONTEXT);
     cx.bind_keys([
         KeyBinding::new("] f", NextFile, diff),
         KeyBinding::new("[ f", PrevFile, diff),
@@ -205,6 +216,18 @@ fn bind_keys(cx: &mut App) {
         KeyBinding::new("[ s", PrevInStack, diff),
         KeyBinding::new("] s", NextInStack, sidebar),
         KeyBinding::new("[ s", PrevInStack, sidebar),
+        // Find, in the diff or the conversation; not from a comment box, whose
+        // own Ctrl+F is its own. In the bar it selects the query again.
+        KeyBinding::new(FIND, find::OpenFind, diff),
+        KeyBinding::new(FIND, find::OpenFind, conversation),
+        KeyBinding::new(FIND, find::OpenFind, find_bar),
+        KeyBinding::new("f3", find::FindNext, diff),
+        KeyBinding::new("f3", find::FindNext, conversation),
+        KeyBinding::new("f3", find::FindNext, find_bar),
+        KeyBinding::new("shift-f3", find::FindPrev, diff),
+        KeyBinding::new("shift-f3", find::FindPrev, conversation),
+        KeyBinding::new("shift-f3", find::FindPrev, find_bar),
+        KeyBinding::new("alt-c", find::ToggleFindCase, find_bar),
         KeyBinding::new("c", OpenComposer, diff),
         KeyBinding::new("shift-c", OpenRangeComposer, diff),
         KeyBinding::new(

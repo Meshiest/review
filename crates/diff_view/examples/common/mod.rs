@@ -281,6 +281,8 @@ fn theme_style(theme: &Theme, font: &FontSettings) -> DiffStyle {
         divider: c.border,
         divider_active: c.accent,
         selection: c.selection,
+        find_match: c.find_match,
+        find_current: c.find_current,
         scrollbar: ScrollbarStyle {
             thumb: c.border_strong,
             ..ScrollbarStyle::default()
@@ -342,6 +344,8 @@ fn fallback_style(font: &FontSettings) -> DiffStyle {
         divider: c(0x2a2e35),
         divider_active: c(0x4a7bd0),
         selection: c(0x2c4a73),
+        find_match: c(0x5a4a1e),
+        find_current: c(0x8a6a1e),
         scrollbar: ScrollbarStyle::default(),
         autoscroll: AutoscrollStyle::default(),
         palette: SyntaxPalette {

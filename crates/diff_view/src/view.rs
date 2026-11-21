@@ -23,6 +23,7 @@ mod cursor;
 mod divider;
 mod expand;
 mod files;
+mod find;
 mod menu;
 mod selecting;
 
@@ -32,6 +33,7 @@ pub use menu::ContextTarget;
 
 use crate::DiffStyle;
 use crate::blocks::{HeaderSlots, Rail, RenderBlock, RenderHeader, assign_lanes};
+use crate::find::FindAt;
 use crate::select::{CodeLine, Selection, blob as line_blob, char_count, display_col};
 use crate::shape::{
     Code, CodeStyle, LineCache, LineKey, Quality, ShapeStyle, push_code, run, shaped_columns,
@@ -343,6 +345,8 @@ pub struct DiffView {
     keys: Option<Subscription>,
     /// The expand arrow under the pointer.
     hovered_arrow: Option<ExpandArrow>,
+    /// The matches of a find.
+    marks: find::Marks,
 }
 
 /// Where one blob's highlights stand.
@@ -413,6 +417,7 @@ impl DiffView {
             text_drag: None,
             keys: None,
             hovered_arrow: None,
+            marks: find::Marks::default(),
         }
     }
 
@@ -1409,6 +1414,14 @@ struct Place {
     file: FileIx,
 }
 
+/// What is painted under a line's glyphs, over its background.
+#[derive(Default)]
+struct Marked {
+    selected: Option<Bounds<Pixels>>,
+    /// Find matches, and whether each is the current one.
+    found: Vec<(Bounds<Pixels>, bool)>,
+}
+
 /// Paints rows from the cache that prepaint filled.
 struct RowPainter<'a> {
     view: &'a DiffView,
@@ -1480,18 +1493,15 @@ impl RowPainter<'_> {
                     (None, None) => return,
                 };
                 let text_origin = point(marker_x + self.columns.marker, origin.y);
-                let selected = self.selected(
-                    visible.row,
-                    CodeLine { file, side, line },
-                    text_origin,
-                    visible.height,
-                    full.right(),
-                );
+                let at = CodeLine { file, side, line };
+                let selected =
+                    self.selected(visible.row, at, text_origin, visible.height, full.right());
+                let found = self.found(at, text_origin, visible.height, full.right());
                 self.code(
                     LineKey::Code { file, side, line },
                     text_origin,
                     visible.height,
-                    selected,
+                    Marked { selected, found },
                     window,
                     cx,
                 );
@@ -1597,7 +1607,14 @@ impl RowPainter<'_> {
         window.with_content_mask(Some(clip), |window| {
             let key = LineKey::FileHeader { file, dim: viewed };
             let at = origin + point(path_left(self.columns, height), px(0.0));
-            self.text(key, at, height, window, cx);
+            let path = &self.view.list.diff().file(file).path;
+            let right = clip.bounds.right();
+            let found = self.found_in(path, (file, FindAt::Path), at, height, right);
+            let marked = Marked {
+                selected: None,
+                found,
+            };
+            self.code(key, at, height, marked, window, cx);
         });
         self.chevron(file, origin, height, viewed, window);
         let checkbox = Bounds::new(origin + zone.checkbox.origin, zone.checkbox.size);
@@ -1876,19 +1893,15 @@ impl RowPainter<'_> {
         );
         let text_origin = point(marker_x + self.columns.marker, y);
         let Place { row, file } = place;
-        let selected = self.selected(
-            row,
-            CodeLine { file, side, line },
-            text_origin,
-            height,
-            bounds.right(),
-        );
+        let at = CodeLine { file, side, line };
+        let selected = self.selected(row, at, text_origin, height, bounds.right());
+        let found = self.found(at, text_origin, height, bounds.right());
         window.with_content_mask(Some(ContentMask { bounds }), |window| {
             self.code(
                 LineKey::Code { file, side, line },
                 text_origin,
                 height,
-                selected,
+                Marked { selected, found },
                 window,
                 cx,
             );
@@ -1968,26 +1981,78 @@ impl RowPainter<'_> {
         window: &mut Window,
         cx: &mut App,
     ) {
-        self.code(key, origin, height, None, window, cx);
+        self.code(key, origin, height, Marked::default(), window, cx);
     }
 
-    /// A shaped line, with the selection between its emphasized words and
-    /// its glyphs.
+    /// The find matches on a code line, as [`Self::found_in`] gives them.
+    fn found(
+        &self,
+        at: CodeLine,
+        origin: Point<Pixels>,
+        height: Pixels,
+        right: Pixels,
+    ) -> Vec<(Bounds<Pixels>, bool)> {
+        if self.view.marks.is_empty() {
+            return Vec::new();
+        }
+        let line = line_blob(self.view.list.diff(), at).line(at.line);
+        let place = (at.file, FindAt::Line(at.side, at.line));
+        self.found_in(&line, place, origin, height, right)
+    }
+
+    /// The find matches at `place` over `text`, whose first char starts at
+    /// `origin`: each one's stretch, no further than `right`, and whether it
+    /// is the current one.
+    fn found_in(
+        &self,
+        text: &str,
+        place: (FileIx, FindAt),
+        origin: Point<Pixels>,
+        height: Pixels,
+        right: Pixels,
+    ) -> Vec<(Bounds<Pixels>, bool)> {
+        let tab_width = self.view.style.tab_width;
+        let column = |index| self.columns.ch * display_col(text, tab_width, index) as f32;
+        self.view
+            .marks
+            .at(place)
+            .filter_map(|(chars, current)| {
+                let start = origin.x + column(chars.start);
+                let end = (origin.x + column(chars.end)).min(right);
+                (end > start).then(|| {
+                    let bounds = Bounds::new(point(start, origin.y), size(end - start, height));
+                    (bounds, current)
+                })
+            })
+            .collect()
+    }
+
+    /// A shaped line, with the find matches and then the selection between
+    /// its emphasized words and its glyphs.
     fn code(
         &self,
         key: LineKey,
         origin: Point<Pixels>,
         height: Pixels,
-        selected: Option<Bounds<Pixels>>,
+        marked: Marked,
         window: &mut Window,
         cx: &mut App,
     ) {
         if let Some((shaped, background)) = self.view.cache.get(key) {
+            let style = &self.view.style;
             if background {
                 let _ = shaped.paint_background(origin, height, TextAlign::Left, None, window, cx);
             }
-            if let Some(selected) = selected {
-                window.paint_quad(fill(selected, self.view.style.selection));
+            for (bounds, current) in marked.found {
+                let color = if current {
+                    style.find_current
+                } else {
+                    style.find_match
+                };
+                window.paint_quad(fill(bounds, color));
+            }
+            if let Some(selected) = marked.selected {
+                window.paint_quad(fill(selected, style.selection));
             }
             let _ = shaped.paint(origin, height, TextAlign::Left, None, window, cx);
         }
@@ -2568,6 +2633,8 @@ pub(super) mod tests {
             divider: Hsla::default(),
             divider_active: Hsla::default(),
             selection: Hsla::default(),
+            find_match: Hsla::default(),
+            find_current: Hsla::default(),
             scrollbar: scroll::ScrollbarStyle::default(),
             autoscroll: scroll::AutoscrollStyle::default(),
             palette: crate::SyntaxPalette {

@@ -107,6 +107,10 @@ tokens! {
         state_text,
         /// Selected text.
         selection,
+        /// Behind every match of a find, and behind its current one: the
+        /// current one stronger, both under text that keeps 4.5:1.
+        find_match,
+        find_current,
         hover,
         /// Pressed controls.
         active,

@@ -26,6 +26,8 @@ pub fn diff_style(theme: &Theme) -> DiffStyle {
         add_emphasis: c.diff_add_emphasis,
         remove_emphasis: c.diff_remove_emphasis,
         selection: c.selection,
+        find_match: c.find_match,
+        find_current: c.find_current,
         file_header_dim: c.text_muted,
         checkbox_border: c.control_border,
         checkbox_checked: c.accent,

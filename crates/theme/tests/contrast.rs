@@ -66,6 +66,8 @@ fn pairs(t: &ThemeData) -> Vec<Pair> {
         ("hover", c.hover),
         ("selected", c.selected),
         ("active", c.active),
+        ("find_match", c.find_match),
+        ("find_current", c.find_current),
     ] {
         check("text", c.text, bg_name, on_surface(bg), TEXT);
     }

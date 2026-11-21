@@ -2,9 +2,10 @@
 //!
 //! [`DiffView`] is an entity that renders a [`DiffElement`], which shapes and
 //! paints only the rows in view, and selects and copies their text.
-//! [`FrameClock`] measures frame CPU time for the scroll benchmarks.
+//! [`Corpus`] finds text in it. [`FrameClock`] measures frame CPU time for the scroll benchmarks.
 
 mod blocks;
+mod find;
 mod frame_clock;
 mod permalink;
 mod select;
@@ -14,6 +15,7 @@ mod style;
 mod view;
 
 pub use blocks::{HeaderPlace, HeaderSlots, Rail, RenderBlock, RenderHeader};
+pub use find::{Corpus, FindAt, FindMatch, Found, MAX_MATCHES, Needle};
 pub use frame_clock::FrameClock;
 pub use permalink::LineAnchor;
 pub use stats::{BAR_BLOCKS, BarBlock, change_bar, line_counts};

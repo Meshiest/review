@@ -11,6 +11,7 @@ use crate::diff_panel::{
     PrevInStack, PrevThread, ToggleAllFilesCollapsed, ToggleFileCollapsed, ToggleFileViewed,
     ToggleThread,
 };
+use crate::find::{FindNext, FindPrev, OpenFind, ToggleFindCase};
 use crate::shell::{
     CloseTab, GoBack, GoForward, NextTab, OpenCommandPalette, OpenSettings, PrevTab, QuickOpen,
     ToggleDiffLayout, ToggleKeyHelp, ToggleSidebar,
@@ -24,18 +25,26 @@ use gpui_kit::component::dock::ToggleZoom;
 pub enum Group {
     Inbox,
     Diff,
+    Find,
     CommentBox,
     Window,
 }
 
 impl Group {
-    pub const ALL: [Self; 4] = [Self::Inbox, Self::Diff, Self::CommentBox, Self::Window];
+    pub const ALL: [Self; 5] = [
+        Self::Inbox,
+        Self::Diff,
+        Self::Find,
+        Self::CommentBox,
+        Self::Window,
+    ];
 
     #[must_use]
     pub fn title(self) -> &'static str {
         match self {
             Self::Inbox => "Inbox",
             Self::Diff => "Diff",
+            Self::Find => "Find",
             Self::CommentBox => "Comment box",
             Self::Window => "Window",
         }
@@ -46,6 +55,7 @@ impl Group {
         match self {
             Self::Inbox => "Focus the inbox first",
             Self::Diff => "Focus a diff first",
+            Self::Find => "Focus a diff or a conversation first",
             Self::CommentBox => "Focus a comment box first",
             Self::Window => "Not available here",
         }
@@ -110,7 +120,14 @@ const fn key(group: Group, keys: &'static str, help: &'static str) -> Command {
 
 const STACK: &str = "Focus the inbox or a diff first";
 
-use Group::{CommentBox, Diff, Inbox, Window};
+use Group::{CommentBox, Diff, Find, Inbox, Window};
+
+/// Ctrl+F, or Cmd+F on macOS (the binding's `secondary`).
+const FIND_KEY: &str = if cfg!(target_os = "macos") {
+    "Cmd+F"
+} else {
+    "Ctrl+F"
+};
 
 /// Every key and command, grouped, in the order the overlay lists them.
 pub const COMMANDS: &[Command] = &[
@@ -253,6 +270,35 @@ pub const COMMANDS: &[Command] = &[
         "Comment on the lines last dragged over",
         boxed::<OpenRangeComposer>,
     ),
+    command(
+        Find,
+        FIND_KEY,
+        "find in the diff or the conversation",
+        "Find",
+        boxed::<OpenFind>,
+    ),
+    command(
+        Find,
+        "Enter  F3",
+        "next match",
+        "Find the next match",
+        boxed::<FindNext>,
+    ),
+    command(
+        Find,
+        "Shift+Enter  Shift+F3",
+        "previous match",
+        "Find the previous match",
+        boxed::<FindPrev>,
+    ),
+    command(
+        Find,
+        "Alt+C",
+        "match case, or not",
+        "",
+        boxed::<ToggleFindCase>,
+    ),
+    key(Find, "Esc", "close the find bar"),
     command(
         CommentBox,
         "Ctrl+Enter",

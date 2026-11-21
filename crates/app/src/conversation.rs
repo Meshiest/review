@@ -12,6 +12,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::Arc;
 
+use diff_view::Step;
 use forge::model::{Comment, Thread, ThreadId};
 use gpui::{
     AnyElement, App, AppContext as _, Context, Entity, FocusHandle, FontWeight,
@@ -25,6 +26,7 @@ use gpui_kit::component::{Icon, dock::Panel, h_flex, scroll::ScrollableElement a
 use scroll::HandleAutoscroll;
 use theme::Theme;
 
+mod find;
 mod footer;
 pub mod job_menu;
 pub mod pipelines;
@@ -33,6 +35,7 @@ use self::footer::{Footer, FooterState};
 use self::pipelines::LogTails;
 use crate::appearance::{self, Appearance};
 use crate::commits;
+use crate::find::{FindNext, FindPrev};
 use crate::model::{CiState, PrKey};
 use crate::panels::{Binding, PanelKind, dock_panel, header};
 use crate::pr_header::{self, Facts, PrActions};
@@ -61,6 +64,9 @@ const INLINE_HEAD_PAD: f32 = 5.0;
 pub const WIDE: f32 = 760.0;
 /// The space above a thread scrolled to from elsewhere.
 const REVEAL_MARGIN: f32 = 12.0;
+
+/// The panel's key context.
+pub const KEY_CONTEXT: &str = "Conversation";
 
 /// The code of each inline thread, for one diff and one set of threads.
 #[derive(Default)]
@@ -109,6 +115,7 @@ pub struct ConversationPanel {
     /// Scroll the comment box into view on the next frames: a draft on the
     /// pull request was picked in the drafts menu.
     reveal_box: Rc<Cell<bool>>,
+    find: find::ConversationFind,
 }
 
 dock_panel!(ConversationPanel, "Conversation", bound, spinners);
@@ -193,6 +200,7 @@ impl ConversationPanel {
                 laid_out: false,
                 commits_open: None,
                 reveal_box: Rc::default(),
+                find: find::ConversationFind::default(),
             }
         })
     }
@@ -347,7 +355,11 @@ impl ConversationPanel {
 
     fn markdown(&mut self, key: &str, text: &str, t: &Theme, cx: &mut App) -> AnyElement {
         let state = self.bodies.get(key, text, cx);
-        threads::body(&state, t).into_any_element()
+        self.find.drawn(&state);
+        let scroll = self.scroll.clone();
+        threads::body(&state, t)
+            .on_reveal(move |line, window, _| find::reveal_line(&scroll, line, window))
+            .into_any_element()
     }
 
     fn entry(
@@ -367,7 +379,9 @@ impl ConversationPanel {
                     .read(cx)
                     .is_folded(pr, &thread.id, thread.is_resolved(), style) =>
             {
-                self.inline_row(thread, pr, t, cx)
+                let row = self.inline_row(thread, pr, t, cx);
+                self.find_in_folded(&thread.id, &thread.comments, cx);
+                row
             }
             Entry::Inline(thread) => self.inline_thread(thread, pr, t, cx),
         }
@@ -866,6 +880,7 @@ impl Panel for ConversationPanel {
 impl Render for ConversationPanel {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         self.spinners.clear();
+        self.find.begin();
         let t = ui::theme(cx);
         let c = &t.colors;
         let session = self.session.read(cx);
@@ -971,6 +986,7 @@ impl Render for ConversationPanel {
             .iter()
             .map(|entry| self.entry(entry, style, &key, &t, cx))
             .collect();
+        self.sync_find(cx);
         let (merge_box, comment_box) = {
             let session = self.session.read(cx);
             let Some(open) = self.binding.open(session) else {
@@ -1084,7 +1100,8 @@ impl Render for ConversationPanel {
             .min_w_0()
             .h_full()
             .child(scroll)
-            .child(self.autoscroll.overlay(ui::scroll_style(&t).autoscroll));
+            .child(self.autoscroll.overlay(ui::scroll_style(&t).autoscroll))
+            .children(self.find_overlay());
         let content = h_flex()
             .flex_1()
             .min_h_0()
@@ -1119,10 +1136,26 @@ impl Render for ConversationPanel {
         .size_full();
 
         v_flex()
+            .key_context(KEY_CONTEXT)
+            .track_focus(&self.focus)
+            .on_action(cx.listener(Self::open_find))
+            .on_action(cx.listener(|this, _: &FindNext, _, cx| {
+                this.step_find(Step::Next, cx);
+            }))
+            .on_action(cx.listener(|this, _: &FindPrev, _, cx| {
+                this.step_find(Step::Prev, cx);
+            }))
             .size_full()
             .relative()
             .bg(c.surface)
-            .capture_any_mouse_down(cx.listener(|this, _, _, cx| this.binding.activated(cx)))
+            .capture_any_mouse_down(cx.listener(|this, _, window, cx| {
+                this.binding.activated(cx);
+                // Ahead of what was clicked: a comment box focuses itself
+                // after this.
+                if !this.focus.contains_focused(window, cx) {
+                    window.focus(&this.focus, cx);
+                }
+            }))
             .child(measure)
             .child(header(
                 cx,

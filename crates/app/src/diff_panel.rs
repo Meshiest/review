@@ -8,6 +8,7 @@
 mod drafts_menu;
 mod file_actions;
 mod file_header;
+mod find;
 mod menu;
 mod threads_menu;
 
@@ -35,6 +36,7 @@ use theme::{ActiveTheme, Theme};
 use crate::appearance::{self, Appearance};
 use crate::commits;
 use crate::diff_style::diff_style;
+use crate::find::{FindNext, FindPrev};
 use crate::gutter;
 use crate::model::{ChangedFile, PrKey};
 use crate::opener::OpenStatus;
@@ -207,6 +209,7 @@ pub struct DiffPanel {
     whole_restore: Option<(FileIx, ContextMode)>,
     /// The threads of a commit's diff: none, the same list every frame.
     no_threads: Arc<[Thread]>,
+    find: find::DiffFind,
 }
 
 dock_panel!(DiffPanel, "Diff", bound);
@@ -315,6 +318,7 @@ impl DiffPanel {
                 whole_mode: ContextMode::Full,
                 whole_restore: None,
                 no_threads: Arc::new([]),
+                find: find::DiffFind::default(),
             }
         })
     }
@@ -1301,7 +1305,9 @@ impl Render for DiffPanel {
                         }
                     });
                 }
+                self.sync_find(cx);
                 let overlays = self.gutter_overlays(&view, &t, cx);
+                let find_bar = self.find_overlay(&view, cx);
                 let bounds = self.bounds.clone();
                 div()
                     .debug_selector(|| "diff-body".into())
@@ -1327,6 +1333,7 @@ impl Render for DiffPanel {
                             .size_full(),
                     )
                     .children(overlays)
+                    .children(find_bar)
                     .into_any_element()
             }
             None => {
@@ -1391,6 +1398,13 @@ impl Render for DiffPanel {
             .on_action(cx.listener(Self::close_menu))
             .on_action(cx.listener(Self::open_composer))
             .on_action(cx.listener(Self::open_range_composer))
+            .on_action(cx.listener(Self::open_find))
+            .on_action(cx.listener(|this, _: &FindNext, _, cx| {
+                this.step_find(Step::Next, cx);
+            }))
+            .on_action(cx.listener(|this, _: &FindPrev, _, cx| {
+                this.step_find(Step::Prev, cx);
+            }))
             .on_action(cx.listener(|this, _: &NextInStack, _, cx| {
                 this.session
                     .update(cx, |session, cx| session.step_stack(StackStep::Down, cx));

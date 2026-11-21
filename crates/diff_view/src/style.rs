@@ -55,6 +55,9 @@ pub struct DiffStyle {
     pub divider_active: Hsla,
     /// Behind selected text.
     pub selection: Hsla,
+    /// Behind each find match, and behind the current one.
+    pub find_match: Hsla,
+    pub find_current: Hsla,
     pub scrollbar: ScrollbarStyle,
     /// The anchor marker of middle-click autoscroll.
     pub autoscroll: AutoscrollStyle,

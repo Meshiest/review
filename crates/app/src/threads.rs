@@ -27,7 +27,7 @@ use gpui::{
 };
 use gpui_kit::assets::IconName;
 use gpui_kit::component::menu::ContextMenuExt as _;
-use gpui_kit::component::text::TextViewState;
+use gpui_kit::component::text::{TextView, TextViewState};
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use store::{DraftAnchor, QueuedComment};
 use theme::Theme;
@@ -433,7 +433,7 @@ impl Bodies {
 
 /// A comment body: markdown in the theme's interface font, with forge
 /// text's link and image rules.
-pub fn body(state: &Entity<TextViewState>, t: &Theme) -> impl IntoElement {
+pub fn body(state: &Entity<TextViewState>, t: &Theme) -> TextView {
     // As wide as what holds it, so long lines wrap there.
     untrusted::text_view(state)
         .w_full()

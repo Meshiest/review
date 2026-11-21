@@ -317,6 +317,30 @@ impl DiffList {
         }
     }
 
+    /// The rows `file` shows when it is open, collapsed or not, without its
+    /// blocks: its header, then its hunks as the list would lay them out.
+    /// For a search that also looks into collapsed files.
+    pub fn open_rows(&self, file: FileIx) -> Vec<Row> {
+        let mut rows = Vec::new();
+        let ix = file.0 as usize;
+        let mut emit = Emitter {
+            rows: &mut rows,
+            base: 0,
+            block_rows: &mut [],
+            file_rows: &mut Vec::new(),
+            hunk_rows: &mut Vec::new(),
+            blocks: FileBlocks::default(),
+            file,
+        };
+        let show = FileShow {
+            mode: self.contexts[ix],
+            collapsed: false,
+            reveals: &self.reveals[ix],
+        };
+        emit.file(&self.diff, self.layout, show);
+        rows
+    }
+
     /// Re-projects the rows from the model; the diff itself is not touched.
     pub fn set_layout(&mut self, layout: Layout) {
         if layout != self.layout {
@@ -664,6 +688,7 @@ impl BlocksByFile {
 
 /// One file's blocks, consumed in line order as rows are emitted. Both
 /// sides' line numbers only grow while walking a file, so this is a merge.
+#[derive(Default)]
 struct FileBlocks {
     top: Vec<BlockId>,
     old: Vec<(u32, BlockId)>,
@@ -1321,6 +1346,20 @@ mod tests {
         list.set_collapsed(Vec::new());
         assert_eq!(list.len(), open);
         assert_eq!(list.row_height(list.block_row(BlockId(0))), 300.0);
+    }
+
+    #[test]
+    fn open_rows_are_a_files_rows_without_blocks_collapsed_or_not() {
+        let blocks = vec![Block::new(anchor(Side::New, 11), 40.0)];
+        let mut list = DiffList::new(two_files(blocks), Layout::Unified, HEIGHTS);
+        let shown: Vec<Row> = list.rows()[..13]
+            .iter()
+            .copied()
+            .filter(|row| !matches!(row, Row::Block { .. }))
+            .collect();
+        assert_eq!(list.open_rows(FileIx(0)), shown);
+        list.set_collapsed(vec![true]);
+        assert_eq!(list.open_rows(FileIx(0)), shown);
     }
 
     #[test]
