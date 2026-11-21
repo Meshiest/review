@@ -34,7 +34,7 @@ use crate::terminals::{Purpose, Terminals};
 use crate::threads::thread_menu::entry_item;
 use crate::ui::{self, Button, ButtonKind, TextExt as _};
 use crate::workspaces::{self, Pick, SaveState, Workspaces};
-use crate::writing::{FROM_CLAUDE, SuggestionState, Writing};
+use crate::writing::{DraftTally, FROM_CLAUDE, SuggestionState, Writing};
 use gpui_kit::TestSupportExt as _;
 
 /// Why `verdict` cannot be sent on this pull request, if it cannot.
@@ -496,6 +496,8 @@ pub(crate) struct Facts {
     pub caps: Capabilities,
     pub own: bool,
     pub queued: usize,
+    /// The drafts not in the review yet.
+    pub drafts: DraftTally,
     pub has_body: bool,
     pub verdict: Verdict,
     pub submitting: bool,
@@ -542,6 +544,7 @@ impl Facts {
             state: open.pr.state,
             own: is_own(open, account),
             queued: writing.map_or(0, |w| w.queued().len()),
+            drafts: writing.map(Writing::draft_tally).unwrap_or_default(),
             has_body: writing.is_some_and(|w| !w.review_body().trim().is_empty()),
             verdict: writing.map_or(Verdict::Comment, Writing::verdict),
             submitting: writing.is_some_and(Writing::submitting),
@@ -857,6 +860,7 @@ impl PrActions {
                     ),
             )
             .children(choices)
+            .children(self.draft_notes(facts.drafts, cx))
             .children(
                 blocked
                     .clone()
@@ -870,6 +874,68 @@ impl PrActions {
                 ),
             )
             .into_any_element()
+    }
+
+    /// The drafts the review would leave out: line and file drafts with a
+    /// button that adds them (saying so while they go), and the others,
+    /// which are sent on their own.
+    fn draft_notes(&self, drafts: DraftTally, cx: &mut Context<Self>) -> Vec<AnyElement> {
+        let t = ui::theme(cx);
+        let c = &t.colors;
+        let note = |id: &'static str, text: String| {
+            div()
+                .debug_selector(move || id.into())
+                .flex_1()
+                .min_w_0()
+                .tiny(&t)
+                .text_color(c.text_muted)
+                .child(text)
+        };
+        let mut notes = Vec::new();
+        match (drafts.queueable, drafts.adding) {
+            (0, 0) => {}
+            (0, n) => notes.push(
+                note(
+                    "review-drafts-adding",
+                    format!("Adding {n} draft comment{} to the review...", plural(n)),
+                )
+                .into_any_element(),
+            ),
+            (n, _) => {
+                let writing = self.writing.clone();
+                let text = match n {
+                    1 => "1 draft comment isn't in this review yet.".to_owned(),
+                    n => format!("{n} draft comments aren't in this review yet."),
+                };
+                notes.push(
+                    h_flex()
+                        .gap(px(8.0))
+                        .items_center()
+                        .child(note("review-drafts-note", text))
+                        .child(
+                            Button::new(
+                                "review-add-drafts",
+                                format!("Add {n} draft{}", plural(n)),
+                                ButtonKind::Secondary,
+                            )
+                            .on_click(move |_, _, cx| {
+                                if let Some(writing) = &writing {
+                                    writing.update(cx, Writing::queue_all);
+                                }
+                            }),
+                        )
+                        .into_any_element(),
+                );
+            }
+        }
+        if let n @ 1.. = drafts.other {
+            let text = match n {
+                1 => "1 other draft is sent on its own, not with the review.".to_owned(),
+                n => format!("{n} other drafts are sent on their own, not with the review."),
+            };
+            notes.push(note("review-drafts-other", text).into_any_element());
+        }
+        notes
     }
 
     /// What of the form came from Claude, its suggestion when the form does

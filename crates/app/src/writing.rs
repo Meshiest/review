@@ -51,6 +51,17 @@ impl Slot {
     }
 }
 
+/// How the drafts with text stand against the pending review.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct DraftTally {
+    /// Line and file drafts "Add to review" takes now.
+    pub queueable: usize,
+    /// Line and file drafts on their way to the review.
+    pub adding: usize,
+    /// Replies, edits and the conversation's comment, sent on their own.
+    pub other: usize,
+}
+
 /// Where a thread or queued-comment action stands.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ActionState {
@@ -692,6 +703,26 @@ impl Writing {
             })
             .map(|slot| slot.anchor.clone())
             .collect()
+    }
+
+    /// The drafts with text, by whether the review can take them now.
+    pub fn draft_tally(&self) -> DraftTally {
+        let mut tally = DraftTally::default();
+        for slot in self
+            .slots
+            .iter()
+            .filter(|slot| !slot.body.trim().is_empty())
+        {
+            let count = match slot.anchor {
+                DraftAnchor::Line { .. } | DraftAnchor::File { .. } if slot.busy => {
+                    &mut tally.adding
+                }
+                DraftAnchor::Line { .. } | DraftAnchor::File { .. } => &mut tally.queueable,
+                _ => &mut tally.other,
+            };
+            *count += 1;
+        }
+        tally
     }
 
     /// Adds every [`queueable`](Self::queueable) draft to the pending review.

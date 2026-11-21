@@ -192,6 +192,64 @@ fn add_all_queues_every_line_draft(cx: &mut TestAppContext) {
 }
 
 #[gpui::test]
+fn the_review_form_adds_the_drafts_it_would_leave_out(cx: &mut TestAppContext) {
+    let mut shell = open_shell(
+        cx,
+        Options {
+            open_pr: Some(41),
+            ..Options::default()
+        },
+    );
+    let writing = shell.writing();
+    line_draft(&mut shell, 2, "Off by one?");
+    line_draft(&mut shell, 5, "Rename this");
+    let thread = threads(&mut shell)
+        .iter()
+        .find(|t| !t.outdated && !t.is_resolved() && t.anchor.is_some())
+        .map(|t| t.id.clone())
+        .expect("a current inline thread");
+    let reply = DraftAnchor::Reply { thread };
+    open_composer(&mut shell, &writing, &reply);
+    shell.type_text("Agreed");
+    shell.keys("escape");
+    let queued = |shell: &mut ShellWindow| shell.update(|_, cx| writing.read(cx).queued().len());
+    let before = queued(&mut shell);
+    let add_drawn = |shell: &mut ShellWindow| {
+        shell
+            .element(SharedString::from("review-add-drafts"))
+            .is_some()
+    };
+
+    shell.click("review-button");
+    assert!(shell.drawn("action-popover"));
+    assert!(
+        shell.drawn("review-drafts-note") && add_drawn(&mut shell),
+        "the form says two drafts are left out"
+    );
+    assert!(
+        shell.drawn("review-drafts-other"),
+        "and that the reply is sent on its own"
+    );
+    shell.click_element(SharedString::from("review-add-drafts"));
+    assert_eq!(
+        queued(&mut shell),
+        before + 2,
+        "both line drafts are in the review"
+    );
+    assert!(shell.drawn("action-popover"), "the form stays open");
+    assert!(
+        !shell.drawn("review-drafts-note")
+            && !add_drawn(&mut shell)
+            && !shell.drawn("review-drafts-adding"),
+        "nothing is left to add"
+    );
+    assert!(
+        shell.drawn("review-drafts-other"),
+        "the reply is still a draft"
+    );
+}
+
+#[gpui::test]
 fn a_draft_on_the_pull_request_jumps_to_the_comment_box(cx: &mut TestAppContext) {
     let mut shell = open(41, cx);
     reveal(&mut shell, "comment-box");
