@@ -43,6 +43,7 @@ use crate::terminals::{
 };
 use crate::untrusted::strip_controls;
 use crate::workspaces::{self, Pick, WorkspaceId, Workspaces};
+use crate::worktrees::ReviewWorktree;
 use crate::writing::{ReviewSuggestion, Suggested, Writing};
 use command::{ADDITIONAL_CLAUDE_MD, Platform, Start, Values};
 use findings::{Dropped, Finding};
@@ -138,6 +139,9 @@ struct Issued {
     file: McpFile,
 }
 
+/// Removes a finished review's worktree; blocks on git and `ssh`.
+pub type Remover = Arc<dyn Fn(&ReviewWorktree) -> Result<(), String> + Send + Sync>;
+
 /// A pull request's agent terminal.
 struct AgentTerminal {
     panel: WeakEntity<TerminalPanel>,
@@ -157,6 +161,9 @@ pub struct AgentReview {
     /// fixtures run's `.scratch`); `None` until a live run has loaded its
     /// config.
     config_dir: Option<PathBuf>,
+    /// What "Clean up" removes worktrees with: git, or in a fixtures run
+    /// nothing (its folders stay under `.scratch`).
+    remover: Remover,
     _calls: Task<()>,
 }
 
@@ -176,6 +183,11 @@ impl AgentReview {
             terminals: HashMap::new(),
             issued: HashMap::new(),
             config_dir: None,
+            remover: if fixtures {
+                Arc::new(|_: &ReviewWorktree| Ok(()))
+            } else {
+                Arc::new(crate::worktrees::remove_review_worktree)
+            },
             _calls: cx.spawn(async move |_, cx| {
                 while let Some(call) = rx.next().await {
                     let reply = cx.update(|cx| match call.request {
@@ -220,6 +232,11 @@ impl AgentReview {
             .spawn(async move { crate::worktrees::sweep_private_local(&sweep, now) })
             .detach();
         self.config_dir = Some(dir);
+    }
+
+    /// Removes worktrees with `remover` from now on, for tests.
+    pub fn set_remover(&mut self, remover: Remover) {
+        self.remover = remover;
     }
 
     /// The server's port on this PC, once it runs.
@@ -473,7 +490,7 @@ fn claude_terminal(
             .into_owned(),
         // `ssh` starts in the home directory, and a quoted `~` stays a `~`.
         Start::Workdir(dir) => repo::shell::home_relative(&dir).to_owned(),
-        Start::Worktree => worktree,
+        Start::Worktree => worktree.clone(),
     };
     Ok(TerminalSpec {
         cwd: Some(cwd),
@@ -484,6 +501,11 @@ fn claude_terminal(
             pr: key.clone(),
             label: review.label.clone(),
             token: mcp.token.clone(),
+            worktree: ReviewWorktree {
+                machine: machine.clone(),
+                repo: workspace.path.trim().to_owned(),
+                path: worktree.clone(),
+            },
         }),
         ..TerminalSpec::shell_on(machine)
     })
@@ -689,6 +711,11 @@ fn suggest_review(key: &PrKey, request: SuggestRequest, cx: &mut App) -> Result<
         body: request.body,
     };
     let done = writing.update(cx, |writing, cx| writing.suggest_review(suggestion, cx));
+    let panel = AgentReview::global(cx)
+        .and_then(|review| review.read(cx).terminals.get(key)?.panel.upgrade());
+    if let Some(panel) = panel {
+        panel.update(cx, |panel, cx| panel.review_done(verdict, cx));
+    }
     let mut text = match done {
         Suggested::Filled => format!(
             "Filled in the Submit review form with {} and your summary.",
@@ -713,6 +740,29 @@ fn suggest_review(key: &PrKey, request: SuggestRequest, cx: &mut App) -> Result<
          this suggestion.",
     );
     Ok(text)
+}
+
+/// Removes a finished review's `worktree` on a thread of its own, as the
+/// installed [`Remover`] does; the answer arrives on the receiver, which is
+/// canceled when the thread could not start.
+pub(crate) fn remove_worktree(
+    worktree: ReviewWorktree,
+    cx: &App,
+) -> futures::channel::oneshot::Receiver<Result<(), String>> {
+    let (tx, rx) = futures::channel::oneshot::channel();
+    let remover = AgentReview::global(cx).map(|review| Arc::clone(&review.read(cx).remover));
+    // A thread that does not start drops the sender, which the receiver
+    // reports.
+    let _ = std::thread::Builder::new()
+        .name("review-worktree-remove".to_owned())
+        .spawn(move || {
+            let removed = match remover {
+                Some(remover) => remover(&worktree),
+                None => Err("the review is not set up".to_owned()),
+            };
+            let _ = tx.send(removed);
+        });
+    rx
 }
 
 /// What a click on "Review with agent" did.

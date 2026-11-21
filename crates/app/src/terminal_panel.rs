@@ -7,6 +7,10 @@
 //! numbered steps it goes through ([`Checklist`]); the terminal replaces
 //! them in the same tab when its program starts.
 //!
+//! When Claude suggests its review, a bar over the agent's terminal says so
+//! and offers to go on talking to it, or to clean up: end Claude, remove
+//! the worktree (only when it has no changes) and close the tab.
+//!
 //! Terminals are not restarted with the app: a restored layout holds a
 //! placeholder that offers to open the same terminal again.
 
@@ -29,6 +33,8 @@ use theme::ActiveTheme;
 
 use crate::checklist::{Checklist, StepState};
 use crate::panels::{close_button, tab_label};
+use crate::session::Session;
+use crate::sink::Verdict;
 use crate::terminals::TerminalSpec;
 use crate::ui::spinner::SpinnerSlots;
 use crate::ui::{self, Button, ButtonKind, TextExt as _};
@@ -52,6 +58,17 @@ pub enum RunState {
     Failed(SharedString),
 }
 
+/// The bar over an agent's terminal once Claude suggested its review.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum ReviewDone {
+    /// Claude suggested this verdict: go on, or clean up.
+    Suggested(Verdict),
+    /// Ending Claude, then removing its worktree.
+    CleaningUp,
+    /// The worktree stays: why, and where it is.
+    Kept { error: String, path: String },
+}
+
 /// Runs a launch again from its first step.
 pub type Retry = Rc<dyn Fn(&mut Window, &mut App)>;
 
@@ -72,6 +89,8 @@ pub struct TerminalPanel {
     spinners: SpinnerSlots,
     /// The view takes focus once it is up, if the panel holds it then.
     focus_view: bool,
+    done: Option<ReviewDone>,
+    _removing: Option<Task<()>>,
     _starting: Option<Task<()>>,
     _subscriptions: Vec<Subscription>,
 }
@@ -191,6 +210,8 @@ impl TerminalPanel {
             launching: None,
             spinners: SpinnerSlots::for_dock(cx),
             focus_view: false,
+            done: None,
+            _removing: None,
             _starting: None,
             _subscriptions: vec![theme],
         }
@@ -237,6 +258,9 @@ impl TerminalPanel {
                             ExitState::Running => return,
                         };
                         this.state = RunState::Exited(code);
+                        if this.done == Some(ReviewDone::CleaningUp) && this._removing.is_none() {
+                            this.remove_worktree(cx);
+                        }
                         cx.notify();
                     },
                 ));
@@ -276,6 +300,181 @@ impl TerminalPanel {
     #[must_use]
     pub fn view(&self) -> Option<&Entity<TerminalView>> {
         self.view.as_ref()
+    }
+
+    /// The bar over an agent's terminal, while it shows.
+    #[must_use]
+    pub fn review_bar(&self) -> Option<&ReviewDone> {
+        self.done.as_ref()
+    }
+
+    /// Claude suggested `verdict` for the review this agent's terminal runs:
+    /// the bar says so, again after a dismiss; nothing while "Clean up"
+    /// runs, or in a plain terminal.
+    pub fn review_done(&mut self, verdict: Verdict, cx: &mut Context<Self>) {
+        if self.spec.agent.is_none() || self.done == Some(ReviewDone::CleaningUp) {
+            return;
+        }
+        self.done = Some(ReviewDone::Suggested(verdict));
+        cx.notify();
+    }
+
+    fn dismiss_bar(&mut self, cx: &mut Context<Self>) {
+        if self.done != Some(ReviewDone::CleaningUp) {
+            self.done = None;
+            cx.notify();
+        }
+    }
+
+    /// "Continue": the bar goes and the user types to Claude again.
+    fn continue_review(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.dismiss_bar(cx);
+        if let Some(view) = &self.view {
+            window.focus(&view.focus_handle(cx), cx);
+        }
+    }
+
+    /// "Clean up": ends Claude as closing the tab does, removes its worktree
+    /// once it has exited, then closes the tab. A worktree git keeps (it
+    /// has changes) stays, and the bar says why and where.
+    fn clean_up(&mut self, cx: &mut Context<Self>) {
+        if self.spec.agent.is_none() || self.done == Some(ReviewDone::CleaningUp) {
+            return;
+        }
+        self.done = Some(ReviewDone::CleaningUp);
+        if self.state == RunState::Running {
+            // The exit event goes on with the removal.
+            self.stop(cx);
+        } else {
+            self.remove_worktree(cx);
+        }
+        cx.notify();
+    }
+
+    fn remove_worktree(&mut self, cx: &mut Context<Self>) {
+        let Some(agent) = &self.spec.agent else {
+            return;
+        };
+        let worktree = agent.worktree.clone();
+        let path = worktree.path.clone();
+        let removed = crate::claude_review::remove_worktree(worktree, cx);
+        let id = self.id;
+        self._removing = Some(cx.spawn(async move |this, cx| {
+            let removed = removed
+                .await
+                .unwrap_or_else(|_| Err("the removal did not start".to_owned()));
+            let _ = this.update(cx, |this, cx| match removed {
+                Ok(()) => {
+                    Session::global(cx).update(cx, |session, cx| session.close_panel(id, cx));
+                }
+                Err(error) => {
+                    this.done = Some(ReviewDone::Kept { error, path });
+                    cx.notify();
+                }
+            });
+        }));
+    }
+
+    /// The bar at the top of the terminal, over it. Its buttons never take
+    /// the focus, so keys (Esc too) still go to the terminal.
+    fn done_bar(&self, cx: &mut Context<Self>) -> Option<gpui::AnyElement> {
+        let done = self.done.as_ref()?;
+        let t = ui::theme(cx);
+        let c = &t.colors;
+        let (mark, text, path) = match done {
+            ReviewDone::Suggested(verdict) => (
+                step_icon(IconName::CircleCheck, c.ok),
+                format!("Claude finished the review: {} suggested.", verdict.label()),
+                None,
+            ),
+            ReviewDone::CleaningUp => (
+                self.spinners
+                    .slot(STEP_MARK - 4.0, c.accent)
+                    .into_any_element(),
+                "Closing Claude and removing the worktree...".to_owned(),
+                None,
+            ),
+            ReviewDone::Kept { error, path } => (
+                step_icon(IconName::CircleX, c.danger),
+                format!("The worktree stays: {error}"),
+                Some(path.clone()),
+            ),
+        };
+        let actions = matches!(done, ReviewDone::Suggested(_)).then(|| {
+            h_flex()
+                .flex_none()
+                .gap(px(6.0))
+                .when(self.state == RunState::Running, |el| {
+                    el.child(
+                        Button::new("review-done-continue", "Continue", ButtonKind::Primary)
+                            .on_click(
+                                cx.listener(|this, _, window, cx| this.continue_review(window, cx)),
+                            ),
+                    )
+                })
+                .child(
+                    Button::new("review-done-clean-up", "Clean up", ButtonKind::Outline)
+                        .on_click(cx.listener(|this, _, _, cx| this.clean_up(cx))),
+                )
+        });
+        let dismiss = (*done != ReviewDone::CleaningUp).then(|| {
+            Button::icon("review-done-dismiss", IconName::Close)
+                .on_click(cx.listener(|this, _, _, cx| this.dismiss_bar(cx)))
+        });
+        let bar = h_flex()
+            .id("review-done-bar")
+            .debug_selector(|| "review-done-bar".into())
+            .occlude()
+            .on_mouse_down(gpui::MouseButton::Left, |_, window, cx| {
+                window.prevent_default();
+                cx.stop_propagation();
+            })
+            .max_w(px(640.0))
+            .min_w_0()
+            .gap(px(10.0))
+            .items_center()
+            .py(px(8.0))
+            .pl(px(12.0))
+            .pr(px(8.0))
+            .rounded(t.radius.lg)
+            .border_1()
+            .border_color(if path.is_some() {
+                c.danger
+            } else {
+                c.border_strong
+            })
+            .bg(c.surface_menu)
+            .small(&t)
+            .child(div().flex_none().child(mark))
+            .child(
+                v_flex()
+                    .flex_1()
+                    .min_w_0()
+                    .gap(px(2.0))
+                    .child(div().text_color(c.text).child(text))
+                    .children(path.map(|path| {
+                        div()
+                            .debug_selector(|| "review-done-path".into())
+                            .mono(&t)
+                            .tiny(&t)
+                            .truncate()
+                            .text_color(c.text_muted)
+                            .child(path)
+                    })),
+            )
+            .children(actions)
+            .children(dismiss);
+        Some(
+            h_flex()
+                .absolute()
+                .top(px(12.0))
+                .left_0()
+                .right_0()
+                .px(px(16.0))
+                .justify_center()
+                .child(bar)
+                .into_any_element(),
+        )
     }
 
     fn badge(&self) -> Option<(String, bool)> {
@@ -529,9 +728,12 @@ impl Render for TerminalPanel {
         let body = match (&self.view, &self.state, &self.launching) {
             (_, _, Some(launching)) => self.steps_view(launching, cx),
             (Some(view), RunState::Running | RunState::Exited(_), None) => div()
+                .debug_selector(|| "terminal-body".into())
+                .relative()
                 .flex_1()
                 .min_h_0()
                 .child(view.clone())
+                .children(self.done_bar(cx))
                 .into_any_element(),
             _ => self.closed_note(cx),
         };

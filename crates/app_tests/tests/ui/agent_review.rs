@@ -14,6 +14,10 @@
 //! step shows its error and Retry; the editor says whether each workspace
 //! is saved, never keeping one for a run only.
 //!
+//! Once Claude suggests its review, a bar over its terminal offers to go on
+//! or to clean up: end Claude, remove the worktree and close the tab, or say
+//! where the worktree stays when it cannot go.
+//!
 //! No real `claude` runs: the workspace's command is a stand-in at an
 //! absolute path that waits and ends, and worktree jobs are stand-ins too
 //! where a test steps through them.
@@ -36,10 +40,10 @@ use app::pr_header::{Menu, PrActions};
 use app::session::OpenMode;
 use app::settings_panel::{DirField, RowState, SettingsPanel, row_status_text};
 use app::sink::{ReviewCommand, ReviewSink, SinkError, SinkOutcome, Verdict};
-use app::terminal_panel::TerminalPanel;
+use app::terminal_panel::{ReviewDone, TerminalPanel};
 use app::terminals::{Outcome, Prepared, TerminalSpec, Terminals, WorktreeJob, WorktreeState};
 use app::workspaces::{SaveState, Storage, Workspaces};
-use app::worktrees::{Step, WorktreeInfo};
+use app::worktrees::{ReviewWorktree, Step, WorktreeInfo};
 use app::writing::{FROM_CLAUDE, Writing};
 use futures::FutureExt as _;
 use futures::future::BoxFuture;
@@ -1096,4 +1100,160 @@ fn a_suggestion_keeps_the_users_summary_and_shows_a_verdict_it_cannot_use(cx: &m
     let state = shell.update(|_, cx| writing.read(cx).suggestion_state());
     assert_eq!(state.suggestion, None);
     close_terminals(&mut shell);
+}
+
+/// Removals "Clean up" asks for, answered with `answer`.
+#[derive(Clone)]
+struct Removals {
+    asked: Arc<Mutex<Vec<ReviewWorktree>>>,
+    answer: Result<(), String>,
+}
+
+impl Removals {
+    fn install(shell: &mut ShellWindow, answer: Result<(), String>) -> Self {
+        let removals = Self {
+            asked: Arc::default(),
+            answer,
+        };
+        let recording = removals.clone();
+        shell.update(|_, cx| {
+            let review = AgentReview::global(cx).expect("installed");
+            review.update(cx, |review, _| {
+                review.set_remover(Arc::new(move |worktree: &ReviewWorktree| {
+                    recording
+                        .asked
+                        .lock()
+                        .expect("the removals")
+                        .push(worktree.clone());
+                    recording.answer.clone()
+                }));
+            });
+        });
+        removals
+    }
+
+    fn asked(&self) -> Vec<ReviewWorktree> {
+        self.asked.lock().expect("the removals").clone()
+    }
+}
+
+fn review_bar(shell: &mut ShellWindow, panel: &Entity<TerminalPanel>) -> Option<ReviewDone> {
+    shell.update(|_, cx| panel.read(cx).review_bar().cloned())
+}
+
+#[gpui::test]
+fn a_finished_review_shows_a_bar_over_its_terminal_to_continue_or_clean_up(
+    cx: &mut TestAppContext,
+) {
+    let scratch = Scratch::new("agent-review-done");
+    let mut shell = open_shell(cx, Options::default());
+    let (_, port, token) = agent_on(&mut shell, 42, &scratch);
+    let panel = terminal_panels(&mut shell)[0].1.clone();
+    let removals = Removals::install(&mut shell, Ok(()));
+    assert_eq!(review_bar(&mut shell, &panel), None);
+    assert!(!shell.drawn("review-done-bar"));
+
+    let (text, error) = suggest(&mut shell, port, &token, "request_changes", "Needs a test.");
+    assert!(!error, "{text}");
+    assert_eq!(
+        review_bar(&mut shell, &panel),
+        Some(ReviewDone::Suggested(Verdict::RequestChanges))
+    );
+    // At the top of the terminal, centered over it.
+    let bar = shell.bounds_of("review-done-bar");
+    let body = shell.bounds_of("terminal-body");
+    assert!(
+        (bar.center().x - body.center().x).abs() < gpui::px(1.0),
+        "{bar:?} in {body:?}"
+    );
+    assert!(bar.top() > body.top() && bar.top() - body.top() < gpui::px(40.0));
+    assert!(bar.size.width < body.size.width);
+
+    // Continue: the bar goes and the terminal has the keys.
+    shell.click_element(SharedString::from("review-done-continue"));
+    assert_eq!(review_bar(&mut shell, &panel), None);
+    assert!(!shell.drawn("review-done-bar"));
+    let focused = shell.update(|window, cx| {
+        let view = panel.read(cx).view().cloned().expect("the terminal");
+        gpui::Focusable::focus_handle(view.read(cx), cx).is_focused(window)
+    });
+    assert!(focused, "the terminal has the keys");
+
+    // A later suggestion shows it again; the x dismisses it.
+    let (_, error) = suggest(&mut shell, port, &token, "comment", "Fine.");
+    assert!(!error);
+    assert_eq!(
+        review_bar(&mut shell, &panel),
+        Some(ReviewDone::Suggested(Verdict::Comment))
+    );
+    shell.click_element(SharedString::from("review-done-dismiss"));
+    assert_eq!(review_bar(&mut shell, &panel), None);
+    assert!(removals.asked().is_empty(), "nothing removed yet");
+
+    // Clean up: Claude ends, its worktree goes, then its tab.
+    let (_, error) = suggest(&mut shell, port, &token, "approve", "LGTM");
+    assert!(!error);
+    let worktree = shell.update(|_, cx| {
+        let spec = panel.read(cx).spec();
+        spec.agent.as_ref().expect("an agent").worktree.clone()
+    });
+    assert_eq!(
+        worktree.repo,
+        scratch.join("clone").to_string_lossy(),
+        "the workspace's clone"
+    );
+    assert!(worktree.path.ends_with("pr-42"), "{}", worktree.path);
+    assert!(worktree.machine.is_local());
+    shell.click_element(SharedString::from("review-done-clean-up"));
+    shell.settle_until("the removal", |_| !removals.asked().is_empty());
+    shell.settle_until("Claude to end", |cx| {
+        !matches!(
+            panel.read(cx).state(),
+            app::terminal_panel::RunState::Running
+        )
+    });
+    shell.advance(Duration::from_millis(50));
+    assert!(terminal_panels(&mut shell).is_empty(), "the tab closed");
+    assert_eq!(removals.asked(), [worktree], "asked once, for its worktree");
+}
+
+#[gpui::test]
+fn a_worktree_with_changes_stays_and_the_bar_says_where(cx: &mut TestAppContext) {
+    let scratch = Scratch::new("agent-review-done-kept");
+    let mut shell = open_shell(cx, Options::default());
+    let (_, port, token) = agent_on(&mut shell, 42, &scratch);
+    let panel = terminal_panels(&mut shell)[0].1.clone();
+    let refusal = "contains modified or untracked files".to_owned();
+    let removals = Removals::install(&mut shell, Err(refusal.clone()));
+    let (_, error) = suggest(&mut shell, port, &token, "comment", "Fine.");
+    assert!(!error);
+    shell.click_element(SharedString::from("review-done-clean-up"));
+    shell.settle_until("the removal to answer", |cx| {
+        matches!(panel.read(cx).review_bar(), Some(ReviewDone::Kept { .. }))
+    });
+    let path = removals.asked()[0].path.clone();
+    assert_eq!(
+        review_bar(&mut shell, &panel),
+        Some(ReviewDone::Kept {
+            error: refusal,
+            path,
+        })
+    );
+    assert!(shell.drawn("review-done-path"));
+    assert!(
+        !shell.drawn("review-done-clean-up"),
+        "nothing more to do there"
+    );
+    assert_eq!(terminal_panels(&mut shell).len(), 1, "the tab stays");
+    assert!(matches!(
+        shell.update(|_, cx| panel.read(cx).state().clone()),
+        app::terminal_panel::RunState::Exited(_)
+    ));
+    shell.click_element(SharedString::from("review-done-dismiss"));
+    assert_eq!(review_bar(&mut shell, &panel), None);
+
+    // A plain terminal never shows it.
+    let plain = shell.update(|_, cx| TerminalPanel::placeholder(TerminalSpec::default(), cx));
+    shell.update(|_, cx| plain.update(cx, |plain, cx| plain.review_done(Verdict::Comment, cx)));
+    assert_eq!(review_bar(&mut shell, &plain), None);
 }

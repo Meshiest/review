@@ -829,6 +829,36 @@ pub fn remove_remote(
     clone.repo.delete_ref(&pr_head_ref(number)).map_err(err)
 }
 
+/// A worktree "Review with agent" made and the repository it was added
+/// to, on its machine: what the finished review's "Clean up" removes.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ReviewWorktree {
+    pub machine: Machine,
+    /// The repository's directory there, as its workspace names it.
+    pub repo: String,
+    /// The worktree's absolute path there.
+    pub path: String,
+}
+
+/// Removes `worktree` from its repository unless it has changes: git
+/// refuses a worktree with modified or untracked files, which then stays.
+///
+/// # Errors
+/// Git's refusal, and git and `ssh` failures.
+pub fn remove_review_worktree(worktree: &ReviewWorktree) -> Result<(), String> {
+    match &worktree.machine.place {
+        Place::Local => {
+            let dir = expand_home(&worktree.repo);
+            let store = repo::Store::open(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
+            repo::remove_worktree(&store, Path::new(&worktree.path), RemoveMode::Clean)
+                .map_err(|e| e.to_string())
+        }
+        Place::Ssh(host) => RemoteRepo::new(host.clone(), &worktree.repo)
+            .remove_worktree(&worktree.path, RemoveMode::Clean)
+            .map_err(|e| e.to_string()),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1059,5 +1089,63 @@ mod tests {
         )));
         assert!(!is_pr_worktree(&entry("/x/r", true)));
         assert!(!is_pr_worktree(&entry("/x/feature", false)));
+    }
+
+    /// "Clean up" on a real worktree with a space and a quote in its path:
+    /// kept, with git's refusal, while it has an untracked file; removed
+    /// once it has none, the clone left as it was.
+    #[test]
+    fn a_review_worktree_is_removed_only_when_clean() {
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../.scratch/worktrees-tests")
+            .join(format!("remove-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let clone = dir.join("my clone");
+        std::fs::create_dir_all(&clone).unwrap();
+        let git = |args: &[&str]| {
+            std::process::Command::new("git")
+                .arg("-C")
+                .arg(&clone)
+                .args([
+                    "-c",
+                    "user.name=t",
+                    "-c",
+                    "user.email=t@t",
+                    "-c",
+                    "commit.gpgsign=false",
+                ])
+                .args(args)
+                .output()
+                .ok()
+                .filter(|out| out.status.success())
+        };
+        if git(&["init", "-q"]).is_none() {
+            return;
+        }
+        std::fs::write(clone.join("a.txt"), "a").unwrap();
+        assert!(git(&["add", "a.txt"]).is_some());
+        assert!(git(&["commit", "-q", "-m", "a"]).is_some());
+        let path = clone.join(".claude/worktrees/pr-'7 x");
+        let path_text = path.to_string_lossy().into_owned();
+        assert!(git(&["worktree", "add", "-q", "--detach", &path_text]).is_some());
+        let worktree = ReviewWorktree {
+            machine: Machine::this_pc(None),
+            repo: clone.to_string_lossy().into_owned(),
+            path: path_text,
+        };
+
+        std::fs::write(path.join("notes.txt"), "mine").unwrap();
+        let error = remove_review_worktree(&worktree).unwrap_err();
+        assert!(
+            error.contains("untracked") || error.contains("modified"),
+            "{error}"
+        );
+        assert!(path.join("notes.txt").is_file(), "kept with its changes");
+
+        std::fs::remove_file(path.join("notes.txt")).unwrap();
+        remove_review_worktree(&worktree).unwrap();
+        assert!(!path.exists());
+        assert!(clone.join("a.txt").is_file());
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

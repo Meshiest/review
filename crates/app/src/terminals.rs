@@ -181,6 +181,8 @@ pub struct AgentCommand {
     pub label: String,
     /// Its review token, revoked when the terminal ends.
     pub token: crate::claude_review::mcp::Token,
+    /// The worktree it reviews in, which "Clean up" removes.
+    pub worktree: worktrees::ReviewWorktree,
 }
 
 /// A remote port forwarded to a port of this PC's loopback.
@@ -1959,6 +1961,11 @@ mod tests {
             ),
             label: "r#4".into(),
             token: crate::claude_review::mcp::Token::new().unwrap(),
+            worktree: worktrees::ReviewWorktree {
+                machine: Machine::this_pc(None),
+                repo: "~/src/r".into(),
+                path: "/home/u/src/r/.claude/worktrees/pr-4".into(),
+            },
         }
     }
 
