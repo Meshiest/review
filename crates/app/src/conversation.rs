@@ -1057,24 +1057,16 @@ impl Render for ConversationPanel {
 
         let wide = self.width.get() >= px(WIDE);
         self.wide.set(wide);
-        let content = if wide {
-            h_flex()
-                .w_full()
-                .items_start()
-                .child(body)
-                .child(
-                    div()
-                        .w(px(side_column::WIDTH))
-                        .flex_none()
-                        .pt(px(16.0))
-                        .pr(px(16.0))
-                        .child(self.side.clone()),
-                )
-                .into_any_element()
-        } else {
-            v_flex()
-                .w_full()
-                .child(
+        // The title block and, side by side, the side column stay put while
+        // the conversation scrolls.
+        let scroll = v_flex()
+            .id("conversation-scroll")
+            .debug_selector(|| "conversation-body".into())
+            .size_full()
+            .track_scroll(&self.scroll)
+            .overflow_y_scroll()
+            .when(!wide, |el| {
+                el.child(
                     div()
                         .px(px(16.0))
                         .pt(px(12.0))
@@ -1083,9 +1075,35 @@ impl Render for ConversationPanel {
                         .border_color(c.border)
                         .child(self.side.clone()),
                 )
-                .child(body)
-                .into_any_element()
-        };
+            })
+            .child(body)
+            .vertical_scrollbar(&self.scroll);
+        let scrolled = div()
+            .relative()
+            .flex_1()
+            .min_w_0()
+            .h_full()
+            .child(scroll)
+            .child(self.autoscroll.overlay(ui::scroll_style(&t).autoscroll));
+        let content = h_flex()
+            .flex_1()
+            .min_h_0()
+            .w_full()
+            .child(scrolled)
+            .when(wide, |el| {
+                el.child(
+                    div()
+                        .id("conversation-side")
+                        .debug_selector(|| "conversation-side".into())
+                        .w(px(side_column::WIDTH))
+                        .flex_none()
+                        .h_full()
+                        .overflow_y_scroll()
+                        .pt(px(16.0))
+                        .pr(px(16.0))
+                        .child(self.side.clone()),
+                )
+            });
         // A width that crosses the line is drawn again in the other layout.
         let (width, laid_wide, me) = (self.width.clone(), self.wide.clone(), cx.entity_id());
         let measure = canvas(
@@ -1122,24 +1140,8 @@ impl Render for ConversationPanel {
                         state => ui::chip(cx, ci_label(state), ci_color(&t, state)),
                     }),
             ))
-            .child(
-                div()
-                    .relative()
-                    .flex_1()
-                    .min_h_0()
-                    .child(
-                        v_flex()
-                            .id("conversation-scroll")
-                            .debug_selector(|| "conversation-body".into())
-                            .size_full()
-                            .track_scroll(&self.scroll)
-                            .overflow_y_scroll()
-                            .child(title_block)
-                            .child(content)
-                            .vertical_scrollbar(&self.scroll),
-                    )
-                    .child(self.autoscroll.overlay(ui::scroll_style(&t).autoscroll)),
-            )
+            .child(title_block)
+            .child(content)
     }
 }
 

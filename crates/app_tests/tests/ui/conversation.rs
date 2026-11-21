@@ -718,3 +718,25 @@ fn middle_press_and_drag_autoscrolls_the_conversation_until_escape(cx: &mut Test
     shell.settle();
     assert!(!running(&mut shell));
 }
+
+#[gpui::test]
+fn the_title_and_the_side_column_stay_put_while_the_conversation_scrolls(cx: &mut TestAppContext) {
+    let mut shell = open(41, cx);
+    let meta = shell.bounds_of("pr-meta");
+    let agent = shell.bounds_of("review-with-agent");
+    let side = shell.bounds_of("conversation-side");
+    let body = shell.bounds_of("conversation-body");
+    assert!(
+        meta.bottom() <= body.top() && agent.bottom() <= body.top(),
+        "the title block is above the scrolled part"
+    );
+    assert!(side.left() >= body.right(), "the side column is beside it");
+
+    let panel = conversation(&mut shell);
+    let scrolled = |shell: &mut ShellWindow| shell.update(|_, cx| panel.read(cx).scrolled());
+    shell.scroll_at(body.center(), 400.0);
+    assert!(scrolled(&mut shell) > 0.0, "the conversation scrolled");
+    assert_eq!(shell.bounds_of("pr-meta"), meta);
+    assert_eq!(shell.bounds_of("review-with-agent"), agent);
+    assert_eq!(shell.bounds_of("conversation-side"), side);
+}
