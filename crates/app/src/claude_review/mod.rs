@@ -956,6 +956,7 @@ fn review_inputs(key: &PrKey, cx: &App) -> Result<(String, String), String> {
         head: diff.head_sha.clone(),
         diff: diff.diff,
         threads: open.threads.clone(),
+        checks: open.checks.clone(),
     };
     let context = prompt::build(&input, &prompt::new_token());
     let url = crate::references::pr_url(open.pr.forge, &key.repo, key.number);
