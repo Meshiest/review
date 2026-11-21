@@ -10,6 +10,7 @@ pub mod label;
 pub mod link;
 pub mod list;
 mod menu_button;
+pub mod select;
 pub mod spinner;
 
 use std::sync::Arc;
@@ -29,6 +30,7 @@ pub use controls::{TOGGLE_HEIGHT, icon_button, search_input, stepper, toggle_gro
 pub use label::label_chip;
 pub use link::web_link;
 pub use menu_button::{MenuTrigger, SplitButton};
+pub use select::{Select, SelectState};
 
 use crate::model::{CiState, FileStatus, ReviewState};
 use crate::ui::spinner::SpinnerSlots;

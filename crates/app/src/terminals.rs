@@ -728,6 +728,8 @@ struct Picker {
 /// drawn by the shell as an overlay layer.
 pub struct Terminals {
     fixtures: bool,
+    /// Invented hosts a test lists after the fixtures' own.
+    fixture_hosts: Vec<String>,
     /// `~/.ssh/config`'s hosts, once read off the main thread.
     ssh_hosts: Vec<String>,
     machines: Vec<Machine>,
@@ -775,6 +777,7 @@ impl Terminals {
             });
             Self {
                 fixtures,
+                fixture_hosts: Vec::new(),
                 ssh_hosts: Vec::new(),
                 machines: Vec::new(),
                 picker: None,
@@ -805,7 +808,13 @@ impl Terminals {
     #[must_use]
     pub fn machines(&self, cx: &App) -> Vec<Machine> {
         if self.fixtures {
-            return machines::fixtures();
+            let mut list = machines::fixtures();
+            list.extend(
+                self.fixture_hosts
+                    .iter()
+                    .map(|host| machines::fixture(host, None)),
+            );
+            return list;
         }
         let session = Session::global(cx);
         let entries = session
@@ -814,6 +823,12 @@ impl Terminals {
             .map(|services| services.config.machines.clone())
             .unwrap_or_default();
         machines::list(&entries, &self.ssh_hosts)
+    }
+
+    /// Lists `hosts` too in a fixtures run, as invented SSH machines, for
+    /// tests that need a long list.
+    pub fn add_fixture_hosts(&mut self, hosts: impl IntoIterator<Item = String>) {
+        self.fixture_hosts.extend(hosts);
     }
 
     /// Where a fixtures run makes worktree folders: `.scratch/fixture-worktrees`

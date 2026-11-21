@@ -790,6 +790,7 @@ struct WorkspaceRow {
     host: Option<String>,
     repo: Entity<InputState>,
     machine: String,
+    machine_select: Entity<ui::SelectState<String>>,
     path: Entity<InputState>,
     workdir: Entity<InputState>,
     command: Entity<InputState>,
@@ -882,6 +883,7 @@ impl WorkspaceRow {
             machines::DEFAULT_COMMAND,
             window,
         );
+        let machine_select = cx.new(|cx| ui::SelectState::new("Search machines", window, cx));
         let prompt = entry.prompt.clone().unwrap_or_default();
         let prompt = cx.new(|cx| {
             TextareaState::new(window, cx)
@@ -904,6 +906,7 @@ impl WorkspaceRow {
             host: entry.host.clone(),
             repo,
             machine: entry.machine.clone(),
+            machine_select,
             path,
             workdir,
             command,
@@ -1637,17 +1640,9 @@ impl SettingsPanel {
             }
             let chosen = row.machine.clone();
             let pick = panel.clone();
-            let options = options
-                .into_iter()
-                .enumerate()
-                .map(|(choice, (name, label))| {
-                    (name, format!("workspace-{ix}-machine-{choice}"), label)
-                });
-            let machine = ui::toggle_group(
-                cx,
-                options,
-                move |name| *name == chosen,
-                move |name, _, cx| {
+            let machine = ui::Select::new(format!("workspace-{ix}-machine"), &row.machine_select)
+                .options(options, move |name| *name == chosen)
+                .on_pick(move |name, _, cx| {
                     let name = name.clone();
                     pick.update(cx, |this, cx| {
                         if let Some(row) = this.workspace_rows.get_mut(ix) {
@@ -1659,8 +1654,7 @@ impl SettingsPanel {
                         }
                     })
                     .ok();
-                },
-            );
+                });
             let host = row
                 .host
                 .as_deref()

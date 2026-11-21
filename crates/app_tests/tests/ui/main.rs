@@ -42,3 +42,4 @@ mod thread_menus;
 mod viewed;
 mod widths;
 mod workspace_dirs;
+mod workspace_machine;

@@ -185,19 +185,27 @@ pub fn list(entries: &[MachineEntry], ssh_hosts: &[String]) -> Vec<Machine> {
 #[must_use]
 pub fn fixtures() -> Vec<Machine> {
     let mut machines = vec![Machine::this_pc(None)];
-    for (name, root) in [("buildbox", Some("~/src")), ("mac-mini", None)] {
-        machines.push(Machine {
-            name: name.to_owned(),
-            place: Place::Ssh(SshHost::new(name).expect("a plain host name")),
-            extras: MachineEntry {
-                host: name.to_owned(),
-                repos_root: root.map(str::to_owned),
-                ..MachineEntry::default()
-            },
-            fixture: true,
-        });
-    }
+    machines.push(fixture("buildbox", Some("~/src")));
+    machines.push(fixture("mac-mini", None));
     machines
+}
+
+/// An invented SSH host named `name`, never connected to.
+///
+/// # Panics
+/// If `name` is not a plain host name.
+#[must_use]
+pub fn fixture(name: &str, repos_root: Option<&str>) -> Machine {
+    Machine {
+        name: name.to_owned(),
+        place: Place::Ssh(SshHost::new(name).expect("a plain host name")),
+        extras: MachineEntry {
+            host: name.to_owned(),
+            repos_root: repos_root.map(str::to_owned),
+            ..MachineEntry::default()
+        },
+        fixture: true,
+    }
 }
 
 /// `~/.ssh/config`.
