@@ -266,6 +266,8 @@ mod tests {
         out
     }
 
+    // The match lists here are lists of ranges, one long or not.
+    #[allow(clippy::single_range_in_vec_init)]
     #[test]
     fn needles_match_ignoring_case_unless_asked_and_never_overlap() {
         assert_eq!(ranges("ab", false, "xAbab aB"), [1..3, 3..5, 6..8]);
