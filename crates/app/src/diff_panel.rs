@@ -9,6 +9,7 @@ mod drafts_menu;
 mod file_actions;
 mod file_header;
 mod menu;
+mod threads_menu;
 
 use std::cell::Cell;
 use std::collections::HashMap;
@@ -178,6 +179,8 @@ pub struct DiffPanel {
     pending_draft: Option<DraftAnchor>,
     /// The "N drafts" chip's, a stop in the tab order.
     drafts_focus: FocusHandle,
+    /// The "N open threads" chip's, likewise.
+    threads_focus: FocusHandle,
     /// What the user writes on the pull request shown; an empty one until
     /// a pull request is open.
     writing: Entity<Writing>,
@@ -297,6 +300,7 @@ impl DiffPanel {
                 pending_scroll: None,
                 pending_draft: None,
                 drafts_focus: cx.focus_handle().tab_stop(true),
+                threads_focus: cx.focus_handle().tab_stop(true),
                 writing,
                 writing_subscriptions: Vec::new(),
                 actions,
@@ -378,6 +382,11 @@ impl DiffPanel {
     /// Space.
     pub fn drafts_focus(&self) -> &FocusHandle {
         &self.drafts_focus
+    }
+
+    /// The focus of the "N open threads" chip, likewise.
+    pub fn threads_focus(&self) -> &FocusHandle {
+        &self.threads_focus
     }
 
     /// The compact review, merge and "..." row above the diff.
@@ -1248,7 +1257,7 @@ impl Render for DiffPanel {
         };
         let open_threads = threads
             .iter()
-            .filter(|thread| thread.anchor.is_some() && !thread.is_resolved())
+            .filter(|thread| threads_menu::is_open(thread))
             .count();
         let drafts = self.writing.read(cx).draft_count();
         let drafts_chip = (drafts > 0).then(|| {
@@ -1401,13 +1410,12 @@ impl Render for DiffPanel {
                     .items_center()
                     .children(drafts_chip)
                     .when(open_threads > 0, |el| {
-                        el.child(ui::chip(
+                        el.child(threads_menu::chip(
+                            open_threads,
+                            &self.threads_focus,
+                            self.cards.clone(),
+                            self.session.clone(),
                             cx,
-                            format!(
-                                "{open_threads} open thread{}",
-                                if open_threads == 1 { "" } else { "s" }
-                            ),
-                            c.info,
                         ))
                     })
                     .child(div().child(summary))

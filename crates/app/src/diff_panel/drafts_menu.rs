@@ -78,7 +78,7 @@ fn place(anchor: &DraftAnchor, writing: &Writing, threads: &[Thread]) -> SharedS
 }
 
 /// The first line with text in it, cut to [`EXCERPT_CHARS`].
-fn excerpt(body: &str) -> SharedString {
+pub(super) fn excerpt(body: &str) -> SharedString {
     let line = body
         .lines()
         .map(str::trim)
@@ -167,25 +167,33 @@ pub(super) fn chip(
                         place,
                         excerpt,
                     } = entry;
+                    let selector = SharedString::from(format!("draft-entry-{ix}"));
                     menu.item(
-                        PopupMenuItem::element(move |_, cx| row(ix, &place, &excerpt, cx))
-                            .on_click(move |_, _, cx| {
-                                let (key, anchor) = (key.clone(), anchor.clone());
-                                session.update(cx, |session, cx| {
-                                    session.jump_to_draft(key, anchor, cx);
-                                });
-                            }),
+                        PopupMenuItem::element(move |_, cx| {
+                            row(selector.clone(), &place, &excerpt, cx)
+                        })
+                        .on_click(move |_, _, cx| {
+                            let (key, anchor) = (key.clone(), anchor.clone());
+                            session.update(cx, |session, cx| {
+                                session.jump_to_draft(key, anchor, cx);
+                            });
+                        }),
                     )
                 })
         })
         .into_any_element()
 }
 
-/// An entry: where the draft is, and its first line under it.
-fn row(ix: usize, place: &SharedString, excerpt: &SharedString, cx: &App) -> Div {
+/// An entry: where the draft (or thread) is, and its first line under it.
+pub(super) fn row(
+    selector: SharedString,
+    place: &SharedString,
+    excerpt: &SharedString,
+    cx: &App,
+) -> Div {
     let t = ui::theme(cx);
     v_flex()
-        .debug_selector(move || format!("draft-entry-{ix}"))
+        .debug_selector(move || selector.to_string())
         .w_full()
         .min_w_0()
         .py(px(2.0))

@@ -39,6 +39,7 @@ mod tab_keys;
 mod tabs;
 mod terminals;
 mod thread_menus;
+mod threads_chip;
 mod viewed;
 mod widths;
 mod workspace_dirs;
