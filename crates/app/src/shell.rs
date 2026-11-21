@@ -1135,6 +1135,7 @@ impl Shell {
             .on_action(cx.listener(Self::toggle_key_help))
             .absolute()
             .inset_0()
+            .occlude()
             .flex()
             .items_center()
             .justify_center()

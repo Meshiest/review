@@ -621,3 +621,31 @@ fn a_forge_with_an_auth_error_offers_to_sign_in(cx: &mut TestAppContext) {
     assert!(shell.drawn("sign-in-gitlab.com"));
     assert!(!shell.drawn("sign-in-github.com"), "signed in already");
 }
+
+#[gpui::test]
+fn the_wheel_over_the_machine_picker_leaves_the_diff_behind_it(cx: &mut TestAppContext) {
+    let mut shell = open_shell(cx, Options::default());
+    shell.open_pr(41);
+    shell.show(41, PanelKind::Diff, OpenMode::Permanent);
+    let view = shell.diff_view();
+    let scrolled = |shell: &mut ShellWindow| shell.update(|_, cx| view.read(cx).scroll_y());
+    let body = shell.bounds_of("diff-body");
+
+    shell.keys("ctrl-`");
+    assert!(shell.drawn("machine-picker"));
+    let picker = shell.bounds_of("machine-picker");
+    for (place, at) in [
+        ("the picker", picker.center()),
+        ("the backdrop", body.center()),
+    ] {
+        shell.scroll_at(at, 600.0);
+        assert_eq!(scrolled(&mut shell), 0.0, "the wheel over {place}");
+    }
+
+    shell.keys("escape");
+    shell.scroll_at(body.center(), 600.0);
+    assert!(
+        scrolled(&mut shell) > 0.0,
+        "with the picker closed the diff scrolls"
+    );
+}

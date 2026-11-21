@@ -95,6 +95,9 @@ fn keys_move_through_hunks_files_and_threads(cx: &mut TestAppContext) {
     let at = scroll_y(&mut shell);
     shell.keys("n");
     assert_eq!(scroll_y(&mut shell), at, "the key list holds the keys");
+    let body = shell.bounds_of("diff-body");
+    shell.scroll_at(body.center(), 600.0);
+    assert_eq!(scroll_y(&mut shell), at, "and the wheel");
     shell.keys("escape");
     assert!(!shell.read_shell(|shell, _| shell.is_key_help_open()));
     shell.keys("n");

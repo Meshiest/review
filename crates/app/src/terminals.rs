@@ -1388,6 +1388,7 @@ impl Terminals {
             .id("machine-picker-layer")
             .absolute()
             .inset_0()
+            .occlude()
             .flex()
             .items_start()
             .justify_center()
