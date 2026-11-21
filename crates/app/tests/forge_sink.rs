@@ -143,6 +143,13 @@ impl Forge for Fake {
     }
 
     async fn start_review(&self, _: &RepoRef, _: PrNumber, commit: &Sha) -> Result<PendingReview> {
+        if self.state.lock().unwrap().pending.is_some() {
+            return Err(Error::Status {
+                status: 422,
+                message: "User can only have one pending review per pull request".into(),
+                request: "start review".into(),
+            });
+        }
         self.log(format!("start {}", commit.short()));
         let id = self.id("R");
         let pending = PendingReview {
@@ -154,7 +161,10 @@ impl Forge for Fake {
     }
 
     async fn pending_review(&self, _: &RepoRef, _: PrNumber) -> Result<Option<PendingReview>> {
-        Ok(self.state.lock().unwrap().pending.clone())
+        let pending = self.state.lock().unwrap().pending.clone();
+        // Long enough for a write sent beside this one to ask too.
+        tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+        Ok(pending)
     }
 
     async fn add_review_comment(
@@ -340,6 +350,18 @@ fn the_first_queued_comment_starts_the_review_and_the_rest_join_it() {
     assert_eq!(lines, [3, 4], "one thread per queued comment, no summary");
     assert!(replies.is_empty());
     assert_eq!(log(&fake), ["submit R1 Comment"]);
+}
+
+#[test]
+fn comments_queued_at_once_go_into_one_review() {
+    let (sink, fake) = sink(Capabilities::GITHUB);
+    let outcomes = futures::executor::block_on(futures::future::join_all(
+        [3, 4, 5].map(|n| sink.submit(&key(), ReviewCommand::QueueComment(line(n)))),
+    ));
+    for outcome in outcomes {
+        assert!(matches!(outcome, Ok(SinkOutcome::Queued(_))), "{outcome:?}");
+    }
+    assert_eq!(log(&fake), ["start aaaaaaa", "add R1", "add R1", "add R1"]);
 }
 
 #[test]

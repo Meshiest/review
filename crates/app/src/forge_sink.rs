@@ -8,6 +8,9 @@
 //!   one pending review per person is all GitHub and Forgejo keep, and
 //!   GitLab's publish sends every draft note at once. A conversation comment
 //!   is the forge's plain comment.
+//! - Writes to one pull request run one at a time: two
+//!   comments queued at once would each find no pending review and start
+//!   one, and the forge refuses the second.
 //! - Every outcome carries what the forge returned, so the app patches its
 //!   threads instead of reading the pull request again. GitLab gives a
 //!   published draft note a new id, so after a submit there it reads the
@@ -32,11 +35,14 @@ use crate::sink::{
 };
 
 type Reviews = Arc<Mutex<HashMap<PrKey, ReviewId>>>;
+type Turns = Arc<Mutex<HashMap<PrKey, Arc<futures::lock::Mutex<()>>>>>;
 
 pub struct ForgeSink {
     services: Services,
     /// The pending review each pull request's comments go into, once known.
     reviews: Reviews,
+    /// Each pull request's writes wait their turn here.
+    turns: Turns,
 }
 
 impl ForgeSink {
@@ -45,7 +51,12 @@ impl ForgeSink {
         Self {
             services,
             reviews: Arc::default(),
+            turns: Arc::default(),
         }
+    }
+
+    fn turn(&self, pr: &PrKey) -> Arc<futures::lock::Mutex<()>> {
+        lock(&self.turns).entry(pr.clone()).or_default().clone()
     }
 }
 
@@ -55,8 +66,9 @@ impl ReviewSink for ForgeSink {
         pr: &PrKey,
         command: ReviewCommand,
     ) -> BoxFuture<'static, Result<SinkOutcome, SinkError>> {
-        let (reviews, key) = (self.reviews.clone(), pr.clone());
+        let (reviews, key, turn) = (self.reviews.clone(), pr.clone(), self.turn(pr));
         let call = self.services.forge(&pr.repo.host, move |forge| async move {
+            let _turn = turn.lock().await;
             let write = Write {
                 forge: forge.as_ref(),
                 reviews: &reviews,
