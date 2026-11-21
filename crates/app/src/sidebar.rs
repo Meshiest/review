@@ -248,6 +248,29 @@ impl Sidebar {
         }
     }
 
+    /// A click on a member of the stack. With another pull request's diff
+    /// in front it shows this one's diff, to step through a stack's diffs;
+    /// otherwise it is an inbox row's click: the conversation first, then
+    /// the diff and back.
+    fn click_stack(&mut self, key: &PrKey, cx: &mut Context<Self>) {
+        let focused = self.session.read(cx).open_key().cloned();
+        let other_diff = focused
+            .filter(|focused| focused != key)
+            .is_some_and(|focused| {
+                self.is_shown(&focused, PanelKind::Diff, cx)
+                    && (!self.is_shown(&focused, PanelKind::Conversation, cx)
+                        || self.last_view == Some((focused, PanelKind::Diff)))
+            });
+        self.on_threads = false;
+        if other_diff {
+            self.show_row(key, PanelKind::Diff, OpenMode::Preview, cx);
+        } else if self.has_view(key, cx) {
+            self.toggle_row_view(key, cx);
+        } else {
+            self.show_row(key, PanelKind::Conversation, OpenMode::Preview, cx);
+        }
+    }
+
     /// Shows `key`'s `kind` panel from its inbox row; opening it reads it
     /// when the settings say so, also when it already had the focus. A diff
     /// reached from the inbox shows every file, not one picked earlier in
@@ -508,8 +531,10 @@ impl Sidebar {
         let rows = stack.members.iter().enumerate().rev().map(|(pos, member)| {
             let current = member.key == open.key;
             let key = member.key.clone();
+            let number = key.number;
             h_flex()
                 .id(("stack", pos))
+                .debug_selector(move || format!("stack-row-{number}"))
                 .w_full()
                 .h(px(ROW))
                 .px(px(10.0))
@@ -518,9 +543,7 @@ impl Sidebar {
                 .cursor_pointer()
                 .when(current, |el| el.bg(c.selected))
                 .when(!current, |el| el.hover(move |s| s.bg(hover)))
-                .on_click(cx.listener(move |this, _, _, cx| {
-                    this.show(&key, PanelKind::Diff, OpenMode::Preview, cx);
-                }))
+                .on_click(cx.listener(move |this, _, _, cx| this.click_stack(&key, cx)))
                 .child(
                     div()
                         .mono(t)

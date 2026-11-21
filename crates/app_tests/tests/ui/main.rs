@@ -35,6 +35,7 @@ mod sections;
 mod settings;
 mod sidebar;
 mod spinners;
+mod stack_clicks;
 mod tab_keys;
 mod tabs;
 mod terminals;
