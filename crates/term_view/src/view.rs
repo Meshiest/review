@@ -80,8 +80,9 @@ pub struct TerminalView {
     hover_cell: Option<(usize, usize)>,
     /// Where the left button went down in the pane, until it comes up.
     press: Option<gpui::Point<Pixels>>,
-    /// When the user last ended a drag (a selection) in the pane; a
-    /// program's copy is only taken just after (see [`copy_allowed`]).
+    /// When the user last ended a drag (a selection) in the pane while the
+    /// program had the mouse; one copy from the program is taken just after
+    /// (see [`copy_allowed`]), and then the drag is spent.
     last_drag: Option<Instant>,
 }
 
@@ -104,9 +105,10 @@ fn dragged(press: gpui::Point<Pixels>, release: gpui::Point<Pixels>) -> bool {
 
 /// Whether a program's copy (OSC 52) reaches the system clipboard: only
 /// while its pane has the focus and within [`COPY_WINDOW`] of the user
-/// ending a drag there, which is how Claude Code copies a selection. Keys,
-/// plain clicks and output alone (a file printed from a pull request, a
-/// remote banner) never let a program replace what the user copied.
+/// ending a drag there with the program reporting the mouse, which is how
+/// Claude Code copies a selection; one copy per drag. Keys, plain clicks and
+/// output alone (a file printed from a pull request, a remote banner) never
+/// let a program replace what the user copied.
 fn copy_allowed(focused: bool, last_drag: Option<Instant>, now: Instant) -> bool {
     focused && last_drag.is_some_and(|at| now.saturating_duration_since(at) <= COPY_WINDOW)
 }
@@ -140,6 +142,7 @@ impl TerminalView {
                         if let Some(text) = view.session.take_clipboard()
                             && copy_allowed(view.focused, view.last_drag, Instant::now())
                         {
+                            view.last_drag = None;
                             cx.write_to_clipboard(ClipboardItem::new_string(text));
                         }
                         let state = view.session.exit_state();
@@ -491,6 +494,10 @@ impl TerminalView {
     ) {
         if event.button == MouseButton::Left {
             self.press = Some(event.position);
+            // A copy the program sent before this press is not the one the
+            // drag asks for.
+            self.last_drag = None;
+            let _ = self.session.take_clipboard();
         }
         window.focus(&self.focus, cx);
         let Some(geometry) = self.geometry else {
@@ -588,6 +595,7 @@ impl TerminalView {
         if event.button == MouseButton::Left
             && let Some(press) = self.press.take()
             && dragged(press, event.position)
+            && self.mode().intersects(TermMode::MOUSE_MODE)
         {
             self.last_drag = Some(Instant::now());
         }
