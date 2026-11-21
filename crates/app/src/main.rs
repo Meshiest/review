@@ -1,5 +1,8 @@
 //! `review`: the application shell.
 
+// A window app on Windows: started from Explorer it opens no console.
+#![cfg_attr(windows, windows_subsystem = "windows")]
+
 use std::time::{Duration, Instant};
 
 use app::appearance::{self, ThemeFlags};
@@ -236,8 +239,30 @@ impl Args {
     }
 }
 
+/// Started from a terminal, messages go to that terminal's console, as
+/// they would without the window subsystem. Output already redirected to a
+/// file or a pipe stays where it was.
+#[cfg(windows)]
+#[allow(unsafe_code)]
+fn attach_parent_console() {
+    use windows_sys::Win32::System::Console::{
+        ATTACH_PARENT_PROCESS, AttachConsole, GetStdHandle, STD_ERROR_HANDLE,
+    };
+    // SAFETY: plain Win32 calls with no pointers; `AttachConsole` fails
+    // harmlessly when the parent has no console.
+    unsafe {
+        if GetStdHandle(STD_ERROR_HANDLE).is_null() {
+            AttachConsole(ATTACH_PARENT_PROCESS);
+        }
+    }
+}
+
+#[cfg(not(windows))]
+fn attach_parent_console() {}
+
 fn main() {
     let started = Instant::now();
+    attach_parent_console();
     let args = match Args::parse() {
         Ok(args) => args,
         Err(message) => {

@@ -89,7 +89,7 @@ mod windows {
 
     use std::ffi::c_void;
     use std::mem::size_of;
-    use std::os::windows::process::ExitStatusExt;
+    use std::os::windows::process::{CommandExt as _, ExitStatusExt};
     use std::process::{Command, ExitStatus};
     use std::ptr;
     use std::time::Duration;
@@ -184,8 +184,11 @@ mod windows {
         /// Ends the child and everything it started.
         pub(crate) fn kill(&self) {
             if self.job.is_null() {
+                // No console window flashes up for it.
+                const CREATE_NO_WINDOW: u32 = 0x0800_0000;
                 let _ = Command::new("taskkill")
                     .args(["/F", "/T", "/PID", &self.pid.to_string()])
+                    .creation_flags(CREATE_NO_WINDOW)
                     .output();
                 return;
             }

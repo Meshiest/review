@@ -872,13 +872,7 @@ fn run_cli(program: &str, args: &[&str]) -> Option<String> {
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
-    #[cfg(windows)]
-    {
-        use std::os::windows::process::CommandExt as _;
-        // Without it every CLI call flashes a console window.
-        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-        command.creation_flags(CREATE_NO_WINDOW);
-    }
+    no_console_window(&mut command);
     let child = command.spawn().ok()?;
     let id = child.id();
     let (tx, rx) = mpsc::channel();
@@ -910,11 +904,23 @@ fn kill(pid: u32) {
         command.args(["-9", &pid.to_string()]);
         command
     };
+    no_console_window(&mut command);
     let _ = command
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .status();
+}
+
+/// Without it every CLI call flashes a console window.
+fn no_console_window(command: &mut Command) {
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt as _;
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        command.creation_flags(CREATE_NO_WINDOW);
+    }
+    let _ = command;
 }
 
 #[cfg(test)]
