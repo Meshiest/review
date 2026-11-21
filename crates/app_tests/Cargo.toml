@@ -13,6 +13,7 @@ app = { path = "../app" }
 diff.workspace = true
 diff_view.workspace = true
 forge.workspace = true
+repo.workspace = true
 store.workspace = true
 theme.workspace = true
 term.workspace = true

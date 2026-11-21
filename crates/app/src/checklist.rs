@@ -3,6 +3,8 @@
 //! check marks, and a failed one shows its error. The worktree job reports
 //! the steps it reaches ([`crate::worktrees::Progress`]); a step it skips
 //! (a worktree already at the head) counts as done once a later one starts.
+//! A canceled launch keeps its step under way until the job has stopped and
+//! what it made is removed, then fails it with what happened.
 
 use crate::worktrees::Step;
 
@@ -24,6 +26,8 @@ pub struct Checklist {
     /// Whether the work reported a step yet: until then the first step
     /// shows as under way, but nothing has run.
     reported: bool,
+    /// The user canceled: the step under way is being stopped.
+    canceling: bool,
 }
 
 /// What a launch is for, which picks its steps.
@@ -58,6 +62,7 @@ impl Checklist {
                 .map(|step| (step, StepState::Waiting))
                 .collect(),
             reported: false,
+            canceling: false,
         };
         if let Some((_, state)) = list.steps.first_mut() {
             *state = StepState::Running;
@@ -99,8 +104,9 @@ impl Checklist {
     }
 
     /// The step under way failed with `error`; with none under way, the
-    /// first that has not finished.
+    /// first that has not finished. A cancel ends with it.
     pub fn fail(&mut self, error: String) {
+        self.canceling = false;
         if let Some((_, state)) = self.current_mut() {
             *state = StepState::Failed(error);
         }
@@ -112,6 +118,17 @@ impl Checklist {
         if let Some((_, state)) = self.steps.iter_mut().find(|(s, _)| *s == step) {
             *state = StepState::Blocked(what);
         }
+    }
+
+    /// The user canceled the launch; [`Self::fail`] says how it ended.
+    pub fn cancel(&mut self) {
+        self.canceling = true;
+    }
+
+    /// Whether a cancel is under way.
+    #[must_use]
+    pub fn canceling(&self) -> bool {
+        self.canceling
     }
 
     /// The failed step's error, if one failed.
@@ -228,5 +245,19 @@ mod tests {
         assert_eq!(states(&list)[0], (Step::CloneInTerminal, "blocked"));
         assert!(list.stopped());
         assert_eq!(list.error(), None);
+    }
+
+    #[test]
+    fn a_cancel_keeps_the_step_under_way_until_it_has_stopped() {
+        let mut list = Checklist::plan(Purpose::Review, false);
+        list.reach(Step::Worktree);
+        list.cancel();
+        assert!(list.canceling());
+        assert!(!list.stopped(), "a new launch waits for it");
+        assert_eq!(states(&list)[1], (Step::Worktree, "running"));
+        list.fail("You canceled the launch.".into());
+        assert!(!list.canceling());
+        assert!(list.stopped());
+        assert_eq!(states(&list)[1], (Step::Worktree, "failed"));
     }
 }

@@ -6,6 +6,7 @@
 //! does that itself and reports on a channel.
 
 mod blob;
+pub mod cancel;
 mod error;
 mod fetch;
 mod files;

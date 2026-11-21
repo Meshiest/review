@@ -10,6 +10,8 @@
 use std::collections::{HashMap, VecDeque};
 use std::path::PathBuf;
 use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 
 use futures::StreamExt as _;
@@ -102,6 +104,8 @@ pub struct LaunchTab {
     pub checklist: Checklist,
     /// Runs the launch again after a failed step.
     pub retry: Retry,
+    /// Stops the launch while a step runs; `None` offers no Cancel.
+    pub cancel: Option<Retry>,
 }
 
 /// The step that starts the launch's program.
@@ -739,6 +743,9 @@ pub struct Terminals {
     focus: FocusHandle,
     worktrees: HashMap<PrKey, WorktreeState>,
     jobs: HashMap<PrKey, Task<()>>,
+    /// The cancel flag of each pull request's last job: the git and `ssh`
+    /// it runs are killed once it is set.
+    cancels: HashMap<PrKey, Arc<AtomicBool>>,
     /// Each pull request's launch tab, which shows the steps until its
     /// program starts.
     tabs: HashMap<PrKey, WeakEntity<TerminalPanel>>,
@@ -786,6 +793,7 @@ impl Terminals {
                 focus: cx.focus_handle(),
                 worktrees: HashMap::new(),
                 jobs: HashMap::new(),
+                cancels: HashMap::new(),
                 tabs: HashMap::new(),
                 pending: None,
                 fixture_root: std::env::current_dir()
@@ -889,6 +897,7 @@ impl Terminals {
             machine,
             checklist,
             retry,
+            cancel,
         } = tab;
         let panel = match self.launch_tab(key, cx) {
             Some(panel) => {
@@ -900,7 +909,8 @@ impl Terminals {
                     machine,
                     ..TerminalSpec::default()
                 };
-                let panel = TerminalPanel::launching(title, stub, checklist, Some(retry), cx);
+                let panel =
+                    TerminalPanel::launching(title, stub, checklist, Some(retry), cancel, cx);
                 self.tabs.insert(key.clone(), panel.downgrade());
                 panel
             }
@@ -1005,6 +1015,7 @@ impl Terminals {
             machine: machine.name.clone(),
             checklist: Checklist::plan(StepsFor::Command, !machine.is_local()),
             retry,
+            cancel: None,
         };
         self.open_launch_tab(&key, tab, at, cx);
         let job = self.worktree_job(&key, &machine, cx);
@@ -1085,7 +1096,10 @@ impl Terminals {
                 return;
             }
         };
+        let flag = Arc::new(AtomicBool::new(false));
+        self.cancels.insert(key.clone(), Arc::clone(&flag));
         let (tx, mut rx) = mpsc::unbounded::<Result<Step, Result<Outcome, String>>>();
+        let job_flag = Arc::clone(&flag);
         thread::Builder::new()
             .name(format!("worktree-{}", key.number))
             .spawn(move || {
@@ -1093,13 +1107,20 @@ impl Terminals {
                 let mut progress = move |step: Step| {
                     let _ = progress_tx.unbounded_send(Ok(step));
                 };
-                let result = job(&mut progress);
+                let result = repo::cancel::scope(job_flag, || job(&mut progress));
                 let _ = tx.unbounded_send(Err(result));
             })
             .ok();
         let task_key = key.clone();
         let task = cx.spawn(async move |this, cx| {
             while let Some(message) = rx.next().await {
+                if flag.load(Ordering::Relaxed) {
+                    // Canceled: what the job made is removed once it ends.
+                    if message.is_err() {
+                        break;
+                    }
+                    continue;
+                }
                 let done = this.update(cx, |this, cx| {
                     let next = match message {
                         Ok(step) => {
@@ -1152,11 +1173,97 @@ impl Terminals {
                     done
                 });
                 if !matches!(done, Ok(false)) {
-                    break;
+                    return;
                 }
             }
+            if !flag.load(Ordering::Relaxed) {
+                return;
+            }
+            let removal = this.update(cx, |this, cx| {
+                claude_review::forget(review.as_ref(), cx);
+                this.remove_canceled(&task_key, &machine, review.as_ref())
+            });
+            let removed = match removal {
+                Ok(Some(removal)) => removal
+                    .await
+                    .unwrap_or_else(|_| Err("the cleanup did not start".to_owned())),
+                Ok(None) => Ok(None),
+                Err(_) => return,
+            };
+            let _ = this.update(cx, |this, cx| {
+                this.canceled(task_key, &machine.name, removed, cx);
+            });
         });
         self.jobs.insert(key, task);
+    }
+
+    /// "Cancel" in `key`'s launch tab while its job runs: the step under
+    /// way stops (its git or `ssh` is killed), nothing starts, and once the
+    /// job has ended the worktree it made or half made is removed; the tab
+    /// then says what happened, and "Review with agent" starts over.
+    pub fn cancel_job(&mut self, key: &PrKey, cx: &mut Context<Self>) {
+        if !matches!(self.worktrees.get(key), Some(WorktreeState::Working { .. })) {
+            return;
+        }
+        let Some(flag) = self.cancels.get(key) else {
+            return;
+        };
+        flag.store(true, Ordering::Relaxed);
+        self.steps(key, cx, Checklist::cancel);
+        cx.notify();
+    }
+
+    /// Removes a canceled review's worktree off the main thread, as "Clean
+    /// up" does; `None` when there is nothing to remove (another launch,
+    /// or a fixtures run's plain folder).
+    fn remove_canceled(
+        &self,
+        key: &PrKey,
+        machine: &Machine,
+        review: Option<&ReviewLaunch>,
+    ) -> Option<futures::channel::oneshot::Receiver<Result<Option<String>, String>>> {
+        let review = review.filter(|_| !self.fixtures)?;
+        let (machine, dir, number) = (
+            machine.clone(),
+            review.workspace.path.trim().to_owned(),
+            key.number.0,
+        );
+        let (tx, rx) = futures::channel::oneshot::channel();
+        // A thread that does not start drops the sender, which the receiver
+        // reports.
+        let _ = thread::Builder::new()
+            .name(format!("worktree-cancel-{number}"))
+            .spawn(move || {
+                let _ = tx.send(worktrees::remove_canceled(&machine, &dir, number));
+            });
+        Some(rx)
+    }
+
+    /// A canceled launch has stopped: its tab says so, with what became of
+    /// its worktree.
+    fn canceled(
+        &mut self,
+        key: PrKey,
+        machine: &str,
+        removed: Result<Option<String>, String>,
+        cx: &mut Context<Self>,
+    ) {
+        let error = match removed {
+            Ok(None) => "You canceled the launch; it left no worktree.".to_owned(),
+            Ok(Some(path)) => {
+                format!("You canceled the launch; its worktree at {path} was removed.")
+            }
+            Err(why) => format!("You canceled the launch. Its worktree stays registered: {why}"),
+        };
+        self.steps(&key, cx, |steps| steps.fail(error.clone()));
+        self.worktrees.insert(
+            key,
+            WorktreeState::Failed {
+                machine: machine.to_owned(),
+                error,
+            },
+        );
+        cx.notify();
     }
 
     /// The worktree is up: start its command without the checkout's agent

@@ -80,7 +80,8 @@ impl Store {
     pub fn fetch_pr(&self, request: &FetchRequest) -> Result<FetchHandle> {
         let args = fetch_args(request)?;
         let (tx, rx) = mpsc::channel();
-        let cancel = Arc::new(AtomicBool::new(false));
+        // Canceling the thread's work cancels the fetch too.
+        let cancel = crate::cancel::current().unwrap_or_default();
         let store = self.clone();
         let command = GitCommand::new(self.git_dir(), request.timeout)
             .args(args)

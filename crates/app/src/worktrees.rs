@@ -687,7 +687,8 @@ impl<'a> RemoteRun<'a> {
 }
 
 /// [`remote_sh`] with its own time and output limits. Blocks until the
-/// script ends or the time is up, when `ssh` is killed.
+/// script ends, or the time is up or the thread's work is canceled
+/// ([`repo::cancel`]), when `ssh` is killed.
 pub(crate) fn remote_sh_limited(
     host: &repo::SshHost,
     script: &str,
@@ -724,7 +725,15 @@ pub(crate) fn remote_sh_limited(
     std::thread::spawn(move || {
         let _ = tx.send(child.wait_with_output());
     });
-    match rx.recv_timeout(timeout) {
+    let deadline = std::time::Instant::now() + timeout;
+    let ended = loop {
+        match rx.recv_timeout(CANCEL_POLL) {
+            Err(mpsc::RecvTimeoutError::Timeout)
+                if !repo::cancel::canceled() && std::time::Instant::now() < deadline => {}
+            ended => break ended,
+        }
+    };
+    match ended {
         Ok(Ok(output)) if output.status.success() => {
             let end = output.stdout.len().min(kept);
             Ok(String::from_utf8_lossy(&output.stdout[..end]).into_owned())
@@ -733,10 +742,17 @@ pub(crate) fn remote_sh_limited(
         Ok(Err(error)) => Err(failed(&error)),
         Err(_) => {
             kill(id);
-            Err(failed(&"took too long"))
+            if repo::cancel::canceled() {
+                Err(failed(&"canceled"))
+            } else {
+                Err(failed(&"took too long"))
+            }
         }
     }
 }
+
+/// How often a remote script's wait looks at the cancel flag.
+const CANCEL_POLL: Duration = Duration::from_millis(50);
 
 fn no_console_window(command: &mut Command) {
     #[cfg(windows)]
@@ -838,6 +854,54 @@ pub struct ReviewWorktree {
     pub repo: String,
     /// The worktree's absolute path there.
     pub path: String,
+}
+
+/// After a canceled "Review with agent": removes pull request `number`'s
+/// worktree from the clone at `dir` on `machine`, made or half made, when
+/// git has it registered, as [`remove_review_worktree`] does. Its path when
+/// it was removed; `None` when there was none.
+///
+/// # Errors
+/// Why it stays registered, with its path; git and `ssh` failures.
+pub fn remove_canceled(
+    machine: &Machine,
+    dir: &str,
+    number: u64,
+) -> Result<Option<String>, String> {
+    let (list, path) = match &machine.place {
+        Place::Local => {
+            // No repository there: nothing was added to it.
+            let Ok(store) = repo::Store::open(&expand_home(dir)) else {
+                return Ok(None);
+            };
+            let path = store.worktree_path(number).to_string_lossy().into_owned();
+            (
+                repo::list_worktrees(&store).map_err(|e| e.to_string())?,
+                path,
+            )
+        }
+        Place::Ssh(host) => {
+            let repo = RemoteRepo::new(host.clone(), dir);
+            if !repo.exists().map_err(|e| e.to_string())? {
+                return Ok(None);
+            }
+            let list = repo.worktrees().map_err(|e| e.to_string())?;
+            let path = remote_worktree_path(&repo, &list, number)?;
+            (list, path)
+        }
+    };
+    if !list.iter().any(|entry| entry.is_at(&path)) {
+        return Ok(None);
+    }
+    let worktree = ReviewWorktree {
+        machine: machine.clone(),
+        repo: dir.to_owned(),
+        path: path.clone(),
+    };
+    match remove_review_worktree(&worktree) {
+        Ok(()) => Ok(Some(path)),
+        Err(error) => Err(format!("{path}: {error}")),
+    }
 }
 
 /// Removes `worktree` from its repository unless it has changes: git
@@ -1146,6 +1210,24 @@ mod tests {
         remove_review_worktree(&worktree).unwrap();
         assert!(!path.exists());
         assert!(clone.join("a.txt").is_file());
+
+        // After a canceled launch: pr-7's worktree, while git lists it.
+        let this_pc = Machine::this_pc(None);
+        let clone_text = clone.to_string_lossy().into_owned();
+        assert_eq!(remove_canceled(&this_pc, &clone_text, 7), Ok(None));
+        let missing = dir.join("no clone").to_string_lossy().into_owned();
+        assert_eq!(remove_canceled(&this_pc, &missing, 7), Ok(None));
+        let pr7 = clone.join(".claude").join("worktrees").join("pr-7");
+        let pr7_text = pr7.to_string_lossy().into_owned();
+        assert!(git(&["worktree", "add", "-q", "--detach", &pr7_text]).is_some());
+        std::fs::write(pr7.join("half.txt"), "x").unwrap();
+        let error = remove_canceled(&this_pc, &clone_text, 7).unwrap_err();
+        assert!(error.starts_with(&pr7_text), "{error}");
+        assert!(pr7.is_dir(), "kept with its changes");
+        std::fs::remove_file(pr7.join("half.txt")).unwrap();
+        let removed = remove_canceled(&this_pc, &clone_text, 7).unwrap();
+        assert_eq!(removed, Some(pr7_text));
+        assert!(!pr7.exists());
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

@@ -75,7 +75,7 @@ impl GitCommand {
             place,
             args: Vec::new(),
             timeout,
-            cancel: None,
+            cancel: crate::cancel::current(),
             on_stderr_line: None,
             capture_stdout: false,
         }

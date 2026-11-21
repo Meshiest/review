@@ -278,6 +278,7 @@ dependencies = [
  "gpui-component",
  "gpui-kit",
  "gpui-pre",
+ "repo",
  "serde_json",
  "store",
  "term",

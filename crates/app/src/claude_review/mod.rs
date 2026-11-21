@@ -844,6 +844,14 @@ pub fn launch(key: &PrKey, workspace: WorkspaceEntry, cx: &mut App) {
         let (key, workspace) = (key.clone(), workspace.clone());
         Rc::new(move |_, cx| launch(&key, workspace.clone(), cx))
     };
+    let cancel: Retry = {
+        let key = key.clone();
+        Rc::new(move |_, cx| {
+            if let Some(terminals) = Terminals::global(cx) {
+                terminals.update(cx, |terminals, cx| terminals.cancel_job(&key, cx));
+            }
+        })
+    };
     let remote = workspace.machine != crate::machines::LOCAL_HOST;
     terminals.update(cx, |terminals, cx| {
         let tab = LaunchTab {
@@ -851,6 +859,7 @@ pub fn launch(key: &PrKey, workspace: WorkspaceEntry, cx: &mut App) {
             machine: machine_name.clone(),
             checklist: Checklist::plan(StepsFor::Review, remote),
             retry,
+            cancel: Some(cancel),
         };
         terminals.open_launch_tab(key, tab, Where::Split, cx);
     });

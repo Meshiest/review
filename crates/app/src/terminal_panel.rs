@@ -77,6 +77,8 @@ struct Launching {
     title: String,
     checklist: Checklist,
     retry: Option<Retry>,
+    /// Stops the launch while a step runs.
+    cancel: Option<Retry>,
 }
 
 pub struct TerminalPanel {
@@ -141,12 +143,14 @@ impl TerminalPanel {
 
     /// A launch's tab before its program starts, titled `title` and showing
     /// `checklist`; [`Self::run`] starts the program in it. `retry` starts
-    /// the launch again after a failed step.
+    /// the launch again after a failed step; `cancel` stops it while a step
+    /// runs.
     pub fn launching(
         title: String,
         spec: TerminalSpec,
         checklist: Checklist,
         retry: Option<Retry>,
+        cancel: Option<Retry>,
         cx: &mut App,
     ) -> Entity<Self> {
         cx.new(|cx| {
@@ -156,6 +160,7 @@ impl TerminalPanel {
                 title,
                 checklist,
                 retry,
+                cancel,
             });
             panel
         })
@@ -535,7 +540,8 @@ impl TerminalPanel {
     }
 
     /// The launch's numbered steps: a spinner on the one under way, check
-    /// marks on finished ones, the error and "Retry" on a failed one.
+    /// marks on finished ones, the error and "Retry" on a failed one, and
+    /// "Cancel" while they run.
     fn steps_view(&self, launching: &Launching, cx: &mut Context<Self>) -> gpui::AnyElement {
         let t = ui::theme(cx);
         let c = &t.colors;
@@ -616,6 +622,30 @@ impl TerminalPanel {
                             .children(action),
                     )
             });
+        let list = &launching.checklist;
+        let cancel = if list.canceling() {
+            Some(
+                div()
+                    .debug_selector(|| "launch-canceling".into())
+                    .small(&t)
+                    .text_color(c.text_secondary)
+                    .child("Canceling: stopping the step under way, then removing what it made.")
+                    .into_any_element(),
+            )
+        } else {
+            launching
+                .cancel
+                .clone()
+                .filter(|_| !list.stopped())
+                .map(|cancel| {
+                    h_flex()
+                        .child(
+                            Button::new("launch-cancel", "Cancel", ButtonKind::Secondary)
+                                .on_click(move |_, window, cx| cancel(window, cx)),
+                        )
+                        .into_any_element()
+                })
+        };
         v_flex()
             .debug_selector(|| "launch-steps".into())
             .size_full()
@@ -629,6 +659,7 @@ impl TerminalPanel {
                     .child(launching.title.clone()),
             )
             .children(rows)
+            .children(cancel)
             .into_any_element()
     }
 }

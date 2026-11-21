@@ -11,8 +11,9 @@
 //! The button's menu lists the repository's workspaces and saves the one
 //! chosen as its preferred; the launch opens its tab at once with numbered
 //! steps that turn into checks, then the terminal in their place; a failed
-//! step shows its error and Retry; the editor says whether each workspace
-//! is saved, never keeping one for a run only.
+//! step shows its error and Retry, and Cancel stops a running one; the
+//! editor says whether each workspace is saved, never keeping one for a run
+//! only.
 //!
 //! Once Claude suggests its review, a bar over its terminal offers to go on
 //! or to clean up: end Claude, remove the worktree and close the tab, or say
@@ -1256,4 +1257,92 @@ fn a_worktree_with_changes_stays_and_the_bar_says_where(cx: &mut TestAppContext)
     let plain = shell.update(|_, cx| TerminalPanel::placeholder(TerminalSpec::default(), cx));
     shell.update(|_, cx| plain.update(cx, |plain, cx| plain.review_done(Verdict::Comment, cx)));
     assert_eq!(review_bar(&mut shell, &plain), None);
+}
+
+/// A worktree job stuck in its fetch until it is canceled, as a real one
+/// is when its git is killed; `alive` disconnects once the job is dropped.
+fn stuck_job(alive: std::sync::mpsc::Sender<()>) -> WorktreeJob {
+    Box::new(move |progress: app::worktrees::Progress<'_>| {
+        let _alive = alive;
+        progress(Step::Fetch);
+        let start = std::time::Instant::now();
+        while !repo::cancel::canceled() {
+            if start.elapsed() > Duration::from_secs(30) {
+                return Err("never canceled".to_owned());
+            }
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        Err("git fetch was canceled".to_owned())
+    })
+}
+
+#[gpui::test]
+fn cancel_stops_the_launch_starts_nothing_and_a_new_launch_works(cx: &mut TestAppContext) {
+    let scratch = Scratch::new("agent-review-cancel");
+    let claude = fake_claude(&scratch);
+    let mut shell = open_shell(cx, Options::default());
+    let key = open_diff(&mut shell, 41);
+    install_workspace(&mut shell, &key, &scratch, &claude);
+    let (alive, dropped) = std::sync::mpsc::channel();
+    shell.update(|_, cx| {
+        let terminals = Terminals::global(cx).expect("terminals");
+        terminals.update(cx, |terminals, _| terminals.queue_job(stuck_job(alive)));
+    });
+
+    shell.click_element(SharedString::from("review-with-agent"));
+    let panel = terminal_panels(&mut shell)[0].1.clone();
+    shell.settle_until("the fetch", |cx| {
+        panel
+            .read(cx)
+            .checklist()
+            .is_some_and(|list| list.steps()[0] == (Step::Fetch, StepState::Running))
+    });
+    assert!(!shell.drawn("launch-canceling"));
+    shell.click_element(SharedString::from("launch-cancel"));
+    shell.settle_until("the job to be dropped", |_| {
+        matches!(
+            dropped.try_recv(),
+            Err(std::sync::mpsc::TryRecvError::Disconnected)
+        )
+    });
+    shell.settle_until("the cancel to end", |cx| {
+        panel
+            .read(cx)
+            .checklist()
+            .is_some_and(|list| !list.canceling())
+    });
+    let steps = launch_steps(&mut shell, &panel);
+    assert!(
+        matches!(&steps[0], (Step::Fetch, StepState::Failed(text)) if text.contains("You canceled")),
+        "{steps:?}"
+    );
+    assert!(
+        shell.element("launch-cancel").is_none(),
+        "nothing to cancel"
+    );
+    // No agent started, and its token is gone.
+    assert!(shell.update(|_, cx| panel.read(cx).view().is_none()));
+    assert_eq!(terminal_panels(&mut shell).len(), 1, "the tab shows it");
+    let terminals = shell.update(|_, cx| Terminals::global(cx).expect("terminals"));
+    assert!(matches!(
+        shell.update(|_, cx| terminals.read(cx).worktree(&key).cloned()),
+        Some(WorktreeState::Failed { .. })
+    ));
+    let review = shell.update(|_, cx| AgentReview::global(cx).expect("installed"));
+    assert!(shell.update(|_, cx| review.read(cx).token(&key).is_none()));
+
+    // "Review with agent" again starts over in the same tab, and the agent
+    // starts.
+    let (go, gate) = std::sync::mpsc::channel();
+    let working = gated_job(Vec::new(), gate, Ok(prepared_in(&scratch)));
+    shell.update(|_, cx| terminals.update(cx, |terminals, _| terminals.queue_job(working)));
+    shell.click_element(SharedString::from("review-with-agent"));
+    assert!(shell.element("launch-cancel").is_some(), "Cancel again");
+    go.send(()).expect("the job waits");
+    shell.settle_until("the agent to start", |cx| {
+        panel.read(cx).checklist().is_none()
+    });
+    assert_eq!(terminal_panels(&mut shell).len(), 1, "the same tab");
+    assert!(shell.update(|_, cx| panel.read(cx).spec().agent.is_some()));
+    close_terminals(&mut shell);
 }
